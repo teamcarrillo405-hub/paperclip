@@ -1,0 +1,33 @@
+{
+  "name": "@paperclipai/plugin-wonda",
+  "version": "0.1.0",
+  "description": "Wonda CLI marketing integration. Chains 20+ AI models into marketing workflows via the wonda CLI.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./wonda-service": "./src/wonda-service.ts",
+    "./wonda-executor": "./src/wonda-executor.ts",
+    "./campaigns": "./src/campaigns.ts",
+    "./tools": "./src/tools.ts",
+    "./manifest": "./src/manifest.ts",
+    "./types": "./src/types.ts"
+  },
+  "paperclipPlugin": {
+    "manifest": "./dist/manifest.js",
+    "worker": "./dist/worker.js"
+  },
+  "scripts": {
+    "prebuild": "node ../../../scripts/ensure-plugin-build-deps.mjs",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "pnpm --filter @paperclipai/plugin-sdk build && tsc --noEmit"
+  },
+  "dependencies": {
+    "@paperclipai/plugin-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.7.3"
+  }
+}

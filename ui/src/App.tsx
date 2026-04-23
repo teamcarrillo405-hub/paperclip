@@ -36,6 +36,8 @@ import { RoiDashboard } from "./pages/RoiDashboard";
 import { FinancialHealthPage } from "./pages/FinancialHealthPage";
 import { PartnerPortal } from "./pages/PartnerPortal";
 import { CompliancePage } from "./pages/CompliancePage";
+import { DevToolsPage } from "./pages/DevToolsPage";
+import { MarketingPage } from "./pages/MarketingPage";
 import { InstanceGeneralSettings } from "./pages/InstanceGeneralSettings";
 import { InstanceAccess } from "./pages/InstanceAccess";
 import { InstanceSettings } from "./pages/InstanceSettings";
@@ -139,6 +141,8 @@ function boardRoutes() {
       <Route path="financial-health" element={<FinancialHealthPage />} />
       <Route path="partner" element={<PartnerPortal />} />
       <Route path="compliance" element={<CompliancePage />} />
+      <Route path="marketing" element={<MarketingPage />} />
+      <Route path="dev-tools" element={<DevToolsPage />} />
       <Route path="instance/settings/adapters" element={<AdapterManager />} />
       <Route path=":pluginRoutePath" element={<PluginPage />} />
       <Route path="*" element={<NotFoundPage scope="board" />} />

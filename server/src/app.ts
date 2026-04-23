@@ -34,6 +34,7 @@ import { instanceSettingsRoutes } from "./routes/instance-settings.js";
 import { billingRoutes, billingWebhookRoutes } from "./routes/billing.js";
 import { voiceRoutes } from "./routes/voice.js";
 import { socialRoutes } from "./routes/social.js";
+import { marketingRoutes } from "./routes/marketing.js";
 import { resellerRoutes, resellerWebhookRoutes } from "./routes/reseller.js";
 import {
   instanceDatabaseBackupRoutes,
@@ -54,6 +55,8 @@ import { customer360Routes } from "./routes/customer360.js";
 import { chatWidgetRoutes, chatWidgetSettingsAdminRoutes } from "./routes/chat-widget.js";
 import { mobileRoutes } from "./routes/mobile.js";
 import { complianceRoutes } from "./routes/compliance.js";
+import { aiderRoutes } from "./routes/aider.js";
+import { gooseRoutes } from "./routes/goose.js";
 import { applyUiBranding } from "./ui-branding.js";
 import { logger } from "./middleware/logger.js";
 import { DEFAULT_LOCAL_PLUGIN_DIR, pluginLoader } from "./services/plugin-loader.js";
@@ -257,6 +260,7 @@ export async function createApp(
   api.use(billingWebhookRoutes(db));
   api.use(voiceRoutes(db));
   api.use(socialRoutes(db));
+  api.use(marketingRoutes(db));
   api.use(resellerRoutes(db));
   api.use(resellerWebhookRoutes(db));
   api.use(guardianRoutes(db, guardianScheduler));
@@ -266,6 +270,8 @@ export async function createApp(
   api.use(financialRoutes(db));
   api.use(customer360Routes(db));
   api.use(complianceRoutes(db));
+  api.use(aiderRoutes(db));
+  api.use(gooseRoutes(db));
   api.use(chatWidgetRoutes(db));
   api.use(chatWidgetSettingsAdminRoutes(db));
   if (opts.databaseBackupService) {

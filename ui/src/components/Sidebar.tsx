@@ -18,6 +18,8 @@ import {
   Users,
   Share2,
   Handshake,
+  Megaphone,
+  Wrench,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@/lib/router";
@@ -123,6 +125,7 @@ export function Sidebar() {
           <SidebarNavItem to="/goals" label="Goals" icon={Target} />
           <SidebarNavItem to="/customers" label="Customers" icon={Users} />
           <SidebarNavItem to="/social" label="Social Media" icon={Share2} />
+          <SidebarNavItem to="/marketing" label="Marketing" icon={Megaphone} />
           {showWorkspacesLink ? (
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
           ) : null}
@@ -142,6 +145,9 @@ export function Sidebar() {
           <SidebarNavItem to="/onboarding" label="Setup Guide" icon={GraduationCap} />
           {showPartnerLink ? (
             <SidebarNavItem to="/partner" label="Partner Program" icon={Handshake} />
+          ) : null}
+          {import.meta.env.VITE_DEV_MODE === "true" ? (
+            <SidebarNavItem to="/dev-tools" label="Dev Tools" icon={Wrench} />
           ) : null}
         </SidebarSection>
 
