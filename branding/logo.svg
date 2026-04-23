@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" fill="none">
+  <!-- Icon mark: stylized "A" -->
+  <rect width="48" height="48" rx="10" fill="#2563eb"/>
+  <path d="M24 10 L36 38 H30 L27 31 H21 L18 38 H12 Z M24 18 L22 25 H26 Z" fill="white"/>
+  <!-- Wordmark -->
+  <text x="58" y="34" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="700" fill="#111827" letter-spacing="-0.5">Avero</text>
+  <text x="130" y="34" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="400" fill="#2563eb" letter-spacing="-0.5"> AI</text>
+</svg>

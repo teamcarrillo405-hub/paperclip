@@ -63,6 +63,7 @@ import { crewaiRoutes } from "./routes/crewai.js";
 import { n8nRoutes } from "./routes/n8n-routes.js";
 import { knowledgeRoutes } from "./routes/knowledge.js";
 import { postalRoutes } from "./routes/postal.js";
+import { devModeRoutes } from "./routes/dev-mode.js";
 import { applyUiBranding } from "./ui-branding.js";
 import { logger } from "./middleware/logger.js";
 import { DEFAULT_LOCAL_PLUGIN_DIR, pluginLoader } from "./services/plugin-loader.js";
@@ -282,6 +283,7 @@ export async function createApp(
   api.use(gooseRoutes(db));
   api.use(crewaiRoutes(db));
   api.use(postalRoutes(db));
+  api.use(devModeRoutes());
   api.use(n8nRoutes());
   api.use(knowledgeRoutes(db));
   api.use(chatWidgetRoutes(db));

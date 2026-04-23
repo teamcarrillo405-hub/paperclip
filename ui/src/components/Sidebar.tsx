@@ -25,6 +25,7 @@ import {
   Mail,
   Video,
   Image,
+  Terminal,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@/lib/router";
@@ -159,7 +160,7 @@ export function Sidebar() {
             <SidebarNavItem to="/partner" label="Partner Program" icon={Handshake} />
           ) : null}
           {import.meta.env.VITE_DEV_MODE === "true" ? (
-            <SidebarNavItem to="/dev-tools" label="Dev Tools" icon={Wrench} />
+            <SidebarNavItem to="/dev-tools" label="Dev Tools" icon={Terminal} />
           ) : null}
         </SidebarSection>
 

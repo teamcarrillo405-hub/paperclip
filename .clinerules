@@ -1,0 +1,66 @@
+# Avero AI — Cline Development Rules
+
+## Project Overview
+Avero AI is a white-labeled AI assistant platform for small businesses, based on paperclipai/paperclip.
+Target market: Small businesses $0–$20M/year.
+Brand: Primary #2563eb (blue), Accent #16a34a (green).
+
+## Architecture
+- Monorepo (pnpm workspaces)
+- packages/plugins/* — agent tool plugins (follow quickbooks pattern)
+- packages/db — Drizzle ORM PostgreSQL schemas
+- server — Express.js API server
+- ui — React + Vite frontend
+
+## CRITICAL: Adapter Type
+ALWAYS use `claude_local` adapter. NEVER use `claude-code` or `claude_code`.
+
+## Plugin Development Rules
+1. Create plugin under packages/plugins/{name}/
+2. Package scope: @paperclipai/plugin-{name}
+3. Export AgentTool[] from src/index.ts
+4. Use companyId (not userId) for per-company data
+5. Register tools in server/src/plugins/index.ts
+6. Create DB schema in packages/db/src/schema/{name}.ts
+7. Export schema from packages/db/src/schema/index.ts
+8. Create migration in packages/db/src/migrations/
+
+## DB Schema Rules
+- Always use uuid primary keys with defaultRandom()
+- Always include createdAt timestamp with defaultNow()
+- Key all company data by companyId uuid
+- Follow billing_subscriptions.ts pattern exactly
+- Migration numbering: check highest existing number + 1
+
+## Server Routes
+- Create route file in server/src/routes/{name}.ts
+- Register in server/src/routes/index.ts AND server/src/app.ts
+- All routes require authentication (check existing auth middleware pattern)
+
+## UI Rules
+- New pages go in ui/src/pages/{Name}Page.tsx
+- Register in ui/src/App.tsx
+- Add sidebar entry in ui/src/components/Sidebar.tsx
+- Use lucide-react for icons
+- Brand colors: primary #2563eb, accent #16a34a
+- Follow existing page patterns
+
+## TypeScript Rules
+- Run `npx tsc --noEmit` before committing
+- Fix only errors you introduce — pre-existing errors are known issues
+- Strict mode is enabled
+
+## Git Rules
+- Branch naming: feature/{name} or bonus/{name}
+- Commit format: feat: {description}
+- Do NOT push (proxy returns 403) — commit locally only
+
+## Testing
+- Unit tests go in packages/{name}/src/__tests__/
+- Integration tests in server/src/__tests__/
+
+## Code Style
+- Use async/await (not callbacks or raw Promise chains)
+- Always handle errors with try/catch
+- Log errors with console.error, not console.log
+- Use TypeScript strict types — avoid `any`

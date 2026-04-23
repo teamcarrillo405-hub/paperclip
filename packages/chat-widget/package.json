@@ -1,0 +1,17 @@
+{
+  "name": "@paperclipai/chat-widget",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --minify --format=iife --target=es2018 --outfile=dist/avero-chat.js",
+    "build:dev": "esbuild src/index.ts --bundle --sourcemap --format=iife --target=es2018 --outfile=dist/avero-chat.js",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.3",
+    "typescript": "^5.7.3"
+  }
+}

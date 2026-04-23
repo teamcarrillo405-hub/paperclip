@@ -42,6 +42,7 @@ import { pluginStateStore } from "./plugin-state-store.js";
 import { pluginDatabaseService } from "./plugin-database.js";
 import { createPluginSecretsHandler } from "./plugin-secrets-handler.js";
 import { logActivity } from "./activity-log.js";
+import { logAuditEntry } from "./audit-log.js";
 import type { PluginEventBus } from "./plugin-event-bus.js";
 import { lookup as dnsLookup } from "node:dns/promises";
 import type { IncomingMessage, RequestOptions as HttpRequestOptions } from "node:http";
@@ -851,6 +852,21 @@ export function buildHostServices(
           entityId: params.entityId ?? pluginId,
           details: pluginActivityDetails(params.metadata),
         });
+        if (pluginId === "email" && params.entityType === "email") {
+          try {
+            await logAuditEntry(db, {
+              companyId,
+              action: "email.sent",
+              resource: "email",
+              resourceId: params.entityId ?? null,
+              details: params.metadata ?? null,
+              outcome: "success",
+              riskLevel: "low",
+            });
+          } catch (err) {
+            console.error("[plugin-host-services] audit log write failed:", err);
+          }
+        }
       },
     },
 

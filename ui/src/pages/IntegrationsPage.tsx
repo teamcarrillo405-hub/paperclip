@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Phone, Plug, Share2, Users } from "lucide-react";
+import { GitBranch, Phone, Plug, Share2, Users } from "lucide-react";
 import { useSearchParams } from "@/lib/router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -462,6 +462,23 @@ export function IntegrationsPage() {
           action={
             <Button size="sm" disabled>
               Connect
+            </Button>
+          }
+        />
+
+        <IntegrationCard
+          icon={
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-600 text-white">
+              <GitBranch className="h-5 w-5" />
+            </div>
+          }
+          name="n8n Automations"
+          description="Visual workflow automation with 400+ integrations"
+          statusTone="disconnected"
+          statusLabel="Sidecar"
+          action={
+            <Button size="sm" variant="outline" asChild>
+              <a href="/automations">Open Automations</a>
             </Button>
           }
         />

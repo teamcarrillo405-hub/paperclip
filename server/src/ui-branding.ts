@@ -1,7 +1,11 @@
+import { loadBrandConfig, type BrandConfig } from "./whitelabel-config.js";
+
 const FAVICON_BLOCK_START = "<!-- PAPERCLIP_FAVICON_START -->";
 const FAVICON_BLOCK_END = "<!-- PAPERCLIP_FAVICON_END -->";
 const RUNTIME_BRANDING_BLOCK_START = "<!-- PAPERCLIP_RUNTIME_BRANDING_START -->";
 const RUNTIME_BRANDING_BLOCK_END = "<!-- PAPERCLIP_RUNTIME_BRANDING_END -->";
+const TITLE_BLOCK_REGEX = /<title>[^<]*<\/title>/i;
+const APPLE_TITLE_REGEX = /<meta\s+name="apple-mobile-web-app-title"\s+content="[^"]*"\s*\/?>/i;
 
 const DEFAULT_FAVICON_LINKS = [
   '<link rel="icon" href="/favicon.ico" sizes="48x48" />',
@@ -205,13 +209,66 @@ function replaceMarkedBlock(html: string, startMarker: string, endMarker: string
   return `${before}${indentedContent}${after}`;
 }
 
+function renderWhitelabelFaviconLinks(brand: BrandConfig): string | null {
+  if (!brand.faviconPath) return null;
+  const normalized = brand.faviconPath.replace(/^\.?\//, "/");
+  const href = escapeHtmlAttribute(normalized.startsWith("/") ? normalized : `/${normalized}`);
+  return `<link rel="icon" href="${href}" sizes="any" />`;
+}
+
+function renderWhitelabelRuntimeMeta(brand: BrandConfig): string {
+  const lines: string[] = [];
+  if (brand.productName) {
+    lines.push(`<meta name="paperclip-brand-product-name" content="${escapeHtmlAttribute(brand.productName)}" />`);
+  }
+  if (brand.primaryColor) {
+    lines.push(
+      `<style>:root{--brand-primary:${escapeHtmlAttribute(brand.primaryColor)};--brand-accent:${escapeHtmlAttribute(brand.accentColor || brand.primaryColor)};}</style>`,
+    );
+  }
+  return lines.join("\n");
+}
+
+function applyTitleBranding(html: string, brand: BrandConfig): string {
+  if (!brand.productName) return html;
+  const escaped = escapeHtmlAttribute(brand.productName);
+  let out = html.replace(TITLE_BLOCK_REGEX, `<title>${escaped}</title>`);
+  out = out.replace(
+    APPLE_TITLE_REGEX,
+    `<meta name="apple-mobile-web-app-title" content="${escaped}" />`,
+  );
+  return out;
+}
+
+function isWhitelabelActive(brand: BrandConfig): boolean {
+  // Whitelabel injection is active when an operator has opted in by setting
+  // hideOpenSourceBranding=true in their config. Absent a config file (or
+  // with defaults), this stays false, preserving upstream OSS behavior.
+  return brand.hideOpenSourceBranding === true;
+}
+
 export function applyUiBranding(html: string, env: NodeJS.ProcessEnv = process.env): string {
-  const branding = getWorktreeUiBranding(env);
-  const withFavicon = replaceMarkedBlock(html, FAVICON_BLOCK_START, FAVICON_BLOCK_END, renderFaviconLinks(branding));
+  const worktreeBranding = getWorktreeUiBranding(env);
+  const brand = loadBrandConfig();
+  const whitelabelActive = isWhitelabelActive(brand);
+
+  const titled = whitelabelActive ? applyTitleBranding(html, brand) : html;
+
+  const worktreeFavicon = renderFaviconLinks(worktreeBranding);
+  const whitelabelFavicon = whitelabelActive ? renderWhitelabelFaviconLinks(brand) : null;
+  const faviconContent = worktreeBranding.enabled && worktreeBranding.faviconHref
+    ? worktreeFavicon
+    : (whitelabelFavicon ?? worktreeFavicon);
+  const withFavicon = replaceMarkedBlock(titled, FAVICON_BLOCK_START, FAVICON_BLOCK_END, faviconContent);
+
+  const worktreeMeta = renderRuntimeBrandingMeta(worktreeBranding);
+  const whitelabelMeta = whitelabelActive ? renderWhitelabelRuntimeMeta(brand) : "";
+  const runtimeMeta = [whitelabelMeta, worktreeMeta].filter((part) => part.length > 0).join("\n");
+
   return replaceMarkedBlock(
     withFavicon,
     RUNTIME_BRANDING_BLOCK_START,
     RUNTIME_BRANDING_BLOCK_END,
-    renderRuntimeBrandingMeta(branding),
+    runtimeMeta,
   );
 }

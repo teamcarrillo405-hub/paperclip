@@ -1,0 +1,153 @@
+{
+  "name": "Invoice Overdue Reminders",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "days", "daysInterval": 1, "triggerAtHour": 9 }
+          ]
+        }
+      },
+      "id": "f2b1c1a1-0001-4000-8000-000000000001",
+      "name": "Daily 9am Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.PAPERCLIP_API_BASE}}/api/invoices/overdue",
+        "authentication": "genericCredentialType",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "buckets", "value": "7,14,30" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f2b1c1a1-0002-4000-8000-000000000002",
+      "name": "Fetch Overdue Invoices",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "invoices",
+        "options": {}
+      },
+      "id": "f2b1c1a1-0003-4000-8000-000000000003",
+      "name": "Split Invoices",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "strict" },
+                "conditions": [
+                  { "leftValue": "={{$json.daysOverdue}}", "rightValue": 7, "operator": { "type": "number", "operation": "equals" } }
+                ]
+              },
+              "outputKey": "7days"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "strict" },
+                "conditions": [
+                  { "leftValue": "={{$json.daysOverdue}}", "rightValue": 14, "operator": { "type": "number", "operation": "equals" } }
+                ]
+              },
+              "outputKey": "14days"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "strict" },
+                "conditions": [
+                  { "leftValue": "={{$json.daysOverdue}}", "rightValue": 30, "operator": { "type": "number", "operation": "gte" } }
+                ]
+              },
+              "outputKey": "30days"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f2b1c1a1-0004-4000-8000-000000000004",
+      "name": "Switch on Days Overdue",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{$env.PAPERCLIP_FROM_EMAIL}}",
+        "toEmail": "={{$json.customerEmail}}",
+        "subject": "Friendly reminder: invoice {{$json.invoiceNumber}} is 7 days overdue",
+        "emailFormat": "html",
+        "html": "<p>Hi {{$json.customerName}},</p><p>Just a reminder that invoice {{$json.invoiceNumber}} for ${{$json.amount}} is now 7 days past due. You can pay it at {{$json.payUrl}}.</p>",
+        "options": {}
+      },
+      "id": "f2b1c1a1-0005-4000-8000-000000000005",
+      "name": "7-Day Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1120, 180]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{$env.PAPERCLIP_FROM_EMAIL}}",
+        "toEmail": "={{$json.customerEmail}}",
+        "subject": "Second notice: invoice {{$json.invoiceNumber}} is 14 days overdue",
+        "emailFormat": "html",
+        "html": "<p>Hi {{$json.customerName}},</p><p>Invoice {{$json.invoiceNumber}} for ${{$json.amount}} is now 14 days past due. Please pay at {{$json.payUrl}} to avoid a late fee.</p>",
+        "options": {}
+      },
+      "id": "f2b1c1a1-0006-4000-8000-000000000006",
+      "name": "14-Day Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{$env.PAPERCLIP_FROM_EMAIL}}",
+        "toEmail": "={{$json.customerEmail}}",
+        "subject": "Final notice: invoice {{$json.invoiceNumber}} is 30+ days overdue",
+        "emailFormat": "html",
+        "html": "<p>Hi {{$json.customerName}},</p><p>This is our final notice before the account moves to collections. Invoice {{$json.invoiceNumber}} for ${{$json.amount}} is 30+ days past due — please pay immediately at {{$json.payUrl}}.</p>",
+        "options": {}
+      },
+      "id": "f2b1c1a1-0007-4000-8000-000000000007",
+      "name": "30-Day Final Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1120, 420]
+    }
+  ],
+  "connections": {
+    "Daily 9am Trigger": {
+      "main": [[{ "node": "Fetch Overdue Invoices", "type": "main", "index": 0 }]]
+    },
+    "Fetch Overdue Invoices": {
+      "main": [[{ "node": "Split Invoices", "type": "main", "index": 0 }]]
+    },
+    "Split Invoices": {
+      "main": [[{ "node": "Switch on Days Overdue", "type": "main", "index": 0 }]]
+    },
+    "Switch on Days Overdue": {
+      "main": [
+        [{ "node": "7-Day Reminder", "type": "main", "index": 0 }],
+        [{ "node": "14-Day Reminder", "type": "main", "index": 0 }],
+        [{ "node": "30-Day Final Reminder", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}

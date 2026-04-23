@@ -13,6 +13,16 @@ export const createCompanySchema = z.object({
 
 export type CreateCompany = z.infer<typeof createCompanySchema>;
 
+export const businessProfileSchema = z.object({
+  businessName: z.string().max(200).optional(),
+  industry: z.string().max(100).optional(),
+  revenueRange: z.string().max(100).optional(),
+  biggestPainPoint: z.string().max(500).optional(),
+  templateId: z.string().max(100).optional(),
+}).passthrough();
+
+export type BusinessProfile = z.infer<typeof businessProfileSchema>;
+
 export const updateCompanySchema = createCompanySchema
   .partial()
   .extend({
@@ -25,6 +35,9 @@ export const updateCompanySchema = createCompanySchema
     feedbackDataSharingTermsVersion: feedbackDataSharingTermsVersionSchema,
     brandColor: brandColorSchema,
     logoAssetId: logoAssetIdSchema,
+    onboardingCompleted: z.boolean().optional(),
+    onboardingStep: z.number().int().min(0).max(10).optional(),
+    businessProfile: businessProfileSchema.nullable().optional(),
   });
 
 export type UpdateCompany = z.infer<typeof updateCompanySchema>;

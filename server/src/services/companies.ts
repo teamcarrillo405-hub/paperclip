@@ -49,6 +49,9 @@ export function companyService(db: Db) {
     feedbackDataSharingTermsVersion: companies.feedbackDataSharingTermsVersion,
     brandColor: companies.brandColor,
     logoAssetId: companyLogos.assetId,
+    onboardingCompleted: companies.onboardingCompleted,
+    onboardingStep: companies.onboardingStep,
+    businessProfile: companies.businessProfile,
     createdAt: companies.createdAt,
     updatedAt: companies.updatedAt,
   };

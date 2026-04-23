@@ -1,0 +1,54 @@
+{
+  "name": "Review Request After Job",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "review-request",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "f3c1c1a1-0001-4000-8000-000000000001",
+      "name": "Webhook: Job Completed",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "review-request"
+    },
+    {
+      "parameters": {
+        "amount": 24,
+        "unit": "hours"
+      },
+      "id": "f3c1c1a1-0002-4000-8000-000000000002",
+      "name": "Wait 24 Hours",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{$env.PAPERCLIP_FROM_EMAIL}}",
+        "toEmail": "={{$json.customerEmail}}",
+        "subject": "How was your experience with {{companyName}}?",
+        "emailFormat": "html",
+        "html": "<p>Hi {{$json.customerName}},</p><p>Thanks for choosing {{companyName}} for your recent {{$json.jobType}}. We'd love to hear about your experience — could you take 30 seconds to leave a review?</p><p><a href=\"{{$json.reviewUrl}}\">Leave a review</a></p><p>Thanks,<br/>The {{companyName}} team</p>",
+        "options": {}
+      },
+      "id": "f3c1c1a1-0003-4000-8000-000000000003",
+      "name": "Send Review Request",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Job Completed": {
+      "main": [[{ "node": "Wait 24 Hours", "type": "main", "index": 0 }]]
+    },
+    "Wait 24 Hours": {
+      "main": [[{ "node": "Send Review Request", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}

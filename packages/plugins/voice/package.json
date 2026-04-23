@@ -1,0 +1,33 @@
+{
+  "name": "@paperclipai/plugin-voice",
+  "version": "0.1.0",
+  "description": "Voice integration plugin for Paperclip (Twilio telephony, Deepgram STT, ElevenLabs TTS).",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./voice-service": "./src/voice-service.ts",
+    "./twilio-handler": "./src/twilio-handler.ts",
+    "./types": "./src/types.ts"
+  },
+  "paperclipPlugin": {
+    "manifest": "./dist/manifest.js",
+    "worker": "./dist/worker.js"
+  },
+  "scripts": {
+    "prebuild": "node ../../../scripts/ensure-plugin-build-deps.mjs",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "pnpm --filter @paperclipai/plugin-sdk build && tsc --noEmit"
+  },
+  "dependencies": {
+    "@paperclipai/plugin-sdk": "workspace:*",
+    "twilio": "^5.0.0",
+    "@deepgram/sdk": "^3.0.0",
+    "elevenlabs": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.7.3"
+  }
+}
