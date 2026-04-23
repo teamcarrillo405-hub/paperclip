@@ -1,0 +1,14 @@
+{
+  "name": "@paperclipai/video-studio",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "remotion": "^4.0.0",
+    "@remotion/renderer": "^4.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0"
+  }
+}
