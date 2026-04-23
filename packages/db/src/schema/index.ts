@@ -110,3 +110,5 @@ export {
   type NewGooseTaskRow,
   type GooseTaskStatus,
 } from "./goose_tasks.js";
+export { kbIngestedDocuments, kbGeneratedDocuments } from "./kb_generated_documents.js";
+export { emailSends, type EmailSendRow, type NewEmailSendRow } from "./email_sends.js";

@@ -37,8 +37,11 @@ import { FinancialHealthPage } from "./pages/FinancialHealthPage";
 import { PartnerPortal } from "./pages/PartnerPortal";
 import { CompliancePage } from "./pages/CompliancePage";
 import { AutonomousTasksPage } from "./pages/AutonomousTasksPage";
+import { KnowledgeBasePage } from "./pages/KnowledgeBasePage";
 import { DevToolsPage } from "./pages/DevToolsPage";
 import { MarketingPage } from "./pages/MarketingPage";
+import { EmailPage } from "./pages/EmailPage";
+import { VideoStudioPage } from "./pages/VideoStudioPage";
 import { CrewsPage } from "./pages/CrewsPage";
 import { InstanceGeneralSettings } from "./pages/InstanceGeneralSettings";
 import { InstanceAccess } from "./pages/InstanceAccess";
@@ -147,7 +150,10 @@ function boardRoutes() {
       <Route path="compliance" element={<CompliancePage />} />
       <Route path="autonomous-tasks" element={<AutonomousTasksPage />} />
       <Route path="marketing" element={<MarketingPage />} />
+      <Route path="email" element={<EmailPage />} />
+      <Route path="video-studio" element={<VideoStudioPage />} />
       <Route path="crews" element={<CrewsPage />} />
+      <Route path="knowledge" element={<KnowledgeBasePage />} />
       <Route path="dev-tools" element={<DevToolsPage />} />
       <Route path="instance/settings/adapters" element={<AdapterManager />} />
       <Route path=":pluginRoutePath" element={<PluginPage />} />

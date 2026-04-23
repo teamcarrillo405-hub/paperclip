@@ -35,6 +35,7 @@ import { billingRoutes, billingWebhookRoutes } from "./routes/billing.js";
 import { voiceRoutes } from "./routes/voice.js";
 import { socialRoutes } from "./routes/social.js";
 import { marketingRoutes } from "./routes/marketing.js";
+import { videoRoutes } from "./routes/video.js";
 import { resellerRoutes, resellerWebhookRoutes } from "./routes/reseller.js";
 import {
   instanceDatabaseBackupRoutes,
@@ -59,6 +60,8 @@ import { aiderRoutes } from "./routes/aider.js";
 import { gooseRoutes } from "./routes/goose.js";
 import { crewaiRoutes } from "./routes/crewai.js";
 import { n8nRoutes } from "./routes/n8n-routes.js";
+import { knowledgeRoutes } from "./routes/knowledge.js";
+import { postalRoutes } from "./routes/postal.js";
 import { applyUiBranding } from "./ui-branding.js";
 import { logger } from "./middleware/logger.js";
 import { DEFAULT_LOCAL_PLUGIN_DIR, pluginLoader } from "./services/plugin-loader.js";
@@ -263,6 +266,7 @@ export async function createApp(
   api.use(voiceRoutes(db));
   api.use(socialRoutes(db));
   api.use(marketingRoutes(db));
+  api.use(videoRoutes(db));
   api.use(resellerRoutes(db));
   api.use(resellerWebhookRoutes(db));
   api.use(guardianRoutes(db, guardianScheduler));
@@ -275,7 +279,9 @@ export async function createApp(
   api.use(aiderRoutes(db));
   api.use(gooseRoutes(db));
   api.use(crewaiRoutes(db));
+  api.use(postalRoutes(db));
   api.use(n8nRoutes());
+  api.use(knowledgeRoutes(db));
   api.use(chatWidgetRoutes(db));
   api.use(chatWidgetSettingsAdminRoutes(db));
   if (opts.databaseBackupService) {

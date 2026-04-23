@@ -21,6 +21,9 @@ import {
   Megaphone,
   Wrench,
   Bot,
+  BookOpen,
+  Mail,
+  Video,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@/lib/router";
@@ -128,6 +131,9 @@ export function Sidebar() {
           <SidebarNavItem to="/social" label="Social Media" icon={Share2} />
           <SidebarNavItem to="/marketing" label="Marketing" icon={Megaphone} />
           <SidebarNavItem to="/crews" label="AI Crews" icon={Users} />
+          <SidebarNavItem to="/knowledge" label="Knowledge Base" icon={BookOpen} />
+          <SidebarNavItem to="/email" label="Email" icon={Mail} />
+          <SidebarNavItem to="/video-studio" label="Video Studio" icon={Video} />
           <SidebarNavItem to="/automations" label="Automations" icon={GitBranch} />
           <SidebarNavItem to="/autonomous-tasks" label="Autonomous Tasks" icon={Bot} />
           {showWorkspacesLink ? (

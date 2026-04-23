@@ -33,3 +33,6 @@ export { aiderRoutes } from "./aider.js";
 export { gooseRoutes } from "./goose.js";
 export { crewaiRoutes } from "./crewai.js";
 export { n8nRoutes } from "./n8n-routes.js";
+export { knowledgeRoutes } from "./knowledge.js";
+export { postalRoutes } from "./postal.js";
+export { videoRoutes } from "./video.js";
