@@ -339,6 +339,11 @@ export function billingService(db: Db) {
             } catch (err) {
               logger.warn({ err, subscriptionId }, "reseller: markClientActiveBySubscription failed");
             }
+            try {
+              await sendInvoiceReceipt(invoice);
+            } catch (err) {
+              logger.warn({ err, subscriptionId }, "billing: postal invoice receipt send failed");
+            }
           }
         }
         break;
@@ -414,3 +419,34 @@ export function billingService(db: Db) {
 }
 
 export type BillingService = ReturnType<typeof billingService>;
+
+async function sendInvoiceReceipt(invoice: Stripe.Invoice): Promise<void> {
+  const to = invoice.customer_email ?? undefined;
+  const companyId =
+    (typeof invoice.metadata?.companyId === "string" ? invoice.metadata.companyId : undefined) ??
+    (typeof invoice.subscription_details?.metadata?.companyId === "string"
+      ? invoice.subscription_details.metadata.companyId
+      : undefined);
+  if (!to || !companyId) return;
+  const { AveroPostalService } = await import("@paperclipai/plugin-postal");
+  const service = new AveroPostalService({ logger });
+  const lineItems = (invoice.lines?.data ?? []).map((l) => ({
+    description: l.description ?? "Subscription",
+    amount: ((l.amount ?? 0) / 100).toFixed(2),
+    quantity: l.quantity ?? 1,
+  }));
+  await service.sendTemplate(
+    "invoice",
+    to,
+    {
+      customerName: invoice.customer_name ?? "Customer",
+      invoiceNumber: invoice.number ?? invoice.id,
+      lineItems,
+      total: ((invoice.amount_paid ?? 0) / 100).toFixed(2),
+      dueDate: invoice.due_date ? new Date(invoice.due_date * 1000).toISOString().slice(0, 10) : undefined,
+      payUrl: invoice.hosted_invoice_url ?? undefined,
+      businessName: "Avero AI",
+    },
+    companyId,
+  );
+}

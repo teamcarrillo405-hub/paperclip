@@ -1,0 +1,37 @@
+{
+  "name": "@paperclipai/plugin-postal",
+  "version": "0.1.0",
+  "description": "Postal transactional email backbone for Avero AI — templates, bulk sending, and agent tools",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./postal-service": "./src/postal-service.ts",
+    "./bulk-sender": "./src/bulk-sender.ts",
+    "./email-templates/invoice-reminder": "./src/email-templates/invoice-reminder.ts",
+    "./email-templates/welcome": "./src/email-templates/welcome.ts",
+    "./email-templates/weekly-report": "./src/email-templates/weekly-report.ts",
+    "./email-templates/review-request": "./src/email-templates/review-request.ts",
+    "./email-templates/appointment": "./src/email-templates/appointment.ts"
+  },
+  "paperclipPlugin": {
+    "manifest": "./dist/manifest.js",
+    "worker": "./dist/worker.js"
+  },
+  "scripts": {
+    "prebuild": "node ../../../scripts/ensure-plugin-build-deps.mjs",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "pnpm --filter @paperclipai/plugin-sdk build && tsc --noEmit"
+  },
+  "dependencies": {
+    "@paperclipai/plugin-sdk": "workspace:*",
+    "@paperclipai/db": "workspace:*",
+    "nodemailer": "^6.9.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.7.3"
+  }
+}
