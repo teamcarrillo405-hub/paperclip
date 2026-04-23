@@ -42,6 +42,7 @@ import { DevToolsPage } from "./pages/DevToolsPage";
 import { MarketingPage } from "./pages/MarketingPage";
 import { EmailPage } from "./pages/EmailPage";
 import { VideoStudioPage } from "./pages/VideoStudioPage";
+import { ImageStudioPage } from "./pages/ImageStudioPage";
 import { CrewsPage } from "./pages/CrewsPage";
 import { InstanceGeneralSettings } from "./pages/InstanceGeneralSettings";
 import { InstanceAccess } from "./pages/InstanceAccess";
@@ -152,6 +153,7 @@ function boardRoutes() {
       <Route path="marketing" element={<MarketingPage />} />
       <Route path="email" element={<EmailPage />} />
       <Route path="video-studio" element={<VideoStudioPage />} />
+      <Route path="image-studio" element={<ImageStudioPage />} />
       <Route path="crews" element={<CrewsPage />} />
       <Route path="knowledge" element={<KnowledgeBasePage />} />
       <Route path="dev-tools" element={<DevToolsPage />} />

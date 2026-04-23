@@ -65,6 +65,7 @@
     "@paperclipai/plugin-quickbooks": "workspace:*",
     "@paperclipai/plugin-social": "workspace:*",
     "@paperclipai/plugin-video": "workspace:*",
+    "@paperclipai/plugin-image-studio": "workspace:*",
     "@paperclipai/plugin-voice": "workspace:*",
     "@paperclipai/plugin-wonda": "workspace:*",
     "@paperclipai/plugin-sdk": "workspace:*",

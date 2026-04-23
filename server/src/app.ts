@@ -36,6 +36,7 @@ import { voiceRoutes } from "./routes/voice.js";
 import { socialRoutes } from "./routes/social.js";
 import { marketingRoutes } from "./routes/marketing.js";
 import { videoRoutes } from "./routes/video.js";
+import { imageStudioRoutes } from "./routes/image-studio.js";
 import { resellerRoutes, resellerWebhookRoutes } from "./routes/reseller.js";
 import {
   instanceDatabaseBackupRoutes,
@@ -267,6 +268,7 @@ export async function createApp(
   api.use(socialRoutes(db));
   api.use(marketingRoutes(db));
   api.use(videoRoutes(db));
+  api.use(imageStudioRoutes(db));
   api.use(resellerRoutes(db));
   api.use(resellerWebhookRoutes(db));
   api.use(guardianRoutes(db, guardianScheduler));
