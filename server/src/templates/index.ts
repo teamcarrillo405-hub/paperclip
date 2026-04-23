@@ -3,6 +3,7 @@ import retailStore from "./retail-store.json" with { type: "json" };
 import contractorOffice from "./contractor-office.json" with { type: "json" };
 import professionalServices from "./professional-services.json" with { type: "json" };
 import bookkeeper from "./bookkeeper.json" with { type: "json" };
+import onboardingConcierge from "./onboarding-concierge.json" with { type: "json" };
 
 export interface IndustryTemplateGoal {
   title: string;
@@ -90,5 +91,16 @@ export const INDUSTRY_TEMPLATES: IndustryTemplate[] = [
     agentCount: 4,
     routineCount: 4,
     file: bookkeeper as IndustryTemplateFile,
+  },
+  {
+    id: "onboarding-concierge",
+    name: "Onboarding Concierge",
+    description:
+      "Guides new customers through setup and checks in during their first 30 days.",
+    industry: "Onboarding",
+    icon: "🎓",
+    agentCount: 1,
+    routineCount: 3,
+    file: onboardingConcierge as IndustryTemplateFile,
   },
 ];

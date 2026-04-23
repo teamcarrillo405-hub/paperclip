@@ -20,9 +20,11 @@ export {
   createCompanySchema,
   updateCompanySchema,
   updateCompanyBrandingSchema,
+  businessProfileSchema,
   type CreateCompany,
   type UpdateCompany,
   type UpdateCompanyBranding,
+  type BusinessProfile,
 } from "./company.js";
 export {
   environmentDriverSchema,

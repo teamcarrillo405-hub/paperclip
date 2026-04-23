@@ -1,4 +1,13 @@
-import { pgTable, uuid, text, integer, timestamp, boolean, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, integer, timestamp, boolean, jsonb, uniqueIndex } from "drizzle-orm/pg-core";
+
+export interface CompanyBusinessProfile {
+  businessName?: string;
+  industry?: string;
+  revenueRange?: string;
+  biggestPainPoint?: string;
+  templateId?: string;
+  [key: string]: unknown;
+}
 
 export const companies = pgTable(
   "companies",
@@ -23,6 +32,9 @@ export const companies = pgTable(
     feedbackDataSharingConsentByUserId: text("feedback_data_sharing_consent_by_user_id"),
     feedbackDataSharingTermsVersion: text("feedback_data_sharing_terms_version"),
     brandColor: text("brand_color"),
+    onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
+    onboardingStep: integer("onboarding_step").notNull().default(0),
+    businessProfile: jsonb("business_profile").$type<CompanyBusinessProfile>(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

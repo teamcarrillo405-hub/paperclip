@@ -1,0 +1,183 @@
+{
+  "manifest": {
+    "schemaVersion": 1,
+    "generatedAt": "2026-04-23T00:00:00.000Z",
+    "source": null,
+    "includes": {
+      "company": true,
+      "agents": true,
+      "projects": false,
+      "issues": true,
+      "skills": false
+    },
+    "company": {
+      "path": "COMPANY.md",
+      "name": "Onboarding Concierge",
+      "description": "Guides new customers through setup and checks in during their first 30 days.",
+      "brandColor": null,
+      "logoPath": null,
+      "requireBoardApprovalForNewAgents": false,
+      "feedbackDataSharingEnabled": false,
+      "feedbackDataSharingConsentAt": null,
+      "feedbackDataSharingConsentByUserId": null,
+      "feedbackDataSharingTermsVersion": null
+    },
+    "sidebar": null,
+    "agents": [
+      {
+        "slug": "onboarding-concierge",
+        "name": "Onboarding Concierge",
+        "path": "agents/onboarding-concierge/AGENT.md",
+        "skills": [],
+        "role": "ceo",
+        "title": "Onboarding Concierge",
+        "icon": "🎓",
+        "capabilities": "Welcomes new customers, guides them through setup, and checks in during the first 30 days to make sure they are getting value.",
+        "reportsToSlug": null,
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      }
+    ],
+    "skills": [],
+    "projects": [],
+    "issues": [
+      {
+        "slug": "welcome-email",
+        "identifier": null,
+        "title": "Send welcome email",
+        "path": "issues/welcome-email/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "onboarding-concierge",
+        "description": "When a new company signs up, send a friendly welcome email introducing their AI team and the first steps.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "event",
+              "label": "New company created",
+              "enabled": true,
+              "event": "company.created",
+              "cronExpression": null,
+              "timezone": null,
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": {
+          "triggerType": "event",
+          "event": "company.created"
+        }
+      },
+      {
+        "slug": "day-2-check-in",
+        "identifier": null,
+        "title": "Day 2 check-in",
+        "path": "issues/day-2-check-in/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "onboarding-concierge",
+        "description": "Two days after signup, if the owner hasn't finished onboarding yet, send a friendly nudge with tips on how to finish setup.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Daily check at 10am",
+              "enabled": true,
+              "cronExpression": "0 10 * * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": {
+          "condition": "onboardingCompleted === false",
+          "dayOffset": 2
+        }
+      },
+      {
+        "slug": "day-7-value-report",
+        "identifier": null,
+        "title": "Day 7 value report",
+        "path": "issues/day-7-value-report/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "onboarding-concierge",
+        "description": "One week after signup, send a summary email showing what the AI agents accomplished: tasks completed, time saved, and what's coming next.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Weekly on Monday 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * 1",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": {
+          "dayOffset": 7
+        }
+      }
+    ],
+    "envInputs": []
+  },
+  "files": {
+    "COMPANY.md": "---\nkind: company\nname: Onboarding Concierge\n---\n\nGuides new customers through setup and checks in during their first 30 days to make sure they're getting value.\n",
+    "agents/onboarding-concierge/AGENT.md": "---\nkind: agent\nname: Onboarding Concierge\ntitle: Onboarding Concierge\n---\n\nYou are the Onboarding Concierge. Your job is to welcome new business owners, help them finish setting up, and check in during their first 30 days. Use plain, friendly language — no jargon. Celebrate small wins and make them feel like their AI team is working for them.\n",
+    "issues/welcome-email/ISSUE.md": "---\nkind: task\nname: Send welcome email\nassignee: onboarding-concierge\nrecurring: true\ntrigger: company.created\n---\n\nWhen a new company signs up, send a friendly welcome email introducing their AI team and the first steps.\n",
+    "issues/day-2-check-in/ISSUE.md": "---\nkind: task\nname: Day 2 check-in\nassignee: onboarding-concierge\nrecurring: true\n---\n\nTwo days after signup, if the owner hasn't finished onboarding yet, send a friendly nudge with tips on how to finish setup.\n",
+    "issues/day-7-value-report/ISSUE.md": "---\nkind: task\nname: Day 7 value report\nassignee: onboarding-concierge\nrecurring: true\n---\n\nOne week after signup, send a summary email showing what the AI agents accomplished so far: tasks completed, time saved, and what's coming next.\n"
+  },
+  "goals": [
+    {
+      "title": "Every new customer finishes onboarding",
+      "level": "strategic"
+    },
+    {
+      "title": "New customers see value within their first week",
+      "level": "strategic"
+    }
+  ],
+  "starterIssues": []
+}

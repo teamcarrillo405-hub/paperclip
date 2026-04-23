@@ -2,6 +2,7 @@ import { crewAiTools, type AgentTool } from "@paperclipai/plugin-crewai";
 import { knowledgeBaseTools } from "@paperclipai/plugin-knowledge-base";
 import { POSTAL_AGENT_TOOLS } from "@paperclipai/plugin-postal";
 import { createVideoTools } from "@paperclipai/plugin-video";
+import { createImageStudioTools } from "@paperclipai/plugin-image-studio";
 import type { Db } from "@paperclipai/db";
 
 export interface LocalPluginTools {
@@ -9,6 +10,7 @@ export interface LocalPluginTools {
   knowledgeBase: AgentTool[];
   postal: AgentTool[];
   video: AgentTool[];
+  imageStudio: AgentTool[];
 }
 
 export function registerLocalPluginTools(db?: Db): LocalPluginTools {
@@ -17,6 +19,7 @@ export function registerLocalPluginTools(db?: Db): LocalPluginTools {
     knowledgeBase: knowledgeBaseTools as unknown as AgentTool[],
     postal: POSTAL_AGENT_TOOLS as unknown as AgentTool[],
     video: db ? (createVideoTools(db) as unknown as AgentTool[]) : [],
+    imageStudio: db ? (createImageStudioTools(db) as unknown as AgentTool[]) : [],
   };
 }
 
@@ -27,5 +30,6 @@ export function listLocalPluginTools(db?: Db): AgentTool[] {
     ...tools.knowledgeBase,
     ...tools.postal,
     ...tools.video,
+    ...tools.imageStudio,
   ];
 }

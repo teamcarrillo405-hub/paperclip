@@ -1,4 +1,4 @@
-export type { Company } from "./company.js";
+export type { Company, CompanyBusinessProfile } from "./company.js";
 export type { Environment, EnvironmentLease, LocalEnvironmentConfig } from "./environment.js";
 export type {
   FeedbackVote,

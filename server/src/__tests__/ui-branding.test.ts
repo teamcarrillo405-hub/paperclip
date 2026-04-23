@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   applyUiBranding,
   getWorktreeUiBranding,
@@ -6,6 +6,7 @@ import {
   renderFaviconLinks,
   renderRuntimeBrandingMeta,
 } from "../ui-branding.js";
+import { resetBrandConfigCache } from "../whitelabel-config.js";
 
 const TEMPLATE = `<!doctype html>
 <head>
@@ -20,6 +21,21 @@ const TEMPLATE = `<!doctype html>
 </head>`;
 
 describe("ui branding", () => {
+  const originalWhitelabelEnv = process.env.WHITELABEL_CONFIG_PATH;
+
+  beforeEach(() => {
+    // Point whitelabel loader at a non-existent path so tests assert the
+    // open-source default behavior, independent of a repo-root config file.
+    process.env.WHITELABEL_CONFIG_PATH = "/tmp/__nonexistent_whitelabel__.ts";
+    resetBrandConfigCache();
+  });
+
+  afterEach(() => {
+    if (originalWhitelabelEnv === undefined) delete process.env.WHITELABEL_CONFIG_PATH;
+    else process.env.WHITELABEL_CONFIG_PATH = originalWhitelabelEnv;
+    resetBrandConfigCache();
+  });
+
   it("detects worktree mode from PAPERCLIP_IN_WORKTREE", () => {
     expect(isWorktreeUiBrandingEnabled({ PAPERCLIP_IN_WORKTREE: "true" })).toBe(true);
     expect(isWorktreeUiBrandingEnabled({ PAPERCLIP_IN_WORKTREE: "1" })).toBe(true);

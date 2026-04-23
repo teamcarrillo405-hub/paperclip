@@ -36,3 +36,5 @@ export { n8nRoutes } from "./n8n-routes.js";
 export { knowledgeRoutes } from "./knowledge.js";
 export { postalRoutes } from "./postal.js";
 export { videoRoutes } from "./video.js";
+export { imageStudioRoutes } from "./image-studio.js";
+export { devModeRoutes } from "./dev-mode.js";

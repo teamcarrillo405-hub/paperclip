@@ -96,6 +96,13 @@ export {
   type VideoRenderType,
   type VideoRenderStatus,
 } from "./video_renders.js";
+export {
+  imageJobs,
+  type ImageJobRow,
+  type NewImageJobRow,
+  type ImageJobStatus,
+  type ImageJobProvider,
+} from "./image_jobs.js";
 export { knowledgeDocuments } from "./knowledge_documents.js";
 export { mobileDevices } from "./mobile_devices.js";
 export {

@@ -10,7 +10,7 @@ import { accessApi } from "../api/access";
 import { assetsApi } from "../api/assets";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
-import { Settings, Check, Download, Upload } from "lucide-react";
+import { Settings, Check, Download, Upload, LayoutTemplate } from "lucide-react";
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
 import {
   Field,
@@ -558,6 +558,12 @@ export function CompanySettings() {
               <Link to="/company/import">
                 <Upload className="mr-1.5 h-3.5 w-3.5" />
                 Import
+              </Link>
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <Link to="/templates">
+                <LayoutTemplate className="mr-1.5 h-3.5 w-3.5" />
+                Template Gallery
               </Link>
             </Button>
           </div>

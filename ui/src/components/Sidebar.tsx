@@ -24,6 +24,8 @@ import {
   BookOpen,
   Mail,
   Video,
+  Image,
+  Terminal,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@/lib/router";
@@ -134,6 +136,7 @@ export function Sidebar() {
           <SidebarNavItem to="/knowledge" label="Knowledge Base" icon={BookOpen} />
           <SidebarNavItem to="/email" label="Email" icon={Mail} />
           <SidebarNavItem to="/video-studio" label="Video Studio" icon={Video} />
+          <SidebarNavItem to="/image-studio" label="Image Studio" icon={Image} />
           <SidebarNavItem to="/automations" label="Automations" icon={GitBranch} />
           <SidebarNavItem to="/autonomous-tasks" label="Autonomous Tasks" icon={Bot} />
           {showWorkspacesLink ? (
@@ -157,7 +160,7 @@ export function Sidebar() {
             <SidebarNavItem to="/partner" label="Partner Program" icon={Handshake} />
           ) : null}
           {import.meta.env.VITE_DEV_MODE === "true" ? (
-            <SidebarNavItem to="/dev-tools" label="Dev Tools" icon={Wrench} />
+            <SidebarNavItem to="/dev-tools" label="Dev Tools" icon={Terminal} />
           ) : null}
         </SidebarSection>
 
