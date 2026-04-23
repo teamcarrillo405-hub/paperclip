@@ -7,6 +7,7 @@ import {
   History,
   Search,
   SquarePen,
+  TrendingUp,
   Network,
   Boxes,
   Repeat,
@@ -80,6 +81,7 @@ export function Sidebar() {
             <span className="truncate">New Issue</span>
           </button>
           <SidebarNavItem to="/dashboard" label="Dashboard" icon={LayoutDashboard} liveCount={liveRunCount} />
+          <SidebarNavItem to="/roi" label="ROI Dashboard" icon={TrendingUp} />
           <SidebarNavItem
             to="/inbox"
             label="Inbox"
