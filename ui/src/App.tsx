@@ -36,6 +36,7 @@ import { RoiDashboard } from "./pages/RoiDashboard";
 import { FinancialHealthPage } from "./pages/FinancialHealthPage";
 import { PartnerPortal } from "./pages/PartnerPortal";
 import { CompliancePage } from "./pages/CompliancePage";
+import { AutonomousTasksPage } from "./pages/AutonomousTasksPage";
 import { DevToolsPage } from "./pages/DevToolsPage";
 import { MarketingPage } from "./pages/MarketingPage";
 import { InstanceGeneralSettings } from "./pages/InstanceGeneralSettings";
@@ -141,6 +142,7 @@ function boardRoutes() {
       <Route path="financial-health" element={<FinancialHealthPage />} />
       <Route path="partner" element={<PartnerPortal />} />
       <Route path="compliance" element={<CompliancePage />} />
+      <Route path="autonomous-tasks" element={<AutonomousTasksPage />} />
       <Route path="marketing" element={<MarketingPage />} />
       <Route path="dev-tools" element={<DevToolsPage />} />
       <Route path="instance/settings/adapters" element={<AdapterManager />} />

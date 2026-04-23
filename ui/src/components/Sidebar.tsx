@@ -20,6 +20,7 @@ import {
   Handshake,
   Megaphone,
   Wrench,
+  Bot,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@/lib/router";
@@ -126,6 +127,7 @@ export function Sidebar() {
           <SidebarNavItem to="/customers" label="Customers" icon={Users} />
           <SidebarNavItem to="/social" label="Social Media" icon={Share2} />
           <SidebarNavItem to="/marketing" label="Marketing" icon={Megaphone} />
+          <SidebarNavItem to="/autonomous-tasks" label="Autonomous Tasks" icon={Bot} />
           {showWorkspacesLink ? (
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
           ) : null}

@@ -56,6 +56,7 @@ export { financeEvents } from "./finance_events.js";
 export { approvals } from "./approvals.js";
 export { approvalComments } from "./approval_comments.js";
 export { activityLog } from "./activity_log.js";
+export { auditLog } from "./audit_log.js";
 export { companySecrets } from "./company_secrets.js";
 export { companySecretVersions } from "./company_secret_versions.js";
 export { companySkills } from "./company_skills.js";
@@ -68,3 +69,44 @@ export { pluginDatabaseNamespaces, pluginMigrations } from "./plugin_database.js
 export { pluginJobs, pluginJobRuns } from "./plugin_jobs.js";
 export { pluginWebhookDeliveries } from "./plugin_webhooks.js";
 export { pluginLogs } from "./plugin_logs.js";
+export { billingSubscriptions } from "./billing_subscriptions.js";
+export { voiceCallLogs } from "./voice_call_logs.js";
+export {
+  socialPosts,
+  type SocialPostStatus,
+  type SocialPostAnalyticsRecord,
+} from "./social_posts.js";
+export { resellerPartners } from "./reseller_partners.js";
+export { resellerClients } from "./reseller_clients.js";
+export { guardianIncidents } from "./guardian_incidents.js";
+export { chatWidgetSessions, type ChatWidgetMessage } from "./chat_widget_sessions.js";
+export { chatWidgetSettings } from "./chat_widget_settings.js";
+export { crewRuns, type CrewRunRow, type NewCrewRunRow, type CrewRunStatus } from "./crew_runs.js";
+export { customerMemories, type CustomerMemoryEntry } from "./customer_memories.js";
+export {
+  marketingCampaigns,
+  type MarketingCampaignStatus,
+  type MarketingCampaignAsset,
+  type MarketingCampaignAssets,
+} from "./marketing_campaigns.js";
+export {
+  videoRenders,
+  type VideoRenderRow,
+  type NewVideoRenderRow,
+  type VideoRenderType,
+  type VideoRenderStatus,
+} from "./video_renders.js";
+export { knowledgeDocuments } from "./knowledge_documents.js";
+export { mobileDevices } from "./mobile_devices.js";
+export {
+  aiderRuns,
+  type AiderRunRow,
+  type NewAiderRunRow,
+  type AiderRunStatus,
+} from "./aider_runs.js";
+export {
+  gooseTasks,
+  type GooseTaskRow,
+  type NewGooseTaskRow,
+  type GooseTaskStatus,
+} from "./goose_tasks.js";
