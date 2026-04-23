@@ -1,0 +1,21 @@
+{
+  "name": "@paperclipai/plugin-crewai",
+  "version": "0.1.0",
+  "description": "CrewAI integration for Paperclip — role-based multi-agent crews run via a Python subprocess.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./crew-definitions/*": "./src/crew-definitions/*"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.7.3"
+  }
+}

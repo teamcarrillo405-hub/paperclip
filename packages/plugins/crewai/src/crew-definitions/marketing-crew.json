@@ -1,0 +1,45 @@
+{
+  "name": "marketing",
+  "goal": "Plan, write, and publish multi-channel marketing content for a small business.",
+  "description": "Runs a marketing research → copywriting → publishing pipeline for SMB campaigns.",
+  "agents": [
+    {
+      "role": "Marketing Researcher",
+      "goal": "Understand the target audience, competitors, and trending topics for the campaign.",
+      "backstory": "You are a seasoned SMB marketing analyst who excels at quickly synthesizing market context from public sources and customer insights."
+    },
+    {
+      "role": "Content Copywriter",
+      "goal": "Turn research insights into persuasive, on-brand copy tailored to the chosen channel.",
+      "backstory": "You are an award-winning direct-response copywriter who writes clear, human, high-conversion copy for small businesses."
+    },
+    {
+      "role": "Social Media Publisher",
+      "goal": "Adapt the copy for the chosen social channels and produce a ready-to-post schedule.",
+      "backstory": "You are a community manager who knows the tone and format expectations of every major social platform and optimizes posting schedules."
+    }
+  ],
+  "tasks": [
+    {
+      "description": "Research the audience, competitors, and three trending angles for campaign '{{campaign_name}}' targeting {{audience}}. Return a structured brief with key talking points.",
+      "agent": "Marketing Researcher",
+      "expectedOutput": "A markdown brief with audience insights, 3 competitor notes, and 3 angle recommendations."
+    },
+    {
+      "description": "Using the research brief, draft 1 long-form piece and 3 short social posts for campaign '{{campaign_name}}'. Voice: {{brand_voice}}.",
+      "agent": "Content Copywriter",
+      "expectedOutput": "One long-form article (markdown) plus three social posts with hooks."
+    },
+    {
+      "description": "Adapt the drafts into channel-native posts for {{channels}} with a one-week posting schedule and suggested hashtags.",
+      "agent": "Social Media Publisher",
+      "expectedOutput": "A posting schedule table plus finalized channel-native post copy."
+    }
+  ],
+  "inputSchema": [
+    { "name": "campaign_name", "label": "Campaign Name", "required": true },
+    { "name": "audience", "label": "Target Audience", "required": true, "description": "Who are we talking to?" },
+    { "name": "brand_voice", "label": "Brand Voice", "description": "e.g. friendly-expert, playful, formal" },
+    { "name": "channels", "label": "Channels", "description": "Comma-separated: instagram, linkedin, x, tiktok" }
+  ]
+}

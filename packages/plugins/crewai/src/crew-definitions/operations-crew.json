@@ -1,0 +1,44 @@
+{
+  "name": "operations",
+  "goal": "Coordinate day-to-day operations: analyze workload, build a schedule, and communicate it.",
+  "description": "Runs an ops analysis → scheduling → communication pipeline for small business operations.",
+  "agents": [
+    {
+      "role": "Ops Analyst",
+      "goal": "Inspect current workload, incidents, and capacity constraints, and surface the actionable issues.",
+      "backstory": "You are an operations analyst who reads dashboards, tickets, and staffing data and produces crisp operational briefs."
+    },
+    {
+      "role": "Scheduler",
+      "goal": "Produce an optimal schedule given the ops brief and staff availability.",
+      "backstory": "You build labor-efficient schedules that respect availability, skill, and compliance constraints for SMB teams."
+    },
+    {
+      "role": "Communicator",
+      "goal": "Turn the schedule and ops decisions into clear messages to every stakeholder.",
+      "backstory": "You are a chief of staff who writes the Monday morning update nobody can misinterpret."
+    }
+  ],
+  "tasks": [
+    {
+      "description": "Analyze the current week's workload for team '{{team}}'. Highlight bottlenecks, risks, and top 3 issues to act on.",
+      "agent": "Ops Analyst",
+      "expectedOutput": "Markdown brief with risks, metrics, and top 3 actions."
+    },
+    {
+      "description": "Given the ops brief and the staff availability ({{availability}}), produce a schedule for the {{period}}.",
+      "agent": "Scheduler",
+      "expectedOutput": "A schedule table with day/time/person assignments."
+    },
+    {
+      "description": "Write a Monday morning update and a staff-facing note explaining the schedule and the top priorities.",
+      "agent": "Communicator",
+      "expectedOutput": "Two short messages in markdown: leadership update and staff message."
+    }
+  ],
+  "inputSchema": [
+    { "name": "team", "label": "Team", "required": true },
+    { "name": "period", "label": "Scheduling Period", "description": "e.g. 'week of May 5, 2026'" },
+    { "name": "availability", "label": "Staff Availability", "description": "Free-text availability summary" }
+  ]
+}

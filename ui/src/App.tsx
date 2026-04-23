@@ -39,6 +39,7 @@ import { CompliancePage } from "./pages/CompliancePage";
 import { AutonomousTasksPage } from "./pages/AutonomousTasksPage";
 import { DevToolsPage } from "./pages/DevToolsPage";
 import { MarketingPage } from "./pages/MarketingPage";
+import { CrewsPage } from "./pages/CrewsPage";
 import { InstanceGeneralSettings } from "./pages/InstanceGeneralSettings";
 import { InstanceAccess } from "./pages/InstanceAccess";
 import { InstanceSettings } from "./pages/InstanceSettings";
@@ -58,6 +59,7 @@ import { JoinRequestQueue } from "./pages/JoinRequestQueue";
 import { NotFoundPage } from "./pages/NotFound";
 import { SocialMediaPage } from "./pages/SocialMediaPage";
 import { IntegrationsPage } from "./pages/IntegrationsPage";
+import { AutomationsPage } from "./pages/AutomationsPage";
 import { OnboardingWizard as OnboardingWizardPage } from "./pages/OnboardingWizard";
 import { useCompany } from "./context/CompanyContext";
 import { useDialog } from "./context/DialogContext";
@@ -129,6 +131,7 @@ function boardRoutes() {
       <Route path="activity" element={<Activity />} />
       <Route path="social" element={<SocialMediaPage />} />
       <Route path="integrations" element={<IntegrationsPage />} />
+      <Route path="automations" element={<AutomationsPage />} />
       <Route path="inbox" element={<InboxRootRedirect />} />
       <Route path="inbox/mine" element={<Inbox />} />
       <Route path="inbox/recent" element={<Inbox />} />
@@ -144,6 +147,7 @@ function boardRoutes() {
       <Route path="compliance" element={<CompliancePage />} />
       <Route path="autonomous-tasks" element={<AutonomousTasksPage />} />
       <Route path="marketing" element={<MarketingPage />} />
+      <Route path="crews" element={<CrewsPage />} />
       <Route path="dev-tools" element={<DevToolsPage />} />
       <Route path="instance/settings/adapters" element={<AdapterManager />} />
       <Route path=":pluginRoutePath" element={<PluginPage />} />

@@ -127,6 +127,8 @@ export function Sidebar() {
           <SidebarNavItem to="/customers" label="Customers" icon={Users} />
           <SidebarNavItem to="/social" label="Social Media" icon={Share2} />
           <SidebarNavItem to="/marketing" label="Marketing" icon={Megaphone} />
+          <SidebarNavItem to="/crews" label="AI Crews" icon={Users} />
+          <SidebarNavItem to="/automations" label="Automations" icon={GitBranch} />
           <SidebarNavItem to="/autonomous-tasks" label="Autonomous Tasks" icon={Bot} />
           {showWorkspacesLink ? (
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />

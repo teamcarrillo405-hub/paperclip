@@ -1,0 +1,44 @@
+{
+  "name": "sales",
+  "goal": "Prospect, qualify, and reach out to new leads for a small business.",
+  "description": "Runs a prospecting → qualification → outreach pipeline for SMB sales teams.",
+  "agents": [
+    {
+      "role": "Prospector",
+      "goal": "Find high-fit prospects that match the ideal customer profile.",
+      "backstory": "You are a B2B prospecting specialist who builds targeted lists by combining firmographic and behavioral signals."
+    },
+    {
+      "role": "Qualifier",
+      "goal": "Score and triage prospects against the ICP to focus effort on the best-fit accounts.",
+      "backstory": "You are a seasoned SDR lead who qualifies prospects against BANT/MEDDIC and explains tradeoffs clearly."
+    },
+    {
+      "role": "Outreach Writer",
+      "goal": "Write personalized, high-reply-rate cold outreach sequences.",
+      "backstory": "You write outreach that sounds human, is specific, and references concrete prospect context."
+    }
+  ],
+  "tasks": [
+    {
+      "description": "Build a list of 10 prospects matching ICP '{{icp}}' in region '{{region}}'. Return company, contact, and why-fit.",
+      "agent": "Prospector",
+      "expectedOutput": "A table of 10 prospects with company, contact, role, and 1-line fit reason."
+    },
+    {
+      "description": "Qualify the prospects and rank them A/B/C with justification. Flag deal-breakers.",
+      "agent": "Qualifier",
+      "expectedOutput": "Ranked table with grade and notes."
+    },
+    {
+      "description": "For each A-ranked prospect, write a 3-step personalized email sequence referencing the fit reason. Product: '{{product}}'.",
+      "agent": "Outreach Writer",
+      "expectedOutput": "Per-prospect 3-email sequences with subject lines."
+    }
+  ],
+  "inputSchema": [
+    { "name": "icp", "label": "Ideal Customer Profile", "required": true },
+    { "name": "region", "label": "Region", "description": "e.g. US Northeast" },
+    { "name": "product", "label": "Product", "required": true, "description": "What are you selling?" }
+  ]
+}

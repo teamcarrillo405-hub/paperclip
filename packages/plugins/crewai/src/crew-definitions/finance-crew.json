@@ -1,0 +1,43 @@
+{
+  "name": "finance",
+  "goal": "Keep books tidy, chase receivables, and advise the owner on money matters.",
+  "description": "Runs a bookkeeping → AR follow-up → CFO advisory pipeline for SMB finance.",
+  "agents": [
+    {
+      "role": "Bookkeeper",
+      "goal": "Categorize transactions, reconcile discrepancies, and produce a clean trial balance.",
+      "backstory": "You are a meticulous bookkeeper who keeps the chart of accounts tidy and flags anomalies early."
+    },
+    {
+      "role": "AR Agent",
+      "goal": "Identify outstanding invoices and draft professional collection messages.",
+      "backstory": "You recover cash politely but firmly by following structured dunning sequences."
+    },
+    {
+      "role": "CFO Advisor",
+      "goal": "Synthesize the financial picture into an owner-ready summary with 3 recommended actions.",
+      "backstory": "You are a fractional CFO who translates numbers into decisions the owner can act on this week."
+    }
+  ],
+  "tasks": [
+    {
+      "description": "Review the transactions for period {{period}} and produce a categorized trial balance. Flag anomalies.",
+      "agent": "Bookkeeper",
+      "expectedOutput": "Trial balance plus anomaly list."
+    },
+    {
+      "description": "Identify outstanding invoices (over {{dso_threshold_days}} days) and draft a tiered dunning sequence.",
+      "agent": "AR Agent",
+      "expectedOutput": "Outstanding invoices table + dunning email sequence (polite → firm → final)."
+    },
+    {
+      "description": "Given the trial balance and AR aging, write a 1-page owner memo with the 3 highest-leverage next actions.",
+      "agent": "CFO Advisor",
+      "expectedOutput": "A 1-page markdown memo with 3 recommended actions."
+    }
+  ],
+  "inputSchema": [
+    { "name": "period", "label": "Reporting Period", "required": true, "description": "e.g. 'April 2026'" },
+    { "name": "dso_threshold_days", "label": "Overdue Threshold (days)", "description": "Default 30" }
+  ]
+}

@@ -57,6 +57,8 @@ import { mobileRoutes } from "./routes/mobile.js";
 import { complianceRoutes } from "./routes/compliance.js";
 import { aiderRoutes } from "./routes/aider.js";
 import { gooseRoutes } from "./routes/goose.js";
+import { crewaiRoutes } from "./routes/crewai.js";
+import { n8nRoutes } from "./routes/n8n-routes.js";
 import { applyUiBranding } from "./ui-branding.js";
 import { logger } from "./middleware/logger.js";
 import { DEFAULT_LOCAL_PLUGIN_DIR, pluginLoader } from "./services/plugin-loader.js";
@@ -272,6 +274,8 @@ export async function createApp(
   api.use(complianceRoutes(db));
   api.use(aiderRoutes(db));
   api.use(gooseRoutes(db));
+  api.use(crewaiRoutes(db));
+  api.use(n8nRoutes());
   api.use(chatWidgetRoutes(db));
   api.use(chatWidgetSettingsAdminRoutes(db));
   if (opts.databaseBackupService) {

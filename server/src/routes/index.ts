@@ -31,3 +31,5 @@ export { mobileRoutes } from "./mobile.js";
 export { complianceRoutes } from "./compliance.js";
 export { aiderRoutes } from "./aider.js";
 export { gooseRoutes } from "./goose.js";
+export { crewaiRoutes } from "./crewai.js";
+export { n8nRoutes } from "./n8n-routes.js";
