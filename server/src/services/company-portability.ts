@@ -864,13 +864,15 @@ async function inferPortableWorkspaceGitMetadata(workspace: NonNullable<ProjectL
 
   let repoUrl: string | null = null;
   try {
-    repoUrl = await readGitOutput(cwd, ["remote", "get-url", "origin"]);
+    // Use `git config remote.<name>.url` instead of `git remote get-url` to
+    // read the raw stored URL without url.insteadOf rewrites applied.
+    repoUrl = await readGitOutput(cwd, ["config", "remote.origin.url"]);
   } catch {
     try {
       const firstRemote = await readGitOutput(cwd, ["remote"]);
       const remoteName = firstRemote?.split("\n").map((entry) => entry.trim()).find(Boolean) ?? null;
       if (remoteName) {
-        repoUrl = await readGitOutput(cwd, ["remote", "get-url", remoteName]);
+        repoUrl = await readGitOutput(cwd, ["config", `remote.${remoteName}.url`]);
       }
     } catch {
       repoUrl = null;
