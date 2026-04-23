@@ -1,0 +1,356 @@
+{
+  "id": "retail-store",
+  "name": "Retail Store",
+  "description": "For boutiques, specialty retail, and stores — manage inventory, sales analytics, customer loyalty, and reviews with AI.",
+  "industry": "Retail",
+  "icon": "🛍️",
+  "manifest": {
+    "schemaVersion": 5,
+    "generatedAt": "2026-04-23T00:00:00.000Z",
+    "source": null,
+    "includes": {
+      "company": true,
+      "agents": true,
+      "projects": false,
+      "issues": true,
+      "skills": false
+    },
+    "company": {
+      "path": "company.md",
+      "name": "Retail Store",
+      "description": "Retail business managed by an AI operating team — inventory, sales analytics, customer loyalty, and reviews.",
+      "brandColor": null,
+      "logoPath": null,
+      "requireBoardApprovalForNewAgents": false,
+      "feedbackDataSharingEnabled": false,
+      "feedbackDataSharingConsentAt": null,
+      "feedbackDataSharingConsentByUserId": null,
+      "feedbackDataSharingTermsVersion": null
+    },
+    "sidebar": null,
+    "agents": [
+      {
+        "slug": "store-director",
+        "name": "Store Director",
+        "path": "agents/store-director/agent.md",
+        "skills": [],
+        "role": "ceo",
+        "title": "Store Director",
+        "icon": "🏬",
+        "capabilities": "Coordinates daily retail operations and reports to the owner.",
+        "reportsToSlug": null,
+        "adapterType": "process",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "inventory-reorder-agent",
+        "name": "Inventory & Reorder Agent",
+        "path": "agents/inventory-reorder-agent/agent.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Inventory & Reorder Agent",
+        "icon": "📦",
+        "capabilities": "Monitors stock levels and drafts purchase orders for supplier approval.",
+        "reportsToSlug": "store-director",
+        "adapterType": "process",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "sales-analyst",
+        "name": "Sales Analyst",
+        "path": "agents/sales-analyst/agent.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Sales Analyst",
+        "icon": "📈",
+        "capabilities": "Analyzes daily and weekly sales performance and flags unusual patterns.",
+        "reportsToSlug": "store-director",
+        "adapterType": "process",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "customer-loyalty-agent",
+        "name": "Customer Loyalty Agent",
+        "path": "agents/customer-loyalty-agent/agent.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Customer Loyalty Agent",
+        "icon": "💝",
+        "capabilities": "Manages customer relationships, win-back campaigns, and personalized outreach.",
+        "reportsToSlug": "store-director",
+        "adapterType": "process",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "review-monitor",
+        "name": "Review Monitor",
+        "path": "agents/review-monitor/agent.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Review Monitor",
+        "icon": "⭐",
+        "capabilities": "Monitors and drafts responses to online reviews across Google and Yelp.",
+        "reportsToSlug": "store-director",
+        "adapterType": "process",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      }
+    ],
+    "skills": [],
+    "projects": [],
+    "issues": [
+      {
+        "slug": "connect-quickbooks",
+        "identifier": null,
+        "title": "Connect QuickBooks for sales data",
+        "path": "issues/connect-quickbooks.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "store-director",
+        "description": "Link QuickBooks in Settings > Integrations so agents can access sales and inventory data.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "set-reorder-thresholds",
+        "identifier": null,
+        "title": "Set reorder thresholds",
+        "path": "issues/set-reorder-thresholds.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "inventory-reorder-agent",
+        "description": "Add your reorder thresholds for key products to the Inventory Agent's instructions.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "connect-email-outreach",
+        "identifier": null,
+        "title": "Connect email for customer outreach",
+        "path": "issues/connect-email-outreach.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "customer-loyalty-agent",
+        "description": "Connect Gmail or Outlook in Settings > Integrations so the Customer Loyalty Agent can send emails.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "routine-daily-sales-briefing",
+        "identifier": null,
+        "title": "Daily sales briefing",
+        "path": "issues/routine-daily-sales-briefing.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "store-director",
+        "description": "Review yesterday's sales, inventory alerts, and customer issues. Send morning briefing to owner.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": "skip",
+          "catchUpPolicy": "skip",
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "cron",
+              "label": "Daily 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * *",
+              "timezone": null,
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "routine-inventory-scan",
+        "identifier": null,
+        "title": "Inventory scan",
+        "path": "issues/routine-inventory-scan.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "inventory-reorder-agent",
+        "description": "Check all inventory levels. Generate draft purchase orders for items below reorder threshold.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": "skip",
+          "catchUpPolicy": "skip",
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "cron",
+              "label": "Daily 7am",
+              "enabled": true,
+              "cronExpression": "0 7 * * *",
+              "timezone": null,
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "routine-weekly-sales-report",
+        "identifier": null,
+        "title": "Weekly sales report",
+        "path": "issues/routine-weekly-sales-report.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "sales-analyst",
+        "description": "Pull weekly sales from QuickBooks. Produce top/bottom sellers report and revenue vs. target comparison.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": "skip",
+          "catchUpPolicy": "skip",
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "cron",
+              "label": "Monday 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * 1",
+              "timezone": null,
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "routine-customer-winback",
+        "identifier": null,
+        "title": "Customer win-back",
+        "path": "issues/routine-customer-winback.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "customer-loyalty-agent",
+        "description": "Identify customers with no purchase in 60+ days. Draft personalized win-back email campaign for owner approval.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": "skip",
+          "catchUpPolicy": "skip",
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "cron",
+              "label": "Wednesday 9am",
+              "enabled": true,
+              "cronExpression": "0 9 * * 3",
+              "timezone": null,
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      }
+    ],
+    "envInputs": []
+  },
+  "files": {
+    "company.md": "---\nname: Retail Store\ndescription: Retail business managed by an AI operating team — inventory, sales analytics, customer loyalty, and reviews.\n---\n\n# Retail Store\n\nA retail operating company for boutiques, gift shops, hardware stores, pet stores, and specialty retail up to $20M/year in annual revenue.\n",
+    "agents/store-director/agent.md": "---\nkind: agent\nslug: store-director\nname: Store Director\ntitle: Store Director\nrole: ceo\n---\n\nYou are the Store Director AI for a retail business. Coordinate daily operations. Every morning, review inventory alerts, sales performance from yesterday, and any pending customer issues. Provide the owner a daily briefing with sales vs. goal, top sellers, and any alerts.\n",
+    "agents/inventory-reorder-agent/agent.md": "---\nkind: agent\nslug: inventory-reorder-agent\nname: Inventory & Reorder Agent\ntitle: Inventory & Reorder Agent\nrole: agent\nreportsTo: store-director\n---\n\nYou manage inventory levels and purchase orders. Monitor stock quantities, identify items below reorder threshold, and generate draft purchase orders for supplier approval. Track seasonal trends and alert the Store Director when items are selling faster than expected.\n",
+    "agents/sales-analyst/agent.md": "---\nkind: agent\nslug: sales-analyst\nname: Sales Analyst\ntitle: Sales Analyst\nrole: agent\nreportsTo: store-director\n---\n\nYou analyze sales performance daily. Pull sales data from QuickBooks, calculate daily/weekly revenue vs. targets, identify top-selling and slow-moving items, and flag any unusual patterns. Send a weekly sales performance report every Monday morning.\n",
+    "agents/customer-loyalty-agent/agent.md": "---\nkind: agent\nslug: customer-loyalty-agent\nname: Customer Loyalty Agent\ntitle: Customer Loyalty Agent\nrole: agent\nreportsTo: store-director\n---\n\nYou manage customer relationships and loyalty. Track repeat customers, identify customers who haven't purchased in 60+ days, and draft win-back email campaigns. Send personalized thank-you emails after large purchases.\n",
+    "agents/review-monitor/agent.md": "---\nkind: agent\nslug: review-monitor\nname: Review Monitor\ntitle: Review Monitor\nrole: agent\nreportsTo: store-director\n---\n\nYou monitor and respond to online reviews on Google and Yelp. Draft a professional response to every new review within 24 hours. Flag negative reviews to the Store Director immediately.\n",
+    "issues/connect-quickbooks.md": "---\nkind: issue\nslug: connect-quickbooks\ntitle: Connect QuickBooks for sales data\npriority: high\nstatus: todo\nassignee: store-director\n---\n\nLink QuickBooks in Settings > Integrations so agents can access sales and inventory data.\n",
+    "issues/set-reorder-thresholds.md": "---\nkind: issue\nslug: set-reorder-thresholds\ntitle: Set reorder thresholds\npriority: high\nstatus: todo\nassignee: inventory-reorder-agent\n---\n\nAdd your reorder thresholds for key products to the Inventory Agent's instructions.\n",
+    "issues/connect-email-outreach.md": "---\nkind: issue\nslug: connect-email-outreach\ntitle: Connect email for customer outreach\npriority: medium\nstatus: todo\nassignee: customer-loyalty-agent\n---\n\nConnect Gmail or Outlook in Settings > Integrations so the Customer Loyalty Agent can send emails.\n",
+    "issues/routine-daily-sales-briefing.md": "---\nkind: issue\nslug: routine-daily-sales-briefing\ntitle: Daily sales briefing\nrecurring: true\nassignee: store-director\n---\n\nReview yesterday's sales, inventory alerts, and customer issues. Send morning briefing to owner.\n",
+    "issues/routine-inventory-scan.md": "---\nkind: issue\nslug: routine-inventory-scan\ntitle: Inventory scan\nrecurring: true\nassignee: inventory-reorder-agent\n---\n\nCheck all inventory levels. Generate draft purchase orders for items below reorder threshold.\n",
+    "issues/routine-weekly-sales-report.md": "---\nkind: issue\nslug: routine-weekly-sales-report\ntitle: Weekly sales report\nrecurring: true\nassignee: sales-analyst\n---\n\nPull weekly sales from QuickBooks. Produce top/bottom sellers report and revenue vs. target comparison.\n",
+    "issues/routine-customer-winback.md": "---\nkind: issue\nslug: routine-customer-winback\ntitle: Customer win-back\nrecurring: true\nassignee: customer-loyalty-agent\n---\n\nIdentify customers with no purchase in 60+ days. Draft personalized win-back email campaign for owner approval.\n"
+  },
+  "goals": [
+    {
+      "title": "Hit monthly revenue targets",
+      "description": null,
+      "level": "strategic"
+    },
+    {
+      "title": "Keep inventory turnover above 8x annually",
+      "description": null,
+      "level": "strategic"
+    },
+    {
+      "title": "Grow repeat customer rate to 40%+",
+      "description": null,
+      "level": "strategic"
+    }
+  ]
+}

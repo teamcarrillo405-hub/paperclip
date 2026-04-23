@@ -1,0 +1,431 @@
+{
+  "manifest": {
+    "schemaVersion": 1,
+    "generatedAt": "2026-04-23T00:00:00.000Z",
+    "source": null,
+    "includes": {
+      "company": true,
+      "agents": true,
+      "projects": false,
+      "issues": true,
+      "skills": false
+    },
+    "company": {
+      "path": "COMPANY.md",
+      "name": "Professional Services",
+      "description": "Professional services firm managing client engagements, billing, deadlines, and business development.",
+      "brandColor": null,
+      "logoPath": null,
+      "requireBoardApprovalForNewAgents": false,
+      "feedbackDataSharingEnabled": false,
+      "feedbackDataSharingConsentAt": null,
+      "feedbackDataSharingConsentByUserId": null,
+      "feedbackDataSharingTermsVersion": null
+    },
+    "sidebar": null,
+    "agents": [
+      {
+        "slug": "practice-manager",
+        "name": "Practice Manager",
+        "path": "agents/practice-manager/AGENT.md",
+        "skills": [],
+        "role": "ceo",
+        "title": "Practice Manager",
+        "icon": "👔",
+        "capabilities": "Coordinates operations across client management, billing, and business development.",
+        "reportsToSlug": null,
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "client-onboarding",
+        "name": "Client Onboarding Agent",
+        "path": "agents/client-onboarding/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Client Onboarding Agent",
+        "icon": "🤝",
+        "capabilities": "Manages new client onboarding, welcome emails, and onboarding checklists.",
+        "reportsToSlug": "practice-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "billing-ar",
+        "name": "Billing & AR Agent",
+        "path": "agents/billing-ar/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Billing & AR Agent",
+        "icon": "💰",
+        "capabilities": "Manages client billing, invoicing, and accounts receivable via QuickBooks.",
+        "reportsToSlug": "practice-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "deadline-compliance",
+        "name": "Deadline & Compliance Tracker",
+        "path": "agents/deadline-compliance/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Deadline & Compliance Tracker",
+        "icon": "⏰",
+        "capabilities": "Tracks all client deadlines and compliance requirements and sends reminders.",
+        "reportsToSlug": "practice-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "business-development",
+        "name": "Business Development Agent",
+        "path": "agents/business-development/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Business Development Agent",
+        "icon": "📈",
+        "capabilities": "Supports business development, tracks pipeline, and drafts follow-up emails.",
+        "reportsToSlug": "practice-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      }
+    ],
+    "skills": [],
+    "projects": [],
+    "issues": [
+      {
+        "slug": "weekly-client-briefing",
+        "identifier": null,
+        "title": "Weekly client briefing",
+        "path": "issues/weekly-client-briefing/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "practice-manager",
+        "description": "Review all active client engagements, outstanding invoices, and upcoming deadlines. Send weekly briefing to owner.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Monday 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * 1",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "daily-ar-check",
+        "identifier": null,
+        "title": "Daily AR check",
+        "path": "issues/daily-ar-check/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "billing-ar",
+        "description": "Check QuickBooks for unpaid invoices. Send reminders as needed.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Daily 9am",
+              "enabled": true,
+              "cronExpression": "0 9 * * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "deadline-scan",
+        "identifier": null,
+        "title": "Deadline scan",
+        "path": "issues/deadline-scan/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "deadline-compliance",
+        "description": "Check all upcoming client deadlines. Send reminders for items due within 7 days.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Daily 7am",
+              "enabled": true,
+              "cronExpression": "0 7 * * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "monthly-invoicing",
+        "identifier": null,
+        "title": "Monthly invoicing",
+        "path": "issues/monthly-invoicing/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "billing-ar",
+        "description": "Generate monthly invoices for all active retainer clients in QuickBooks.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Monthly 1st 8am",
+              "enabled": true,
+              "cronExpression": "0 8 1 * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "bd-pipeline-review",
+        "identifier": null,
+        "title": "BD pipeline review",
+        "path": "issues/bd-pipeline-review/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "business-development",
+        "description": "Review proposal status and client satisfaction. Draft any needed follow-up emails.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Friday 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * 5",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "connect-quickbooks-for-billing",
+        "identifier": null,
+        "title": "Connect QuickBooks for billing",
+        "path": "issues/connect-quickbooks-for-billing/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "practice-manager",
+        "description": "Link QuickBooks in Settings > Integrations to enable automated invoicing and AR tracking.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "connect-email-for-client-communications",
+        "identifier": null,
+        "title": "Connect email for client communications",
+        "path": "issues/connect-email-for-client-communications/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "practice-manager",
+        "description": "Connect Gmail or Outlook in Settings > Integrations so agents can send client emails.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "add-active-client-list",
+        "identifier": null,
+        "title": "Add active client list",
+        "path": "issues/add-active-client-list/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "practice-manager",
+        "description": "Add your current client roster and engagement details to the Practice Manager's instructions.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "set-billing-rates",
+        "identifier": null,
+        "title": "Set billing rates",
+        "path": "issues/set-billing-rates/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "billing-ar",
+        "description": "Add your standard billing rates and retainer amounts to the Billing Agent's instructions.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      }
+    ],
+    "envInputs": []
+  },
+  "files": {
+    "COMPANY.md": "---\nkind: company\nname: Professional Services\n---\n\nProfessional services firm managing client engagements, billing, deadlines, and business development.\n",
+    "agents/practice-manager/AGENT.md": "---\nkind: agent\nname: Practice Manager\ntitle: Practice Manager\n---\n\nYou are the Practice Manager AI for a professional services firm. Coordinate operations across client management, billing, and business development. Every Monday, review open client engagements, outstanding invoices, and upcoming deadlines. Provide the owner a weekly briefing with revenue forecast, capacity status, and action items.\n",
+    "agents/client-onboarding/AGENT.md": "---\nkind: agent\nname: Client Onboarding Agent\ntitle: Client Onboarding Agent\nreportsTo: practice-manager\n---\n\nYou manage new client onboarding. When a new client is added, create a welcome email, send an onboarding checklist, and set up their client folder. Track onboarding completion and escalate to the Practice Manager if onboarding stalls for more than 5 days.\n",
+    "agents/billing-ar/AGENT.md": "---\nkind: agent\nname: Billing & AR Agent\ntitle: Billing & AR Agent\nreportsTo: practice-manager\n---\n\nYou manage client billing and accounts receivable. Check QuickBooks daily for unbilled time, generate monthly invoices for active clients, and send payment reminders at 7, 14, and 30 days past due. Escalate invoices over 45 days to the Practice Manager.\n",
+    "agents/deadline-compliance/AGENT.md": "---\nkind: agent\nname: Deadline & Compliance Tracker\ntitle: Deadline & Compliance Tracker\nreportsTo: practice-manager\n---\n\nYou track all client deadlines and compliance requirements. Maintain a list of upcoming deliverables, send reminders to the team 7 days and 2 days before each deadline, and flag any missed deadlines immediately to the Practice Manager.\n",
+    "agents/business-development/AGENT.md": "---\nkind: agent\nname: Business Development Agent\ntitle: Business Development Agent\nreportsTo: practice-manager\n---\n\nYou support business development. Monitor client satisfaction signals, identify upsell opportunities for existing clients, and draft follow-up emails after project completions. Track proposal status and send a weekly pipeline summary to the Practice Manager.\n",
+    "issues/weekly-client-briefing/ISSUE.md": "---\nkind: task\nname: Weekly client briefing\nassignee: practice-manager\nrecurring: true\n---\n\nReview all active client engagements, outstanding invoices, and upcoming deadlines. Send weekly briefing to owner.\n",
+    "issues/daily-ar-check/ISSUE.md": "---\nkind: task\nname: Daily AR check\nassignee: billing-ar\nrecurring: true\n---\n\nCheck QuickBooks for unpaid invoices. Send reminders as needed.\n",
+    "issues/deadline-scan/ISSUE.md": "---\nkind: task\nname: Deadline scan\nassignee: deadline-compliance\nrecurring: true\n---\n\nCheck all upcoming client deadlines. Send reminders for items due within 7 days.\n",
+    "issues/monthly-invoicing/ISSUE.md": "---\nkind: task\nname: Monthly invoicing\nassignee: billing-ar\nrecurring: true\n---\n\nGenerate monthly invoices for all active retainer clients in QuickBooks.\n",
+    "issues/bd-pipeline-review/ISSUE.md": "---\nkind: task\nname: BD pipeline review\nassignee: business-development\nrecurring: true\n---\n\nReview proposal status and client satisfaction. Draft any needed follow-up emails.\n",
+    "issues/connect-quickbooks-for-billing/ISSUE.md": "---\nkind: task\nname: Connect QuickBooks for billing\nassignee: practice-manager\n---\n\nLink QuickBooks in Settings > Integrations to enable automated invoicing and AR tracking.\n",
+    "issues/connect-email-for-client-communications/ISSUE.md": "---\nkind: task\nname: Connect email for client communications\nassignee: practice-manager\n---\n\nConnect Gmail or Outlook in Settings > Integrations so agents can send client emails.\n",
+    "issues/add-active-client-list/ISSUE.md": "---\nkind: task\nname: Add active client list\nassignee: practice-manager\n---\n\nAdd your current client roster and engagement details to the Practice Manager's instructions.\n",
+    "issues/set-billing-rates/ISSUE.md": "---\nkind: task\nname: Set billing rates\nassignee: billing-ar\n---\n\nAdd your standard billing rates and retainer amounts to the Billing Agent's instructions.\n"
+  },
+  "goals": [
+    {
+      "title": "Bill 100% of completed work within 30 days",
+      "level": "strategic"
+    },
+    {
+      "title": "Achieve 90%+ on-time delivery rate for client work",
+      "level": "strategic"
+    },
+    {
+      "title": "Grow revenue 20% through client expansion",
+      "level": "strategic"
+    }
+  ],
+  "starterIssues": [
+    {
+      "slug": "connect-quickbooks-for-billing",
+      "title": "Connect QuickBooks for billing",
+      "priority": "high",
+      "description": "Link QuickBooks in Settings > Integrations to enable automated invoicing and AR tracking."
+    },
+    {
+      "slug": "connect-email-for-client-communications",
+      "title": "Connect email for client communications",
+      "priority": "high",
+      "description": "Connect Gmail or Outlook in Settings > Integrations so agents can send client emails."
+    },
+    {
+      "slug": "add-active-client-list",
+      "title": "Add active client list",
+      "priority": "high",
+      "description": "Add your current client roster and engagement details to the Practice Manager's instructions."
+    },
+    {
+      "slug": "set-billing-rates",
+      "title": "Set billing rates",
+      "priority": "medium",
+      "description": "Add your standard billing rates and retainer amounts to the Billing Agent's instructions."
+    }
+  ]
+}

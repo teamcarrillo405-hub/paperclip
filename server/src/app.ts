@@ -10,6 +10,7 @@ import { actorMiddleware } from "./middleware/auth.js";
 import { boardMutationGuard } from "./middleware/board-mutation-guard.js";
 import { privateHostnameGuard, resolvePrivateHostnameAllowSet } from "./middleware/private-hostname-guard.js";
 import { healthRoutes } from "./routes/health.js";
+import { brandRoutes } from "./routes/brand.js";
 import { companyRoutes } from "./routes/companies.js";
 import { companySkillRoutes } from "./routes/company-skills.js";
 import { agentRoutes } from "./routes/agents.js";
@@ -23,11 +24,16 @@ import { secretRoutes } from "./routes/secrets.js";
 import { costRoutes } from "./routes/costs.js";
 import { activityRoutes } from "./routes/activity.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
+import { roiRoutes } from "./routes/roi.js";
 import { userProfileRoutes } from "./routes/user-profiles.js";
 import { sidebarBadgeRoutes } from "./routes/sidebar-badges.js";
 import { sidebarPreferenceRoutes } from "./routes/sidebar-preferences.js";
 import { inboxDismissalRoutes } from "./routes/inbox-dismissals.js";
 import { instanceSettingsRoutes } from "./routes/instance-settings.js";
+import { billingRoutes, billingWebhookRoutes } from "./routes/billing.js";
+import { voiceRoutes } from "./routes/voice.js";
+import { socialRoutes } from "./routes/social.js";
+import { resellerRoutes } from "./routes/reseller.js";
 import {
   instanceDatabaseBackupRoutes,
   type InstanceDatabaseBackupService,
@@ -38,12 +44,21 @@ import { assetRoutes } from "./routes/assets.js";
 import { accessRoutes } from "./routes/access.js";
 import { pluginRoutes } from "./routes/plugins.js";
 import { adapterRoutes } from "./routes/adapters.js";
+import { integrationRoutes } from "./routes/integrations.js";
 import { pluginUiStaticRoutes } from "./routes/plugin-ui-static.js";
+import { templateRoutes } from "./routes/templates.js";
+import { financialRoutes } from "./routes/financial.js";
+import { customer360Routes } from "./routes/customer360.js";
+import { chatWidgetRoutes, chatWidgetSettingsAdminRoutes } from "./routes/chat-widget.js";
+import { mobileRoutes } from "./routes/mobile.js";
 import { applyUiBranding } from "./ui-branding.js";
 import { logger } from "./middleware/logger.js";
 import { DEFAULT_LOCAL_PLUGIN_DIR, pluginLoader } from "./services/plugin-loader.js";
 import { createPluginWorkerManager } from "./services/plugin-worker-manager.js";
 import { createPluginJobScheduler } from "./services/plugin-job-scheduler.js";
+import { loadGuardianConfig } from "./services/guardian-config.js";
+import { createGuardianScheduler } from "./services/guardian-scheduler.js";
+import { guardianRoutes } from "./routes/guardian.js";
 import { pluginJobStore } from "./services/plugin-job-store.js";
 import { createPluginToolDispatcher } from "./services/plugin-tool-dispatcher.js";
 import { pluginLifecycleManager } from "./services/plugin-lifecycle.js";
@@ -169,9 +184,39 @@ export async function createApp(
   }
   app.use(llmRoutes(db));
 
+  {
+    const widgetDistCandidates = [
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../packages/chat-widget/dist"),
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../chat-widget-dist"),
+      path.resolve(process.cwd(), "packages/chat-widget/dist"),
+    ];
+    const widgetDist = widgetDistCandidates.find((p) => fs.existsSync(p));
+    if (widgetDist) {
+      app.get("/widget/avero-chat.js", (_req, res, next) => {
+        const filePath = path.join(widgetDist, "avero-chat.js");
+        if (!fs.existsSync(filePath)) {
+          next();
+          return;
+        }
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+        res.setHeader("Cache-Control", "public, max-age=300");
+        res.sendFile(filePath);
+      });
+    } else {
+      app.get("/widget/avero-chat.js", (_req, res) => {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+        res.status(503).send("// Avero chat widget bundle not built. Run `pnpm --filter @paperclipai/chat-widget build`.");
+      });
+    }
+  }
+
   // Mount API routes
   const api = Router();
   api.use(boardMutationGuard());
+  const guardianConfig = await loadGuardianConfig();
+  const guardianScheduler = createGuardianScheduler(db, guardianConfig);
   api.use(
     "/health",
     healthRoutes(db, {
@@ -181,6 +226,7 @@ export async function createApp(
       companyDeletionEnabled: opts.companyDeletionEnabled,
     }),
   );
+  api.use("/brand", brandRoutes());
   api.use("/companies", companyRoutes(db, opts.storageService));
   api.use(companySkillRoutes(db));
   api.use(agentRoutes(db));
@@ -197,11 +243,24 @@ export async function createApp(
   api.use(costRoutes(db));
   api.use(activityRoutes(db));
   api.use(dashboardRoutes(db));
+  api.use(roiRoutes(db));
   api.use(userProfileRoutes(db));
   api.use(sidebarBadgeRoutes(db));
   api.use(sidebarPreferenceRoutes(db));
   api.use(inboxDismissalRoutes(db));
   api.use(instanceSettingsRoutes(db));
+  api.use(billingRoutes(db));
+  api.use(billingWebhookRoutes(db));
+  api.use(voiceRoutes(db));
+  api.use(socialRoutes(db));
+  api.use(resellerRoutes(db));
+  api.use(guardianRoutes(db, guardianScheduler));
+  api.use(mobileRoutes(db));
+  api.use(templateRoutes(db, opts.storageService));
+  api.use(financialRoutes(db));
+  api.use(customer360Routes(db));
+  api.use(chatWidgetRoutes(db));
+  api.use(chatWidgetSettingsAdminRoutes(db));
   if (opts.databaseBackupService) {
     api.use(instanceDatabaseBackupRoutes(opts.databaseBackupService));
   }
@@ -273,6 +332,7 @@ export async function createApp(
     ),
   );
   api.use(adapterRoutes());
+  api.use("/integrations", integrationRoutes(db));
   api.use(
     accessRoutes(db, {
       deploymentMode: opts.deploymentMode,
@@ -290,6 +350,22 @@ export async function createApp(
   }));
 
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+  // Serve operator-provided whitelabel branding assets from /branding/*.
+  // The config references files like "./branding/favicon.ico" that resolve
+  // to this mount point. We check multiple candidate roots so the same paths
+  // work in the monorepo (dev) and in a published server package.
+  const brandingRootCandidates = [
+    path.resolve(__dirname, "../../branding"),
+    path.resolve(__dirname, "../branding"),
+    path.resolve(process.cwd(), "branding"),
+  ];
+  for (const brandingRoot of brandingRootCandidates) {
+    if (fs.existsSync(brandingRoot)) {
+      app.use("/branding", express.static(brandingRoot, { maxAge: "1h" }));
+      break;
+    }
+  }
   if (opts.uiMode === "static") {
     // Try published location first (server/ui-dist/), then monorepo dev location (../../ui/dist)
     const candidates = [
@@ -392,6 +468,7 @@ export async function createApp(
 
   jobCoordinator.start();
   scheduler.start();
+  guardianScheduler.start();
   const feedbackExportTimer = opts.feedbackExportService
     ? setInterval(() => {
       void opts.feedbackExportService?.flushPendingFeedbackTraces().catch((err) => {
@@ -426,6 +503,7 @@ export async function createApp(
   });
   process.once("exit", () => {
     if (feedbackExportTimer) clearInterval(feedbackExportTimer);
+    guardianScheduler.stop();
     devWatcher?.close();
     viteHtmlRenderer?.dispose();
     hostServiceCleanup.disposeAll();

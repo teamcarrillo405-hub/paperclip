@@ -1,0 +1,332 @@
+{
+  "manifest": {
+    "schemaVersion": 1,
+    "generatedAt": "2026-04-23T00:00:00.000Z",
+    "source": null,
+    "includes": {
+      "company": true,
+      "agents": true,
+      "projects": false,
+      "issues": true,
+      "skills": false
+    },
+    "company": {
+      "path": "COMPANY.md",
+      "name": "Contractor Office",
+      "description": "Field services back office for contractors, HVAC, plumbing, electrical, and landscaping businesses.",
+      "brandColor": null,
+      "logoPath": null,
+      "requireBoardApprovalForNewAgents": false,
+      "feedbackDataSharingEnabled": false,
+      "feedbackDataSharingConsentAt": null,
+      "feedbackDataSharingConsentByUserId": null,
+      "feedbackDataSharingTermsVersion": null
+    },
+    "sidebar": null,
+    "agents": [
+      {
+        "slug": "office-manager",
+        "name": "Office Manager",
+        "path": "agents/office-manager/AGENT.md",
+        "skills": [],
+        "role": "ceo",
+        "title": "Office Manager",
+        "icon": "🗂️",
+        "capabilities": "Coordinates the agent team, handles owner escalations, and runs the daily briefing.",
+        "reportsToSlug": null,
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "estimator",
+        "name": "Estimator",
+        "path": "agents/estimator/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Estimator",
+        "icon": "📐",
+        "capabilities": "Produces job estimates and drafts QuickBooks invoices for customer approval.",
+        "reportsToSlug": "office-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "scheduler",
+        "name": "Scheduler",
+        "path": "agents/scheduler/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Scheduler",
+        "icon": "📅",
+        "capabilities": "Manages the job schedule, crew assignments, and customer reminders.",
+        "reportsToSlug": "office-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "accounts-receivable",
+        "name": "Accounts Receivable Agent",
+        "path": "agents/accounts-receivable/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Accounts Receivable Agent",
+        "icon": "💵",
+        "capabilities": "Monitors outstanding invoices in QuickBooks and sends payment reminders.",
+        "reportsToSlug": "office-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "review-monitor",
+        "name": "Review Monitor",
+        "path": "agents/review-monitor/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Review Monitor",
+        "icon": "⭐",
+        "capabilities": "Monitors Google and Yelp reviews and drafts professional responses.",
+        "reportsToSlug": "office-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      }
+    ],
+    "skills": [],
+    "projects": [],
+    "issues": [
+      {
+        "slug": "daily-job-status-briefing",
+        "identifier": null,
+        "title": "Daily Job Status Briefing",
+        "path": "issues/daily-job-status-briefing/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "office-manager",
+        "description": "Review all open jobs, flag overdue items, and send a morning briefing to the owner.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Weekdays 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * 1-5",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "daily-ar-check",
+        "identifier": null,
+        "title": "Daily AR Check",
+        "path": "issues/daily-ar-check/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "accounts-receivable",
+        "description": "Check QuickBooks for unpaid invoices and send reminders as needed.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Daily 9am",
+              "enabled": true,
+              "cronExpression": "0 9 * * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "weekly-revenue-report",
+        "identifier": null,
+        "title": "Weekly Revenue Report",
+        "path": "issues/weekly-revenue-report/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "office-manager",
+        "description": "Pull P&L and AR aging from QuickBooks and send a weekly financial summary to the owner.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Monday 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * 1",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "set-up-quickbooks-connection",
+        "identifier": null,
+        "title": "Set up QuickBooks connection",
+        "path": "issues/set-up-quickbooks-connection/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "office-manager",
+        "description": "Connect QuickBooks Online in Settings > Integrations so agents can access invoices and customers.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "configure-estimating-template",
+        "identifier": null,
+        "title": "Configure estimating template",
+        "path": "issues/configure-estimating-template/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "estimator",
+        "description": "Add your standard labor rates and common materials to the Estimator agent's instructions.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "import-existing-customer-list",
+        "identifier": null,
+        "title": "Import existing customer list",
+        "path": "issues/import-existing-customer-list/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "accounts-receivable",
+        "description": "Upload your existing customer list so the AR Agent can start monitoring outstanding invoices.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      }
+    ],
+    "envInputs": []
+  },
+  "files": {
+    "COMPANY.md": "---\nkind: company\nname: Contractor Office\n---\n\nField services back office for contractors, home builders, HVAC, plumbing, electrical, and landscaping businesses up to $20M/year.\n",
+    "agents/office-manager/AGENT.md": "---\nkind: agent\nname: Office Manager\ntitle: Office Manager\n---\n\nYou are the Office Manager for a contracting business. Coordinate the team of AI agents. Every morning, review open jobs, flag anything overdue, and brief the owner. Escalate any customer complaints or approvals needed.\n",
+    "agents/estimator/AGENT.md": "---\nkind: agent\nname: Estimator\ntitle: Estimator\nreportsTo: office-manager\n---\n\nYou create job estimates. When given a job description and customer info, produce a detailed line-item estimate with labor and materials. Use QuickBooks to create draft invoices. Follow up if estimate has not been responded to in 3 days.\n",
+    "agents/scheduler/AGENT.md": "---\nkind: agent\nname: Scheduler\ntitle: Scheduler\nreportsTo: office-manager\n---\n\nYou manage the job schedule. Track open jobs, their status, and crew assignments. Flag jobs that are overdue or have no scheduled date. Send reminder emails to customers 24 hours before a job.\n",
+    "agents/accounts-receivable/AGENT.md": "---\nkind: agent\nname: Accounts Receivable Agent\ntitle: Accounts Receivable Agent\nreportsTo: office-manager\n---\n\nYou manage outstanding invoices. Check QuickBooks daily for unpaid invoices. Send polite payment reminder emails at 7, 14, and 30 days past due. Escalate to the Office Manager any invoice over 45 days past due.\n",
+    "agents/review-monitor/AGENT.md": "---\nkind: agent\nname: Review Monitor\ntitle: Review Monitor\nreportsTo: office-manager\n---\n\nYou monitor and respond to online reviews. When notified of a new Google or Yelp review, draft a professional response within 24 hours. Flag any 1-2 star reviews to the Office Manager immediately.\n",
+    "issues/daily-job-status-briefing/ISSUE.md": "---\nkind: task\nname: Daily Job Status Briefing\nassignee: office-manager\nrecurring: true\n---\n\nReview all open jobs, flag overdue items, and send a morning briefing to the owner.\n",
+    "issues/daily-ar-check/ISSUE.md": "---\nkind: task\nname: Daily AR Check\nassignee: accounts-receivable\nrecurring: true\n---\n\nCheck QuickBooks for unpaid invoices and send reminders as needed.\n",
+    "issues/weekly-revenue-report/ISSUE.md": "---\nkind: task\nname: Weekly Revenue Report\nassignee: office-manager\nrecurring: true\n---\n\nPull P&L and AR aging from QuickBooks and send a weekly financial summary to the owner.\n",
+    "issues/set-up-quickbooks-connection/ISSUE.md": "---\nkind: task\nname: Set up QuickBooks connection\nassignee: office-manager\n---\n\nConnect QuickBooks Online in Settings > Integrations so agents can access invoices and customers.\n",
+    "issues/configure-estimating-template/ISSUE.md": "---\nkind: task\nname: Configure estimating template\nassignee: estimator\n---\n\nAdd your standard labor rates and common materials to the Estimator agent's instructions.\n",
+    "issues/import-existing-customer-list/ISSUE.md": "---\nkind: task\nname: Import existing customer list\nassignee: accounts-receivable\n---\n\nUpload your existing customer list so the AR Agent can start monitoring outstanding invoices.\n"
+  },
+  "goals": [
+    {
+      "title": "Keep all jobs on schedule",
+      "level": "strategic"
+    },
+    {
+      "title": "Collect outstanding invoices within 30 days",
+      "level": "strategic"
+    },
+    {
+      "title": "Maintain 4.5+ star review rating",
+      "level": "strategic"
+    }
+  ],
+  "starterIssues": [
+    {
+      "slug": "set-up-quickbooks-connection",
+      "title": "Set up QuickBooks connection",
+      "priority": "high",
+      "description": "Connect QuickBooks Online in Settings > Integrations so agents can access invoices and customers."
+    },
+    {
+      "slug": "configure-estimating-template",
+      "title": "Configure estimating template",
+      "priority": "medium",
+      "description": "Add your standard labor rates and common materials to the Estimator agent's instructions."
+    },
+    {
+      "slug": "import-existing-customer-list",
+      "title": "Import existing customer list",
+      "priority": "medium",
+      "description": "Upload your existing customer list so the AR Agent can start monitoring outstanding invoices."
+    }
+  ]
+}

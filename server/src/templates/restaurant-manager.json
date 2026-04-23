@@ -1,0 +1,368 @@
+{
+  "manifest": {
+    "schemaVersion": 1,
+    "generatedAt": "2026-04-23T00:00:00.000Z",
+    "source": null,
+    "includes": {
+      "company": true,
+      "agents": true,
+      "projects": false,
+      "issues": true,
+      "skills": false
+    },
+    "company": {
+      "path": "COMPANY.md",
+      "name": "Restaurant Manager",
+      "description": "Restaurant operations company managing inventory, staffing, costs, and online reputation.",
+      "brandColor": null,
+      "logoPath": null,
+      "requireBoardApprovalForNewAgents": false,
+      "feedbackDataSharingEnabled": false,
+      "feedbackDataSharingConsentAt": null,
+      "feedbackDataSharingConsentByUserId": null,
+      "feedbackDataSharingTermsVersion": null
+    },
+    "sidebar": null,
+    "agents": [
+      {
+        "slug": "general-manager",
+        "name": "General Manager",
+        "path": "agents/general-manager/AGENT.md",
+        "skills": [],
+        "role": "ceo",
+        "title": "General Manager",
+        "icon": "👔",
+        "capabilities": "Coordinates daily restaurant operations across inventory, staffing, reviews, and cost control.",
+        "reportsToSlug": null,
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "inventory-manager",
+        "name": "Inventory Manager",
+        "path": "agents/inventory-manager/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Inventory Manager",
+        "icon": "📦",
+        "capabilities": "Monitors food and supply inventory, flags low stock, and drafts purchase orders.",
+        "reportsToSlug": "general-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "staff-scheduler",
+        "name": "Staff Scheduler",
+        "path": "agents/staff-scheduler/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Staff Scheduler",
+        "icon": "📅",
+        "capabilities": "Manages shift schedules, identifies coverage gaps, and handles swap requests.",
+        "reportsToSlug": "general-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "review-reputation-monitor",
+        "name": "Review & Reputation Monitor",
+        "path": "agents/review-reputation-monitor/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Review & Reputation Monitor",
+        "icon": "⭐",
+        "capabilities": "Monitors Google, Yelp, and TripAdvisor reviews and drafts responses.",
+        "reportsToSlug": "general-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "cost-controller",
+        "name": "Cost Controller",
+        "path": "agents/cost-controller/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Cost Controller",
+        "icon": "💰",
+        "capabilities": "Tracks food and labor cost percentages against targets using QuickBooks data.",
+        "reportsToSlug": "general-manager",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      }
+    ],
+    "skills": [],
+    "projects": [],
+    "issues": [
+      {
+        "slug": "morning-ops-briefing",
+        "identifier": null,
+        "title": "Morning ops briefing",
+        "path": "issues/morning-ops-briefing/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "general-manager",
+        "description": "Daily Operations Briefing: Review inventory alerts, staffing, and open issues. Send morning summary to owner.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Daily 7am",
+              "enabled": true,
+              "cronExpression": "0 7 * * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "inventory-check",
+        "identifier": null,
+        "title": "Inventory check",
+        "path": "issues/inventory-check/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "inventory-manager",
+        "description": "Check all inventory levels against par. Flag shortages and draft purchase orders.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Daily 6am",
+              "enabled": true,
+              "cronExpression": "0 6 * * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "weekly-cost-report",
+        "identifier": null,
+        "title": "Weekly cost report",
+        "path": "issues/weekly-cost-report/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "cost-controller",
+        "description": "Pull weekly food cost % and labor cost % from QuickBooks. Compare to targets and send report to owner.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Monday 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * 1",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "staff-schedule-review",
+        "identifier": null,
+        "title": "Staff schedule review",
+        "path": "issues/staff-schedule-review/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "staff-scheduler",
+        "description": "Review next week's schedule for coverage gaps. Flag any unfilled shifts to the General Manager.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Thursday 3pm",
+              "enabled": true,
+              "cronExpression": "0 15 * * 4",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "connect-quickbooks-for-cost-tracking",
+        "identifier": null,
+        "title": "Connect QuickBooks for cost tracking",
+        "path": "issues/connect-quickbooks-for-cost-tracking/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "general-manager",
+        "description": "Link QuickBooks in Settings > Integrations so the Cost Controller can pull daily expense data.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "set-inventory-par-levels",
+        "identifier": null,
+        "title": "Set inventory par levels",
+        "path": "issues/set-inventory-par-levels/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "inventory-manager",
+        "description": "Add your standard par levels for key ingredients to the Inventory Manager's instructions.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "add-review-platform-links",
+        "identifier": null,
+        "title": "Add review platform links",
+        "path": "issues/add-review-platform-links/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "review-reputation-monitor",
+        "description": "Add your Google Business, Yelp, and TripAdvisor profile URLs to the Review Monitor's instructions.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      }
+    ],
+    "envInputs": []
+  },
+  "files": {
+    "COMPANY.md": "---\nkind: company\nname: Restaurant Manager\n---\n\nRestaurant operations company managing inventory, staffing, costs, and online reputation.\n",
+    "agents/general-manager/AGENT.md": "---\nkind: agent\nname: General Manager\ntitle: General Manager\n---\n\nYou are the General Manager AI for a restaurant. Coordinate daily operations across the team. Every morning, review inventory alerts, staffing for the day, and any unresolved customer complaints. Brief the owner each weekday with key metrics.\n",
+    "agents/inventory-manager/AGENT.md": "---\nkind: agent\nname: Inventory Manager\ntitle: Inventory Manager\nreportsTo: general-manager\n---\n\nYou monitor food and supply inventory. Track stock levels, flag items running low, and generate purchase orders when supplies drop below par levels. Alert the General Manager to any items that need immediate ordering. Review waste logs weekly.\n",
+    "agents/staff-scheduler/AGENT.md": "---\nkind: agent\nname: Staff Scheduler\ntitle: Staff Scheduler\nreportsTo: general-manager\n---\n\nYou manage staff schedules. Track upcoming shifts, identify gaps in coverage, and alert the General Manager to unfilled shifts 48 hours in advance. Handle shift swap requests and maintain a record of availability.\n",
+    "agents/review-reputation-monitor/AGENT.md": "---\nkind: agent\nname: Review & Reputation Monitor\ntitle: Review & Reputation Monitor\nreportsTo: general-manager\n---\n\nYou monitor all online reviews on Google, Yelp, and TripAdvisor. Draft a professional, warm response to every new review within 12 hours. Flag 1-2 star reviews to the General Manager immediately with the customer's concern summarized.\n",
+    "agents/cost-controller/AGENT.md": "---\nkind: agent\nname: Cost Controller\ntitle: Cost Controller\nreportsTo: general-manager\n---\n\nYou track food costs and labor costs daily. Pull expense data from QuickBooks, calculate food cost percentage and labor cost percentage, and alert the General Manager when either exceeds target thresholds. Produce a weekly cost summary every Monday.\n",
+    "issues/morning-ops-briefing/ISSUE.md": "---\nkind: task\nname: Morning ops briefing\nassignee: general-manager\nrecurring: true\n---\n\nDaily Operations Briefing: Review inventory alerts, staffing, and open issues. Send morning summary to owner.\n",
+    "issues/inventory-check/ISSUE.md": "---\nkind: task\nname: Inventory check\nassignee: inventory-manager\nrecurring: true\n---\n\nCheck all inventory levels against par. Flag shortages and draft purchase orders.\n",
+    "issues/weekly-cost-report/ISSUE.md": "---\nkind: task\nname: Weekly cost report\nassignee: cost-controller\nrecurring: true\n---\n\nPull weekly food cost % and labor cost % from QuickBooks. Compare to targets and send report to owner.\n",
+    "issues/staff-schedule-review/ISSUE.md": "---\nkind: task\nname: Staff schedule review\nassignee: staff-scheduler\nrecurring: true\n---\n\nReview next week's schedule for coverage gaps. Flag any unfilled shifts to the General Manager.\n",
+    "issues/connect-quickbooks-for-cost-tracking/ISSUE.md": "---\nkind: task\nname: Connect QuickBooks for cost tracking\nassignee: general-manager\n---\n\nLink QuickBooks in Settings > Integrations so the Cost Controller can pull daily expense data.\n",
+    "issues/set-inventory-par-levels/ISSUE.md": "---\nkind: task\nname: Set inventory par levels\nassignee: inventory-manager\n---\n\nAdd your standard par levels for key ingredients to the Inventory Manager's instructions.\n",
+    "issues/add-review-platform-links/ISSUE.md": "---\nkind: task\nname: Add review platform links\nassignee: review-reputation-monitor\n---\n\nAdd your Google Business, Yelp, and TripAdvisor profile URLs to the Review Monitor's instructions.\n"
+  },
+  "goals": [
+    {
+      "title": "Keep food cost below 30% of revenue",
+      "level": "strategic"
+    },
+    {
+      "title": "Maintain 4.0+ star average across all review platforms",
+      "level": "strategic"
+    },
+    {
+      "title": "Ensure full staffing coverage every shift",
+      "level": "strategic"
+    }
+  ],
+  "starterIssues": [
+    {
+      "slug": "connect-quickbooks-for-cost-tracking",
+      "title": "Connect QuickBooks for cost tracking",
+      "priority": "high",
+      "description": "Link QuickBooks in Settings > Integrations so the Cost Controller can pull daily expense data."
+    },
+    {
+      "slug": "set-inventory-par-levels",
+      "title": "Set inventory par levels",
+      "priority": "high",
+      "description": "Add your standard par levels for key ingredients to the Inventory Manager's instructions."
+    },
+    {
+      "slug": "add-review-platform-links",
+      "title": "Add review platform links",
+      "priority": "medium",
+      "description": "Add your Google Business, Yelp, and TripAdvisor profile URLs to the Review Monitor's instructions."
+    }
+  ]
+}

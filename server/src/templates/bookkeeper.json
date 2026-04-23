@@ -1,0 +1,296 @@
+{
+  "manifest": {
+    "schemaVersion": 1,
+    "generatedAt": "2026-04-23T00:00:00.000Z",
+    "source": null,
+    "includes": {
+      "company": true,
+      "agents": true,
+      "projects": false,
+      "issues": true,
+      "skills": false
+    },
+    "company": {
+      "path": "COMPANY.md",
+      "name": "AI Bookkeeper",
+      "description": "Monitors your finances, sends daily briefings, and chases overdue invoices.",
+      "brandColor": null,
+      "logoPath": null,
+      "requireBoardApprovalForNewAgents": false,
+      "feedbackDataSharingEnabled": false,
+      "feedbackDataSharingConsentAt": null,
+      "feedbackDataSharingConsentByUserId": null,
+      "feedbackDataSharingTermsVersion": null
+    },
+    "sidebar": null,
+    "agents": [
+      {
+        "slug": "daily-briefing-agent",
+        "name": "Daily Briefing Agent",
+        "path": "agents/daily-briefing-agent/AGENT.md",
+        "skills": [],
+        "role": "ceo",
+        "title": "Daily Briefing Agent",
+        "icon": "☀️",
+        "capabilities": "Generates the daily financial briefing — revenue, expenses, health score, and the headline insight — and emails it to the owner.",
+        "reportsToSlug": null,
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "ar-alert-agent",
+        "name": "AR Alert Agent",
+        "path": "agents/ar-alert-agent/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "AR Alert Agent",
+        "icon": "🚨",
+        "capabilities": "Watches QuickBooks accounts receivable, flags invoices overdue by more than 7 days, and drafts payment reminders.",
+        "reportsToSlug": "daily-briefing-agent",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "weekly-pnl-agent",
+        "name": "Weekly P&L Agent",
+        "path": "agents/weekly-pnl-agent/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Weekly P&L Agent",
+        "icon": "📊",
+        "capabilities": "Compiles the weekly profit and loss report with trend analysis vs prior weeks and highlights material changes.",
+        "reportsToSlug": "daily-briefing-agent",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      },
+      {
+        "slug": "monthly-close-agent",
+        "name": "Monthly Close Agent",
+        "path": "agents/monthly-close-agent/AGENT.md",
+        "skills": [],
+        "role": "agent",
+        "title": "Monthly Close Agent",
+        "icon": "📅",
+        "capabilities": "Runs the monthly close: full P&L, balance sheet review, cash flow summary, and next-month recommendations.",
+        "reportsToSlug": "daily-briefing-agent",
+        "adapterType": "claude_local",
+        "adapterConfig": {},
+        "runtimeConfig": {},
+        "permissions": {},
+        "budgetMonthlyCents": 0,
+        "metadata": null
+      }
+    ],
+    "skills": [],
+    "projects": [],
+    "issues": [
+      {
+        "slug": "daily-morning-briefing",
+        "identifier": null,
+        "title": "Daily Morning Briefing",
+        "path": "issues/daily-morning-briefing/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "daily-briefing-agent",
+        "description": "Generate the financial health summary for today and email the headline + top insights to the owner.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Daily 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "ar-overdue-alert",
+        "identifier": null,
+        "title": "AR Overdue Alert",
+        "path": "issues/ar-overdue-alert/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "ar-alert-agent",
+        "description": "Check QuickBooks every 4 hours for invoices more than 7 days overdue and alert the owner with a draft reminder.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Every 4 hours",
+              "enabled": true,
+              "cronExpression": "0 */4 * * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "weekly-pnl-report",
+        "identifier": null,
+        "title": "Weekly P&L Report",
+        "path": "issues/weekly-pnl-report/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "weekly-pnl-agent",
+        "description": "Produce the detailed weekly profit and loss report, compare with prior weeks, and email to the owner.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "Monday 8am",
+              "enabled": true,
+              "cronExpression": "0 8 * * 1",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "monthly-close-review",
+        "identifier": null,
+        "title": "Monthly Close Review",
+        "path": "issues/monthly-close-review/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "monthly-close-agent",
+        "description": "Run the full monthly close: P&L, balance sheet, cash flow, and recommendations for next month.",
+        "recurring": true,
+        "routine": {
+          "concurrencyPolicy": null,
+          "catchUpPolicy": null,
+          "variables": null,
+          "triggers": [
+            {
+              "kind": "schedule",
+              "label": "1st of month 8am",
+              "enabled": true,
+              "cronExpression": "0 8 1 * *",
+              "timezone": "UTC",
+              "signingMode": null,
+              "replayWindowSec": null
+            }
+          ]
+        },
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "medium",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      },
+      {
+        "slug": "connect-quickbooks",
+        "identifier": null,
+        "title": "Connect QuickBooks",
+        "path": "issues/connect-quickbooks/ISSUE.md",
+        "projectSlug": null,
+        "projectWorkspaceKey": null,
+        "assigneeAgentSlug": "daily-briefing-agent",
+        "description": "Connect QuickBooks Online in Settings > Integrations so the bookkeeper agents can pull P&L, A/R, invoices, and expenses.",
+        "recurring": false,
+        "routine": null,
+        "legacyRecurrence": null,
+        "status": "todo",
+        "priority": "high",
+        "labelIds": [],
+        "billingCode": null,
+        "executionWorkspaceSettings": null,
+        "assigneeAdapterOverrides": null,
+        "metadata": null
+      }
+    ],
+    "envInputs": []
+  },
+  "files": {
+    "COMPANY.md": "---\nkind: company\nname: AI Bookkeeper\n---\n\nAI Bookkeeper monitors your finances using your QuickBooks data. It sends daily briefings, chases overdue invoices, compiles weekly P&Ls, and runs the monthly close.\n",
+    "agents/daily-briefing-agent/AGENT.md": "---\nkind: agent\nname: Daily Briefing Agent\ntitle: Daily Briefing Agent\n---\n\nYou are the Daily Briefing Agent. Each morning, call the /api/financial/summary endpoint (or the QuickBooks P&L, A/R aging, and overdue invoice tools) to produce a short, plain-English briefing for the business owner. Lead with the health score and headline insight, then list the top insights, any alerts, and the top recommendations. Keep it scannable.\n",
+    "agents/ar-alert-agent/AGENT.md": "---\nkind: agent\nname: AR Alert Agent\ntitle: AR Alert Agent\nreportsTo: daily-briefing-agent\n---\n\nYou watch accounts receivable. Every four hours, query QuickBooks for invoices overdue by more than 7 days. For anything new, draft a polite but firm payment reminder email and surface it for owner approval. Escalate invoices over 30 days past due.\n",
+    "agents/weekly-pnl-agent/AGENT.md": "---\nkind: agent\nname: Weekly P&L Agent\ntitle: Weekly P&L Agent\nreportsTo: daily-briefing-agent\n---\n\nOn Monday mornings, pull the previous week's P&L from QuickBooks and compare to the prior 3 weeks. Highlight any category that moved by more than 20%. Call out the top 3 expense categories and net margin. Send a short report to the owner.\n",
+    "agents/monthly-close-agent/AGENT.md": "---\nkind: agent\nname: Monthly Close Agent\ntitle: Monthly Close Agent\nreportsTo: daily-briefing-agent\n---\n\nOn the 1st of each month, run the full monthly close: P&L, balance sheet review, cash flow summary for the closed month, and 2-3 concrete recommendations for the next month. Flag any accounts that look miscategorized.\n",
+    "issues/daily-morning-briefing/ISSUE.md": "---\nkind: task\nname: Daily Morning Briefing\nassignee: daily-briefing-agent\nrecurring: true\n---\n\nGenerate the financial health summary for today and email the headline + top insights to the owner.\n",
+    "issues/ar-overdue-alert/ISSUE.md": "---\nkind: task\nname: AR Overdue Alert\nassignee: ar-alert-agent\nrecurring: true\n---\n\nCheck QuickBooks every 4 hours for invoices more than 7 days overdue and alert the owner with a draft reminder.\n",
+    "issues/weekly-pnl-report/ISSUE.md": "---\nkind: task\nname: Weekly P&L Report\nassignee: weekly-pnl-agent\nrecurring: true\n---\n\nProduce the detailed weekly profit and loss report, compare with prior weeks, and email to the owner.\n",
+    "issues/monthly-close-review/ISSUE.md": "---\nkind: task\nname: Monthly Close Review\nassignee: monthly-close-agent\nrecurring: true\n---\n\nRun the full monthly close: P&L, balance sheet, cash flow, and recommendations for next month.\n",
+    "issues/connect-quickbooks/ISSUE.md": "---\nkind: task\nname: Connect QuickBooks\nassignee: daily-briefing-agent\n---\n\nConnect QuickBooks Online in Settings > Integrations so the bookkeeper agents can pull P&L, A/R, invoices, and expenses.\n"
+  },
+  "goals": [
+    {
+      "title": "Maintain a financial health score of 80 or higher",
+      "level": "strategic"
+    },
+    {
+      "title": "Collect all invoices within 30 days of issue",
+      "level": "strategic"
+    },
+    {
+      "title": "Close the books on the 1st of every month",
+      "level": "strategic"
+    }
+  ],
+  "starterIssues": [
+    {
+      "slug": "connect-quickbooks",
+      "title": "Connect QuickBooks",
+      "priority": "high",
+      "description": "Connect QuickBooks Online in Settings > Integrations so the bookkeeper agents can pull P&L, A/R, invoices, and expenses."
+    }
+  ]
+}
