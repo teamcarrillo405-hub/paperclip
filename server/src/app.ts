@@ -9,6 +9,7 @@ import { httpLogger, errorHandler } from "./middleware/index.js";
 import { actorMiddleware } from "./middleware/auth.js";
 import { boardMutationGuard } from "./middleware/board-mutation-guard.js";
 import { privateHostnameGuard, resolvePrivateHostnameAllowSet } from "./middleware/private-hostname-guard.js";
+import { referralCookieMiddleware } from "./middleware/referral-cookie.js";
 import { healthRoutes } from "./routes/health.js";
 import { brandRoutes } from "./routes/brand.js";
 import { companyRoutes } from "./routes/companies.js";
@@ -33,7 +34,7 @@ import { instanceSettingsRoutes } from "./routes/instance-settings.js";
 import { billingRoutes, billingWebhookRoutes } from "./routes/billing.js";
 import { voiceRoutes } from "./routes/voice.js";
 import { socialRoutes } from "./routes/social.js";
-import { resellerRoutes } from "./routes/reseller.js";
+import { resellerRoutes, resellerWebhookRoutes } from "./routes/reseller.js";
 import {
   instanceDatabaseBackupRoutes,
   type InstanceDatabaseBackupService,
@@ -47,10 +48,12 @@ import { adapterRoutes } from "./routes/adapters.js";
 import { integrationRoutes } from "./routes/integrations.js";
 import { pluginUiStaticRoutes } from "./routes/plugin-ui-static.js";
 import { templateRoutes } from "./routes/templates.js";
+import { onboardingRoutes } from "./routes/onboarding.js";
 import { financialRoutes } from "./routes/financial.js";
 import { customer360Routes } from "./routes/customer360.js";
 import { chatWidgetRoutes, chatWidgetSettingsAdminRoutes } from "./routes/chat-widget.js";
 import { mobileRoutes } from "./routes/mobile.js";
+import { complianceRoutes } from "./routes/compliance.js";
 import { applyUiBranding } from "./ui-branding.js";
 import { logger } from "./middleware/logger.js";
 import { DEFAULT_LOCAL_PLUGIN_DIR, pluginLoader } from "./services/plugin-loader.js";
@@ -172,6 +175,7 @@ export async function createApp(
       bindHost: opts.bindHost,
     }),
   );
+  app.use(referralCookieMiddleware());
   app.use(
     actorMiddleware(db, {
       deploymentMode: opts.deploymentMode,
@@ -254,11 +258,14 @@ export async function createApp(
   api.use(voiceRoutes(db));
   api.use(socialRoutes(db));
   api.use(resellerRoutes(db));
+  api.use(resellerWebhookRoutes(db));
   api.use(guardianRoutes(db, guardianScheduler));
   api.use(mobileRoutes(db));
   api.use(templateRoutes(db, opts.storageService));
+  api.use(onboardingRoutes(db));
   api.use(financialRoutes(db));
   api.use(customer360Routes(db));
+  api.use(complianceRoutes(db));
   api.use(chatWidgetRoutes(db));
   api.use(chatWidgetSettingsAdminRoutes(db));
   if (opts.databaseBackupService) {

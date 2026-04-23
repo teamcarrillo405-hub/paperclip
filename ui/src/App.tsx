@@ -34,6 +34,8 @@ import { CompanyImport } from "./pages/CompanyImport";
 import { DesignGuide } from "./pages/DesignGuide";
 import { RoiDashboard } from "./pages/RoiDashboard";
 import { FinancialHealthPage } from "./pages/FinancialHealthPage";
+import { PartnerPortal } from "./pages/PartnerPortal";
+import { CompliancePage } from "./pages/CompliancePage";
 import { InstanceGeneralSettings } from "./pages/InstanceGeneralSettings";
 import { InstanceAccess } from "./pages/InstanceAccess";
 import { InstanceSettings } from "./pages/InstanceSettings";
@@ -53,17 +55,22 @@ import { JoinRequestQueue } from "./pages/JoinRequestQueue";
 import { NotFoundPage } from "./pages/NotFound";
 import { SocialMediaPage } from "./pages/SocialMediaPage";
 import { IntegrationsPage } from "./pages/IntegrationsPage";
+import { OnboardingWizard as OnboardingWizardPage } from "./pages/OnboardingWizard";
 import { useCompany } from "./context/CompanyContext";
 import { useDialog } from "./context/DialogContext";
 import { loadLastInboxTab } from "./lib/inbox";
 import { shouldRedirectCompanylessRouteToOnboarding } from "./lib/onboarding-route";
+import { useQuery } from "@tanstack/react-query";
+import { onboardingApi } from "./api/onboarding";
+import { agentsApi } from "./api/agents";
 
 function boardRoutes() {
   return (
     <>
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="dashboard" element={<Dashboard />} />
-      <Route path="onboarding" element={<OnboardingRoutePage />} />
+      <Route path="onboarding" element={<OnboardingWizardPage />} />
+      <Route path="setup-guide" element={<OnboardingWizardPage />} />
       <Route path="companies" element={<Companies />} />
       <Route path="company/settings" element={<CompanySettings />} />
       <Route path="company/settings/access" element={<CompanyAccess />} />
@@ -130,6 +137,8 @@ function boardRoutes() {
       <Route path="design-guide" element={<DesignGuide />} />
       <Route path="roi" element={<RoiDashboard />} />
       <Route path="financial-health" element={<FinancialHealthPage />} />
+      <Route path="partner" element={<PartnerPortal />} />
+      <Route path="compliance" element={<CompliancePage />} />
       <Route path="instance/settings/adapters" element={<AdapterManager />} />
       <Route path=":pluginRoutePath" element={<PluginPage />} />
       <Route path="*" element={<NotFoundPage scope="board" />} />
@@ -190,11 +199,27 @@ function CompanyRootRedirect() {
   const { companies, selectedCompany, loading } = useCompany();
   const location = useLocation();
 
+  const targetCompany = selectedCompany ?? companies[0] ?? null;
+  const companyId = targetCompany?.id ?? null;
+
+  const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
+    queryKey: ["onboarding", "status", companyId],
+    queryFn: () => onboardingApi.status(companyId!),
+    enabled: !!companyId,
+    retry: false,
+  });
+
+  const { data: agents, isLoading: agentsLoading } = useQuery({
+    queryKey: ["agents", "list", companyId],
+    queryFn: () => agentsApi.list(companyId!),
+    enabled: !!companyId,
+    retry: false,
+  });
+
   if (loading) {
     return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading...</div>;
   }
 
-  const targetCompany = selectedCompany ?? companies[0] ?? null;
   if (!targetCompany) {
     if (
       shouldRedirectCompanylessRouteToOnboarding({
@@ -205,6 +230,18 @@ function CompanyRootRedirect() {
       return <Navigate to="/onboarding" replace />;
     }
     return <NoCompaniesStartPage />;
+  }
+
+  if (companyId && (onboardingLoading || agentsLoading)) {
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading...</div>;
+  }
+
+  if (
+    onboardingStatus
+    && onboardingStatus.onboardingCompleted === false
+    && (agents?.length ?? 0) === 0
+  ) {
+    return <Navigate to={`/${targetCompany.issuePrefix}/onboarding`} replace />;
   }
 
   return <Navigate to={`/${targetCompany.issuePrefix}/dashboard`} replace />;

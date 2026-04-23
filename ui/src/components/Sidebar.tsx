@@ -12,11 +12,16 @@ import {
   Boxes,
   Repeat,
   GitBranch,
+  GraduationCap,
   Settings,
+  ShieldCheck,
   Users,
   Share2,
+  Handshake,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "@/lib/router";
+import { resellerApi } from "../api/reseller";
 import { SidebarSection } from "./SidebarSection";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { SidebarProjects } from "./SidebarProjects";
@@ -47,6 +52,16 @@ export function Sidebar() {
   });
   const liveRunCount = liveRuns?.length ?? 0;
   const showWorkspacesLink = experimentalSettings?.enableIsolatedWorkspaces === true;
+
+  const location = useLocation();
+  const isOnPartnerRoute = location.pathname.startsWith("/partner");
+  const { data: resellerMe } = useQuery({
+    queryKey: ["reseller", "me"],
+    queryFn: () => resellerApi.me(),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const showPartnerLink = Boolean(resellerMe?.partner) || isOnPartnerRoute;
 
   function openSearch() {
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
@@ -122,7 +137,12 @@ export function Sidebar() {
           <SidebarNavItem to="/skills" label="Skills" icon={Boxes} />
           <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
           <SidebarNavItem to="/activity" label="Activity" icon={History} />
+          <SidebarNavItem to="/compliance" label="Compliance" icon={ShieldCheck} />
           <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} />
+          <SidebarNavItem to="/onboarding" label="Setup Guide" icon={GraduationCap} />
+          {showPartnerLink ? (
+            <SidebarNavItem to="/partner" label="Partner Program" icon={Handshake} />
+          ) : null}
         </SidebarSection>
 
         <PluginSlotOutlet
