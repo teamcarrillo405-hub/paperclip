@@ -24,6 +24,7 @@ import {
   CircleDot,
   Bot,
   Hexagon,
+  FolderKanban,
   Target,
   LayoutDashboard,
   Inbox,
@@ -37,10 +38,11 @@ import {
   XCircle,
   Pin,
   PinOff,
+  Timer,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Identity } from "./Identity";
-import { agentUrl, projectUrl } from "../lib/utils";
+import { agentUrl, projectUrl, cn } from "../lib/utils";
 
 // ---------------------------------------------------------------------------
 // Fuzzy scoring — pure, outside component
@@ -135,6 +137,25 @@ function KbdBadge({ keys }: { keys: string }) {
           {k}
         </kbd>
       ))}
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Entity type chip
+// ---------------------------------------------------------------------------
+
+function EntityChip({ type }: { type: "issue" | "agent" | "project" | "goal" }) {
+  const config: Record<string, { bg: string; Icon: typeof CircleDot }> = {
+    issue:   { bg: "bg-blue-500/10 text-blue-500",      Icon: CircleDot },
+    agent:   { bg: "bg-violet-500/10 text-violet-500",  Icon: Bot },
+    project: { bg: "bg-emerald-500/10 text-emerald-500", Icon: FolderKanban },
+    goal:    { bg: "bg-amber-500/10 text-amber-500",    Icon: Target },
+  };
+  const { bg, Icon } = config[type] ?? config.issue;
+  return (
+    <span className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded", bg)}>
+      <Icon className="h-3 w-3" />
     </span>
   );
 }
@@ -437,6 +458,22 @@ export function CommandPalette() {
             <Plus className="mr-2 h-4 w-4" />
             Create new project
           </CommandItem>
+          <CommandItem
+            value="new goal create goal"
+            onSelect={() => { go("/goals?new=1", "New Goal"); }}
+          >
+            <EntityChip type="goal" />
+            <span className="ml-2 flex-1">New Goal</span>
+          </CommandItem>
+          <CommandItem
+            value="new routine automation schedule"
+            onSelect={() => { go("/routines?new=1", "New Routine"); }}
+          >
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-slate-500/10 text-slate-500">
+              <Timer className="h-3 w-3" />
+            </span>
+            <span className="ml-2 flex-1">New Routine</span>
+          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
@@ -556,8 +593,8 @@ export function CommandPalette() {
                     )
                   }
                 >
-                  <CircleDot className="mr-2 h-4 w-4" />
-                  <span className="text-muted-foreground mr-2 font-mono text-xs">
+                  <EntityChip type="issue" />
+                  <span className="text-muted-foreground ml-2 mr-2 font-mono text-xs">
                     {issue.identifier ?? issue.id.slice(0, 8)}
                   </span>
                   <span className="flex-1 truncate">{issue.title}</span>
@@ -580,8 +617,8 @@ export function CommandPalette() {
                   key={agent.id}
                   onSelect={() => go(agentUrl(agent), agent.name)}
                 >
-                  <Bot className="mr-2 h-4 w-4" />
-                  {agent.name}
+                  <EntityChip type="agent" />
+                  <span className="ml-2 flex-1 truncate">{agent.name}</span>
                   <span className="text-xs text-muted-foreground ml-2">{agent.role}</span>
                 </CommandItem>
               ))}
@@ -598,8 +635,8 @@ export function CommandPalette() {
                   key={project.id}
                   onSelect={() => go(projectUrl(project), project.name)}
                 >
-                  <Hexagon className="mr-2 h-4 w-4" />
-                  {project.name}
+                  <EntityChip type="project" />
+                  <span className="ml-2 flex-1 truncate">{project.name}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
