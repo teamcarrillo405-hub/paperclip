@@ -140,6 +140,7 @@ export function OnboardingWizard() {
   const [taskDescription, setTaskDescription] = useState(
     DEFAULT_TASK_DESCRIPTION
   );
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   // Auto-grow textarea for task description
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -311,6 +312,7 @@ export function OnboardingWizard() {
     setUnsetAnthropicLoading(false);
     setTaskTitle("Hire your first engineer and create a hiring plan");
     setTaskDescription(DEFAULT_TASK_DESCRIPTION);
+    setSelectedTemplateId(null);
     setCreatedCompanyId(null);
     setCreatedCompanyPrefix(null);
     setCreatedCompanyGoalId(null);
@@ -794,7 +796,9 @@ export function OnboardingWizard() {
                 <p className="text-[#2F80FF] text-xs font-semibold tracking-[0.25em] uppercase mb-3">
                   Step {step} of 4
                   <span className="text-[11px] text-muted-foreground/60 ml-2 normal-case tracking-normal font-normal">
-                    ~2 min · {4 - step} step{4 - step !== 1 ? "s" : ""} remaining
+                    {step < 4
+                      ? `~2 min · ${4 - step} step${4 - step !== 1 ? "s" : ""} remaining`
+                      : "Final step"}
                   </span>
                 </p>
                 <h2
@@ -1228,10 +1232,13 @@ export function OnboardingWizard() {
                           <button
                             key={t.id}
                             type="button"
-                            onClick={() => setTaskDescription(t.description)}
+                            onClick={() => {
+                              setTaskDescription(t.description);
+                              setSelectedTemplateId(t.id);
+                            }}
                             className={cn(
                               "text-left rounded-lg border p-3 text-xs transition-colors",
-                              taskDescription === t.description
+                              selectedTemplateId === t.id
                                 ? "border-primary bg-primary/10 text-foreground"
                                 : "border-border/60 bg-card hover:border-primary/50 hover:bg-accent/40 text-muted-foreground",
                             )}
@@ -1247,7 +1254,10 @@ export function OnboardingWizard() {
                       className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:ring-2 focus:ring-[#2F80FF] focus:border-[#2F80FF] placeholder:text-zinc-400 resize-none min-h-[120px] max-h-[300px] overflow-y-auto"
                       placeholder="Add more detail about what the agent should do..."
                       value={taskDescription}
-                      onChange={(e) => setTaskDescription(e.target.value)}
+                      onChange={(e) => {
+                        setTaskDescription(e.target.value);
+                        setSelectedTemplateId(null);
+                      }}
                     />
                   </div>
                 </div>
