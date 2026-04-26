@@ -1,0 +1,25 @@
+{
+  "timeZone": "America/New_York",
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "addOns": {
+    "common": {
+      "name": "Avero Enterprise",
+      "logoUrl": "https://www.gstatic.com/images/icons/material/system/2x/auto_awesome_black_24dp.png",
+      "homepageTrigger": {
+        "runFunction": "onHomepage"
+      }
+    },
+    "gmail": {
+      "contextualTriggers": [
+        {
+          "unconditional": {},
+          "onTriggerFunction": "onGmailMessage"
+        }
+      ]
+    },
+    "docs": {
+      "onFileScopeGranted": "onDocOpen"
+    }
+  }
+}

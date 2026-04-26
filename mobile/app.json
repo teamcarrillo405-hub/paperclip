@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "AVERO",
+    "slug": "avero",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": { "backgroundColor": "#050D1E" },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.averoai.app"
+    },
+    "android": {
+      "adaptiveIcon": { "backgroundColor": "#2563EB" },
+      "package": "com.averoai.app"
+    },
+    "plugins": ["expo-notifications", "expo-secure-store"]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "Avero Enterprise",
+  "version": "1.0.0",
+  "description": "AI operating system — works inside Gmail, Docs, and Sheets",
+  "permissions": ["storage", "activeTab", "scripting", "contextMenus", "notifications"],
+  "host_permissions": [
+    "https://mail.google.com/*",
+    "https://docs.google.com/*",
+    "https://sheets.google.com/*",
+    "http://localhost:3100/*",
+    "https://*.averoai.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content/gmail.js"],
+      "css": ["content/sidebar.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://docs.google.com/*"],
+      "js": ["content/docs.js"],
+      "css": ["content/sidebar.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://sheets.google.com/*"],
+      "js": ["content/sheets.js"],
+      "css": ["content/sidebar.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "32": "icons/icon32.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "32": "icons/icon32.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["sidebar/sidebar.html"],
+      "matches": [
+        "https://mail.google.com/*",
+        "https://docs.google.com/*",
+        "https://sheets.google.com/*"
+      ]
+    }
+  ]
+}

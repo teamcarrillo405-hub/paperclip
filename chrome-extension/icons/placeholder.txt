@@ -1,0 +1,44 @@
+Icon placeholder — replace with real PNG files before publishing.
+
+Required files:
+  icon32.png  — 32x32 pixel PNG, transparent background
+  icon128.png — 128x128 pixel PNG, transparent background
+
+Design reference:
+  - Hexagon shape (matches Avero brand ⬡)
+  - Fill: #F5C518 (Avero gold)
+  - "A" letterform centered in white
+  - 2px white stroke on the hexagon outline for visibility on dark backgrounds
+
+SVG source to rasterize:
+
+icon32.svg / icon128.svg
+─────────────────────────
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Hexagon -->
+  <polygon
+    points="64,4 120,36 120,92 64,124 8,92 8,36"
+    fill="#F5C518"
+    stroke="#fff"
+    stroke-width="4"
+  />
+  <!-- Letter A -->
+  <text
+    x="64" y="88"
+    font-family="Arial Black, Arial, sans-serif"
+    font-size="72"
+    font-weight="900"
+    fill="#1a1a1a"
+    text-anchor="middle"
+  >A</text>
+</svg>
+
+─────────────────────────
+Tools to convert SVG → PNG:
+  - Inkscape: inkscape icon128.svg -o icon128.png -w 128 -h 128
+  - ImageMagick: convert -background none icon128.svg -resize 128x128 icon128.png
+  - Online: https://svgtopng.com/
+
+The manifest references icons/icon32.png and icons/icon128.png.
+Chrome will show the extension with default puzzle-piece icon if these
+files are absent during development — that is fine for local testing.

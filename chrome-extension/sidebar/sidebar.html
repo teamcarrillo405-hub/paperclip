@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Avero Sidebar</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  <!--
+    This file exists as a web_accessible_resource placeholder.
+    The actual sidebar UI is injected directly into the host page DOM
+    by the content scripts (gmail.js, docs.js, sheets.js) using
+    document.createElement — this keeps everything in the page context
+    so content scripts can interact with host-page elements.
+
+    If you need a full iframe-based sidebar in the future, render your
+    React/Vue/Svelte app here and postMessage between this frame and the
+    content script.
+  -->
+  <p style="padding:16px;color:#888;">Avero sidebar — loaded via content script.</p>
+</body>
+</html>

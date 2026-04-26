@@ -1,0 +1,342 @@
+/* ============================================================
+   Avero Enterprise — Injected Sidebar Styles
+   Scoped under .avero-* to avoid collisions with host pages.
+   ============================================================ */
+
+/* ---------- Layout shell ---------- */
+
+.avero-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  z-index: 999999;
+  background: #ffffff;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  color: #1a1a1a;
+  border-left: 1px solid #e0e0e0;
+  /* smooth open/close */
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.18s ease;
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.avero-sidebar.avero-hidden {
+  transform: translateX(105%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- Header ---------- */
+
+.avero-sidebar-header {
+  background: #F5C518;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  height: 44px;
+  flex-shrink: 0;
+  cursor: grab;
+  user-select: none;
+  border-bottom: 1px solid #dba800;
+}
+
+.avero-sidebar-header:active {
+  cursor: grabbing;
+}
+
+.avero-sidebar-header span {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+.avero-sidebar-header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1;
+  color: #1a1a1a;
+  opacity: 0.7;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.avero-sidebar-header button:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* ---------- Body / scroll area ---------- */
+
+.avero-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px 20px;
+  scroll-behavior: smooth;
+}
+
+.avero-sidebar-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.avero-sidebar-body::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+
+/* ---------- Sections ---------- */
+
+.avero-section {
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #ebebeb;
+}
+
+.avero-section strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #555;
+}
+
+/* ---------- Inputs ---------- */
+
+.avero-input,
+.avero-textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a1a1a;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  margin-bottom: 8px;
+}
+
+.avero-input:focus,
+.avero-textarea:focus {
+  border-color: #F5C518;
+  box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.2);
+}
+
+.avero-textarea {
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.45;
+}
+
+.avero-select {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a1a1a;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E") no-repeat right 10px center;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: border-color 0.15s;
+}
+
+.avero-select:focus {
+  border-color: #F5C518;
+}
+
+/* ---------- Buttons ---------- */
+
+.avero-btn {
+  display: inline-block;
+  background: #F5C518;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  margin-right: 6px;
+  margin-top: 2px;
+}
+
+.avero-btn:hover {
+  background: #e8b800;
+}
+
+.avero-btn:active {
+  transform: scale(0.97);
+}
+
+.avero-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.avero-btn-secondary {
+  display: inline-block;
+  background: #ffffff;
+  color: #333;
+  border: 1px solid #c0c0c0;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  margin-right: 6px;
+  margin-top: 2px;
+}
+
+.avero-btn-secondary:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.avero-btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.avero-btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+/* ---------- Result / output box ---------- */
+
+.avero-result {
+  background: #fffde7;
+  border-left: 3px solid #F5C518;
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #1a1a1a;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.avero-result.avero-result-error {
+  background: #fff3f3;
+  border-left-color: #e53935;
+}
+
+.avero-result.avero-result-success {
+  background: #f1fff4;
+  border-left-color: #2e7d32;
+}
+
+/* ---------- Loading spinner ---------- */
+
+.avero-loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #F5C518;
+  border-radius: 50%;
+  animation: avero-spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+@keyframes avero-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Badge ---------- */
+
+.avero-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  background: #F5C518;
+  color: #1a1a1a;
+  border-radius: 3px;
+  padding: 2px 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.avero-badge-gray {
+  background: #e0e0e0;
+  color: #555;
+}
+
+/* ---------- Trigger button (injected into host toolbar) ---------- */
+
+.avero-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #F5C518;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.avero-trigger-btn:hover {
+  background: #e8b800;
+}
+
+.avero-trigger-btn:active {
+  transform: scale(0.96);
+}
+
+/* ---------- Divider ---------- */
+
+.avero-divider {
+  border: none;
+  border-top: 1px solid #e8e8e8;
+  margin: 10px 0;
+}
+
+/* ---------- Responsive: collapse to floating button on narrow viewports ---------- */
+
+@media (max-width: 767px) {
+  .avero-sidebar {
+    width: 100%;
+    max-width: 340px;
+  }
+}
