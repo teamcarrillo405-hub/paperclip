@@ -87,7 +87,11 @@ function aggregateRuns(runs: readonly HeartbeatRun[] = [], numDays = 14): Dashbo
 
 function resolveRunActivity(props: RunChartProps): DashboardRunActivityDay[] {
   const numDays = props.days ?? 14;
-  if (Array.isArray(props.activity)) return props.activity;
+  if (Array.isArray(props.activity)) {
+    return numDays < props.activity.length
+      ? props.activity.slice(-numDays)
+      : props.activity;
+  }
   if (Array.isArray(props.runs)) return aggregateRuns(props.runs, numDays);
   return [];
 }
