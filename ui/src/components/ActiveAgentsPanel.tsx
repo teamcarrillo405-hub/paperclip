@@ -9,10 +9,11 @@ import { issuesApi } from "../api/issues";
 import { agentsApi } from "../api/agents";
 import { queryKeys } from "../lib/queryKeys";
 import { cn, relativeTime, formatCents } from "../lib/utils";
-import { ExternalLink, StopCircle, RotateCcw, PauseCircle } from "lucide-react";
+import { ExternalLink, StopCircle, RotateCcw, PauseCircle, Maximize2, LayoutGrid } from "lucide-react";
 import { Identity } from "./Identity";
 import { RunChatSurface } from "./RunChatSurface";
 import { useLiveRunTranscripts } from "./transcript/useLiveRunTranscripts";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function startOfMonth(): string {
   const d = new Date();
@@ -134,11 +135,13 @@ export function ActiveAgentsPanel({ companyId, isLive = false }: ActiveAgentsPan
         </div>
       )}
       {hiddenRunCount > 0 && (
-        <div className="mt-3 flex justify-end text-xs text-muted-foreground">
-          <Link to="/agents" className="hover:text-foreground hover:underline">
-            {hiddenRunCount} more active/recent run{hiddenRunCount === 1 ? "" : "s"}
-          </Link>
-        </div>
+        <Link
+          to="/agents"
+          className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-border/50 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent/30 hover:text-foreground"
+        >
+          <LayoutGrid className="h-3.5 w-3.5" />
+          Show all {runs.length} running agents
+        </Link>
       )}
     </div>
   );
@@ -163,6 +166,7 @@ const AgentRunCard = memo(function AgentRunCard({
 }) {
   const queryClient = useQueryClient();
   const [hovered, setHovered] = useState(false);
+  const [transcriptExpanded, setTranscriptExpanded] = useState(false);
   const isFailed = isRunFailed(run);
 
   const cancelMutation = useMutation({
@@ -313,14 +317,42 @@ const AgentRunCard = memo(function AgentRunCard({
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-3">
+      <div className="relative group/transcript min-h-0 flex-1 overflow-y-auto p-3">
         <RunChatSurface
           run={run}
           transcript={transcript}
           hasOutput={hasOutput}
           companyId={companyId}
         />
+        <button
+          type="button"
+          onClick={() => setTranscriptExpanded(true)}
+          className="absolute top-2 right-2 opacity-0 group-hover/transcript:opacity-100 transition-opacity p-1 rounded bg-background/80 text-muted-foreground hover:text-foreground"
+          title="Expand transcript"
+        >
+          <Maximize2 className="h-3 w-3" />
+        </button>
       </div>
+
+      {transcriptExpanded && (
+        <Dialog open={transcriptExpanded} onOpenChange={setTranscriptExpanded}>
+          <DialogContent className="max-w-3xl h-[70vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="text-sm font-semibold">
+                {run.agentName ?? "Agent"} — Live Transcript
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <RunChatSurface
+                run={run}
+                transcript={transcript}
+                hasOutput={hasOutput}
+                companyId={companyId}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 });
