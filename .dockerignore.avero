@@ -1,0 +1,56 @@
+# Avero Enterprise — Docker build context exclusions
+# Referenced via: docker build -f Dockerfile.avero --build-arg ...
+
+# Dependency directories — rebuilt inside Docker
+node_modules
+ui/node_modules
+server/node_modules
+cli/node_modules
+packages/*/node_modules
+packages/adapters/*/node_modules
+packages/plugins/*/node_modules
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Paperclip runtime data (not part of the build)
+.paperclip
+paperclip-data
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+**/__tests__/
+**/test/
+evals/
+tests/
+
+# Environment files — injected at runtime, never baked into image
+.env
+.env.*
+!.env.example
+
+# Build artifacts that will be regenerated
+server/dist
+ui/dist
+packages/*/dist
+cli/dist
+
+# Dev tooling
+.vscode
+.idea
+*.swp
+*.swo
+
+# CI/CD
+.github
+
+# Local dev config
+docker-compose.override.yml

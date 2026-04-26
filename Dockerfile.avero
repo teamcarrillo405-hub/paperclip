@@ -1,0 +1,127 @@
+# ============================================================
+# Avero Enterprise — Production Dockerfile
+# Multi-stage build for pnpm monorepo
+# Workspace: @paperclipai/server, @paperclipai/ui, packages/*
+# ============================================================
+
+# ------------------------------------------------------------
+# Stage 1 — deps: install all workspace dependencies
+# ------------------------------------------------------------
+FROM node:20-alpine AS deps
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy workspace manifests only — layer-cache friendly
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc* ./
+
+# Server
+COPY server/package.json server/
+
+# UI
+COPY ui/package.json ui/
+
+# Shared packages
+COPY packages/shared/package.json packages/shared/
+COPY packages/db/package.json packages/db/
+COPY packages/adapter-utils/package.json packages/adapter-utils/
+COPY packages/mcp-server/package.json packages/mcp-server/
+
+# Adapters
+COPY packages/adapters/claude-local/package.json packages/adapters/claude-local/
+COPY packages/adapters/codex-local/package.json packages/adapters/codex-local/
+COPY packages/adapters/cursor-local/package.json packages/adapters/cursor-local/
+COPY packages/adapters/gemini-local/package.json packages/adapters/gemini-local/
+COPY packages/adapters/openclaw-gateway/package.json packages/adapters/openclaw-gateway/
+COPY packages/adapters/opencode-local/package.json packages/adapters/opencode-local/
+COPY packages/adapters/pi-local/package.json packages/adapters/pi-local/
+
+# Plugins
+COPY packages/plugins/sdk/package.json packages/plugins/sdk/
+COPY packages/plugins/aider/package.json packages/plugins/aider/
+COPY packages/plugins/crewai/package.json packages/plugins/crewai/
+COPY packages/plugins/email/package.json packages/plugins/email/
+COPY packages/plugins/goose/package.json packages/plugins/goose/
+COPY packages/plugins/image-studio/package.json packages/plugins/image-studio/
+COPY packages/plugins/knowledge-base/package.json packages/plugins/knowledge-base/
+COPY packages/plugins/n8n/package.json packages/plugins/n8n/
+COPY packages/plugins/postal/package.json packages/plugins/postal/
+COPY packages/plugins/quickbooks/package.json packages/plugins/quickbooks/
+COPY packages/plugins/social/package.json packages/plugins/social/
+COPY packages/plugins/video/package.json packages/plugins/video/
+COPY packages/plugins/voice/package.json packages/plugins/voice/
+COPY packages/plugins/wonda/package.json packages/plugins/wonda/
+
+# Patches required by pnpm
+COPY patches/ patches/
+
+RUN pnpm install --frozen-lockfile
+
+# ------------------------------------------------------------
+# Stage 2 — build: compile UI and server
+# ------------------------------------------------------------
+FROM node:20-alpine AS build
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Bring in installed node_modules from deps stage
+COPY --from=deps /app /app
+
+# Copy full source
+COPY . .
+
+# Build shared plugin-sdk first (server depends on it)
+RUN pnpm --filter @paperclipai/plugin-sdk build
+
+# Build UI (produces ui/dist/)
+RUN pnpm --filter @paperclipai/ui build
+
+# Build server: runs `tsc && mkdir -p dist/onboarding-assets && cp -R ...`
+# Produces server/dist/
+RUN pnpm --filter @paperclipai/server build
+
+# Fail fast if the expected entry point is missing
+RUN test -f server/dist/index.js || \
+    (echo "ERROR: server/dist/index.js not found — build failed" && exit 1)
+
+# ------------------------------------------------------------
+# Stage 3 — runtime: minimal production image
+# ------------------------------------------------------------
+FROM node:20-alpine AS runtime
+
+RUN apk add --no-cache dumb-init
+
+WORKDIR /app
+
+# Server compiled output
+COPY --chown=node:node --from=build /app/server/dist/ ./server/dist/
+COPY --chown=node:node --from=build /app/server/node_modules/ ./server/node_modules/
+
+# Shared packages compiled output
+COPY --chown=node:node --from=build /app/packages/shared/dist/ ./packages/shared/dist/
+COPY --chown=node:node --from=build /app/packages/db/dist/ ./packages/db/dist/
+COPY --chown=node:node --from=build /app/packages/adapter-utils/dist/ ./packages/adapter-utils/dist/
+COPY --chown=node:node --from=build /app/packages/plugins/sdk/dist/ ./packages/plugins/sdk/dist/
+
+# Package node_modules needed at runtime
+COPY --chown=node:node --from=build /app/packages/shared/node_modules/ ./packages/shared/node_modules/
+COPY --chown=node:node --from=build /app/packages/db/node_modules/ ./packages/db/node_modules/
+
+# UI static assets served by the Express server when SERVE_UI=true
+COPY --chown=node:node --from=build /app/ui/dist/ ./ui/dist/
+
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=3100 \
+    SERVE_UI=true
+
+EXPOSE 3100
+
+USER node
+
+# dumb-init handles PID 1 signal forwarding correctly
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "server/dist/index.js"]

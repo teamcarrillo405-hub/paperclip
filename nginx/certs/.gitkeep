@@ -1,0 +1,12 @@
+# TLS certificates go here — DO NOT commit actual cert files to git.
+#
+# Expected files:
+#   cert.pem  — TLS certificate (full chain for production)
+#   key.pem   — TLS private key
+#
+# Generate with scripts/setup-ssl.sh:
+#   Self-signed (local dev):  bash scripts/setup-ssl.sh
+#   Let's Encrypt (prod):     bash scripts/setup-ssl.sh --domain your.domain.com
+#
+# The nginx/certs/ directory is git-ignored via .gitignore patterns.
+# This .gitkeep preserves the directory in version control.

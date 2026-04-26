@@ -1,0 +1,98 @@
+# ============================================================
+# Avero Enterprise — Production Docker Compose
+# Usage: docker compose -f docker-compose.avero.yml up -d
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # PostgreSQL 16 — primary datastore
+  # ----------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: avero
+      POSTGRES_USER: avero
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U avero -d avero"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - avero-internal
+
+  # ----------------------------------------------------------
+  # Avero application server (Express/TypeScript)
+  # ----------------------------------------------------------
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.avero
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://avero:${POSTGRES_PASSWORD:-changeme}@postgres:5432/avero
+      SERVE_UI: "true"
+      PORT: "3100"
+      NODE_ENV: production
+    ports:
+      # Exposed for direct access / health checks from host.
+      # In production behind nginx this can be removed (internal only).
+      - "3100:3100"
+    volumes:
+      - avero_data:/home/node/.paperclip
+    networks:
+      - avero-internal
+      - avero-public
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3100/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ----------------------------------------------------------
+  # Nginx — TLS termination, reverse proxy, static caching
+  # ----------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - avero-public
+
+# ----------------------------------------------------------
+# Named volumes
+# ----------------------------------------------------------
+volumes:
+  pgdata:
+    driver: local
+  avero_data:
+    driver: local
+
+# ----------------------------------------------------------
+# Networks
+# ----------------------------------------------------------
+networks:
+  avero-internal:
+    driver: bridge
+    internal: true
+  avero-public:
+    driver: bridge
