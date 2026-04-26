@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "@/lib/router";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
 import { costsApi } from "../api/costs";
 import { heartbeatsApi } from "../api/heartbeats";
@@ -59,6 +59,7 @@ function filterOrgTree(nodes: OrgNode[], tab: FilterTab, showTerminated: boolean
 
 export function Agents() {
   const { selectedCompanyId } = useCompany();
+  const queryClient = useQueryClient();
   const { openNewAgent } = useDialog();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
@@ -113,10 +114,16 @@ export function Agents() {
 
   const pauseMutation = useMutation({
     mutationFn: (id: string) => agentsApi.pause(id, selectedCompanyId ?? undefined),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => agentsApi.remove(id, selectedCompanyId ?? undefined),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
+    },
   });
 
   const liveRunByAgent = useMemo(() => {
@@ -214,10 +221,11 @@ export function Agents() {
   }
 
   async function handleBulkPause() {
-    for (const id of selectedIds) {
-      await pauseMutation.mutateAsync(id);
+    try {
+      await Promise.all([...selectedIds].map((id) => pauseMutation.mutateAsync(id)));
+    } finally {
+      setSelectedIds(new Set());
     }
-    setSelectedIds(new Set());
   }
 
   async function handleBulkDelete() {
@@ -225,10 +233,11 @@ export function Agents() {
       `Delete ${selectedIds.size} agent${selectedIds.size !== 1 ? "s" : ""}? This action cannot be undone.`,
     );
     if (!confirmed) return;
-    for (const id of selectedIds) {
-      await deleteMutation.mutateAsync(id);
+    try {
+      await Promise.all([...selectedIds].map((id) => deleteMutation.mutateAsync(id)));
+    } finally {
+      setSelectedIds(new Set());
     }
-    setSelectedIds(new Set());
   }
 
   function handleExportCsv() {
