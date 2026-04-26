@@ -26,6 +26,7 @@ import { ChartCard, RunActivityChart, PriorityChart, IssueStatusChart, SuccessRa
 import { PageSkeleton } from "../components/PageSkeleton";
 import type { Agent, Issue } from "@paperclipai/shared";
 import { PluginSlotOutlet } from "@/plugins/slots";
+import { useCompanyLiveEvents } from "../hooks/useCompanyLiveEvents";
 
 const DASHBOARD_ACTIVITY_LIMIT = 10;
 
@@ -34,19 +35,35 @@ function getRecentIssues(issues: Issue[]): Issue[] {
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 }
 
+// Fallback polling interval used when the WebSocket is not connected.
+// The global LiveUpdatesProvider drives real-time invalidation when the
+// socket is open, so these intervals only matter as a safety net.
+const DASHBOARD_POLL_INTERVAL_MS = 60_000;
+
 export function Dashboard() {
-  const { selectedCompanyId, companies } = useCompany();
+  const { selectedCompanyId, selectedCompany, companies } = useCompany();
   const { openOnboarding } = useDialog();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [animatedActivityIds, setAnimatedActivityIds] = useState<Set<string>>(new Set());
   const seenActivityIdsRef = useRef<Set<string>>(new Set());
   const hydratedActivityRef = useRef(false);
   const activityAnimationTimersRef = useRef<number[]>([]);
+  const [chartDays, setChartDays] = useState<7 | 14 | 30>(14);
+  const [syncedSecondsAgo, setSyncedSecondsAgo] = useState(0);
+  const lastSyncRef = useRef(Date.now());
+
+  // isConnected reflects the state of the per-Dashboard WebSocket connection.
+  // The global LiveUpdatesProvider already handles query invalidation and
+  // toasts for all pages; this hook is used solely to drive the "Live"
+  // indicator on the Agents panel header and to confirm the socket is open
+  // before trusting the 60-second fallback polling interval.
+  const { isConnected } = useCompanyLiveEvents(selectedCompanyId ?? undefined);
 
   const { data: agents } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
+    refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
   useEffect(() => {
@@ -57,24 +74,28 @@ export function Dashboard() {
     queryKey: queryKeys.dashboard(selectedCompanyId!),
     queryFn: () => dashboardApi.summary(selectedCompanyId!),
     enabled: !!selectedCompanyId,
+    refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
   const { data: activity } = useQuery({
     queryKey: [...queryKeys.activity(selectedCompanyId!), { limit: DASHBOARD_ACTIVITY_LIMIT }],
     queryFn: () => activityApi.list(selectedCompanyId!, { limit: DASHBOARD_ACTIVITY_LIMIT }),
     enabled: !!selectedCompanyId,
+    refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
   const { data: issues } = useQuery({
     queryKey: queryKeys.issues.list(selectedCompanyId!),
     queryFn: () => issuesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
+    refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
   const { data: projects } = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
+    refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
   const { data: companyMembers } = useQuery({
@@ -82,6 +103,14 @@ export function Dashboard() {
     queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
+
+  // Reset the last-synced timer whenever the dashboard data refreshes.
+  useEffect(() => {
+    if (data) {
+      lastSyncRef.current = Date.now();
+      setSyncedSecondsAgo(0);
+    }
+  }, [data]);
 
   const userProfileMap = useMemo(
     () => buildCompanyUserProfileMap(companyMembers?.users),
@@ -146,6 +175,13 @@ export function Dashboard() {
     };
   }, []);
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSyncedSecondsAgo(Math.floor((Date.now() - lastSyncRef.current) / 1000));
+    }, 10_000);
+    return () => clearInterval(id);
+  }, []);
+
   const agentMap = useMemo(() => {
     const map = new Map<string, Agent>();
     for (const a of agents ?? []) map.set(a.id, a);
@@ -193,9 +229,24 @@ export function Dashboard() {
 
   const hasNoAgents = agents !== undefined && agents.length === 0;
 
+  const liveRunCount = data?.agents.running ?? 0;
+
   return (
     <div className="space-y-6">
       {error && <p className="text-sm text-destructive">{error.message}</p>}
+
+      {/* Page header: company name + live agent count + last-synced */}
+      <div>
+        <h1 className="text-xl font-bold text-foreground">
+          {selectedCompany?.name ?? "Dashboard"}
+        </h1>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {liveRunCount > 0
+            ? `${liveRunCount} agent${liveRunCount !== 1 ? "s" : ""} running · `
+            : ""}
+          Last synced {syncedSecondsAgo}s ago
+        </p>
+      </div>
 
       {hasNoAgents && (
         <div className="flex items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-500/25 dark:bg-amber-950/60">
@@ -214,7 +265,7 @@ export function Dashboard() {
         </div>
       )}
 
-      <ActiveAgentsPanel companyId={selectedCompanyId!} />
+      <ActiveAgentsPanel companyId={selectedCompanyId!} isLive={isConnected} />
 
       {data && (
         <>
@@ -291,19 +342,41 @@ export function Dashboard() {
             />
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <ChartCard title="Run Activity" subtitle="Last 14 days">
-              <RunActivityChart activity={data.runActivity} />
-            </ChartCard>
-            <ChartCard title="Issues by Priority" subtitle="Last 14 days">
-              <PriorityChart issues={issues ?? []} />
-            </ChartCard>
-            <ChartCard title="Issues by Status" subtitle="Last 14 days">
-              <IssueStatusChart issues={issues ?? []} />
-            </ChartCard>
-            <ChartCard title="Success Rate" subtitle="Last 14 days">
-              <SuccessRateChart activity={data.runActivity} />
-            </ChartCard>
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-foreground">Activity</h2>
+              <div className="flex items-center gap-0.5 rounded-md border border-border/60 bg-muted/30 p-0.5">
+                {([7, 14, 30] as const).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setChartDays(d)}
+                    className={cn(
+                      "px-2.5 py-1 text-[11px] font-medium rounded transition-colors",
+                      chartDays === d
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {d}d
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <ChartCard title="Run Activity" subtitle={`Last ${chartDays} days`}>
+                <RunActivityChart activity={data.runActivity} days={chartDays} />
+              </ChartCard>
+              <ChartCard title="Issues by Priority" subtitle={`Last ${chartDays} days`}>
+                <PriorityChart issues={issues ?? []} days={chartDays} />
+              </ChartCard>
+              <ChartCard title="Issues by Status" subtitle={`Last ${chartDays} days`}>
+                <IssueStatusChart issues={issues ?? []} days={chartDays} />
+              </ChartCard>
+              <ChartCard title="Success Rate" subtitle={`Last ${chartDays} days`}>
+                <SuccessRateChart activity={data.runActivity} days={chartDays} />
+              </ChartCard>
+            </div>
           </div>
 
           <PluginSlotOutlet

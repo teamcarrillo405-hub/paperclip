@@ -70,8 +70,14 @@ export function ActivityRow({ event, agentMap, userProfileMap, entityNameMap, en
     </div>
   );
 
+  const actorTypeStripe =
+    event.actorType === "agent"  ? "border-l-2 border-l-blue-500/60" :
+    event.actorType === "system" ? "border-l-2 border-l-slate-400/40" :
+    "border-l-2 border-l-transparent";
+
   const classes = cn(
     "px-4 py-2 text-sm",
+    actorTypeStripe,
     link && "cursor-pointer hover:bg-accent/50 transition-colors",
     className,
   );

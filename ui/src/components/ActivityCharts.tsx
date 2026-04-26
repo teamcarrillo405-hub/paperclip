@@ -2,12 +2,17 @@ import type { DashboardRunActivityDay, HeartbeatRun } from "@paperclipai/shared"
 
 /* ---- Utilities ---- */
 
-export function getLast14Days(): string[] {
-  return Array.from({ length: 14 }, (_, i) => {
+export function getLastNDays(n: number): string[] {
+  return Array.from({ length: n }, (_, i) => {
     const d = new Date();
-    d.setDate(d.getDate() - (13 - i));
+    d.setDate(d.getDate() - (n - 1 - i));
     return d.toISOString().slice(0, 10);
   });
+}
+
+/** @deprecated Use getLastNDays(14) instead */
+export function getLast14Days(): string[] {
+  return getLastNDays(14);
 }
 
 function formatDayLabel(dateStr: string): string {
@@ -18,11 +23,13 @@ function formatDayLabel(dateStr: string): string {
 /* ---- Sub-components ---- */
 
 function DateLabels({ days }: { days: string[] }) {
+  const last = days.length - 1;
+  const mid = Math.floor(days.length / 2);
   return (
     <div className="flex gap-[3px] mt-1.5">
       {days.map((day, i) => (
         <div key={day} className="flex-1 text-center">
-          {(i === 0 || i === 6 || i === 13) ? (
+          {(i === 0 || i === mid || i === last) ? (
             <span className="text-[9px] text-muted-foreground tabular-nums">{formatDayLabel(day)}</span>
           ) : null}
         </div>
@@ -59,11 +66,11 @@ export function ChartCard({ title, subtitle, children }: { title: string; subtit
 /* ---- Chart Components ---- */
 
 type RunChartProps =
-  | { activity?: DashboardRunActivityDay[] | null; runs?: never }
-  | { runs?: HeartbeatRun[] | null; activity?: never };
+  | { activity?: DashboardRunActivityDay[] | null; runs?: never; days?: 7 | 14 | 30 }
+  | { runs?: HeartbeatRun[] | null; activity?: never; days?: 7 | 14 | 30 };
 
-function aggregateRuns(runs: readonly HeartbeatRun[] = []): DashboardRunActivityDay[] {
-  const days = getLast14Days();
+function aggregateRuns(runs: readonly HeartbeatRun[] = [], numDays = 14): DashboardRunActivityDay[] {
+  const days = getLastNDays(numDays);
   const grouped = new Map<string, DashboardRunActivityDay>();
   for (const day of days) grouped.set(day, { date: day, succeeded: 0, failed: 0, other: 0, total: 0 });
   for (const run of runs) {
@@ -79,14 +86,16 @@ function aggregateRuns(runs: readonly HeartbeatRun[] = []): DashboardRunActivity
 }
 
 function resolveRunActivity(props: RunChartProps): DashboardRunActivityDay[] {
+  const numDays = props.days ?? 14;
   if (Array.isArray(props.activity)) return props.activity;
-  if (Array.isArray(props.runs)) return aggregateRuns(props.runs);
+  if (Array.isArray(props.runs)) return aggregateRuns(props.runs, numDays);
   return [];
 }
 
 export function RunActivityChart(props: RunChartProps) {
+  const numDays = props.days ?? 14;
   const activity = resolveRunActivity(props);
-  const days = activity.length > 0 ? activity.map((day) => day.date) : getLast14Days();
+  const days = activity.length > 0 ? activity.map((day) => day.date) : getLastNDays(numDays);
   const grouped = new Map(activity.map((day) => [day.date, day]));
 
   const maxValue = Math.max(...activity.map(v => v.total), 1);
@@ -130,8 +139,8 @@ const priorityColors: Record<string, string> = {
 
 const priorityOrder = ["critical", "high", "medium", "low"] as const;
 
-export function PriorityChart({ issues }: { issues: { priority: string; createdAt: Date }[] }) {
-  const days = getLast14Days();
+export function PriorityChart({ issues, days: numDays = 14 }: { issues: { priority: string; createdAt: Date }[]; days?: 7 | 14 | 30 }) {
+  const days = getLastNDays(numDays);
   const grouped = new Map<string, Record<string, number>>();
   for (const day of days) grouped.set(day, { critical: 0, high: 0, medium: 0, low: 0 });
   for (const issue of issues) {
@@ -194,8 +203,8 @@ const statusLabels: Record<string, string> = {
   backlog: "Backlog",
 };
 
-export function IssueStatusChart({ issues }: { issues: { status: string; createdAt: Date }[] }) {
-  const days = getLast14Days();
+export function IssueStatusChart({ issues, days: numDays = 14 }: { issues: { status: string; createdAt: Date }[]; days?: 7 | 14 | 30 }) {
+  const days = getLastNDays(numDays);
   const allStatuses = new Set<string>();
   const grouped = new Map<string, Record<string, number>>();
   for (const day of days) grouped.set(day, {});
@@ -242,8 +251,9 @@ export function IssueStatusChart({ issues }: { issues: { status: string; created
 }
 
 export function SuccessRateChart(props: RunChartProps) {
+  const numDays = props.days ?? 14;
   const activity = resolveRunActivity(props);
-  const days = activity.length > 0 ? activity.map((day) => day.date) : getLast14Days();
+  const days = activity.length > 0 ? activity.map((day) => day.date) : getLastNDays(numDays);
   const grouped = new Map(activity.map((day) => [day.date, day]));
 
   const hasData = activity.some(v => v.total > 0);
