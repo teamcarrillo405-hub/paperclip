@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ChevronRight, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Link } from "@/lib/router";
 
 interface SidebarSectionProps {
   label: string;
@@ -45,14 +46,14 @@ export function SidebarSection({
             {label}
           </span>
           {createHref && (
-            <a
-              href={createHref}
+            <Link
+              to={createHref}
               onClick={(e) => e.stopPropagation()}
               title={createTitle ?? `New ${label.toLowerCase()}`}
               className="opacity-0 group-hover/sec:opacity-100 transition-opacity text-muted-foreground/60 hover:text-foreground rounded"
             >
               <Plus className="h-3.5 w-3.5" />
-            </a>
+            </Link>
           )}
         </div>
       )}

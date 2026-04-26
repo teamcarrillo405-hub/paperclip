@@ -60,7 +60,6 @@ import { SidebarCompanyMenu } from "./SidebarCompanyMenu";
 import { DensityToggle } from "./DensityToggle";
 
 const ALL_NAV_ITEMS = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/issues", label: "Issues", icon: CircleDot },
   { to: "/inbox", label: "Inbox", icon: Inbox },
   { to: "/approvals", label: "Approvals", icon: ClipboardCheck },

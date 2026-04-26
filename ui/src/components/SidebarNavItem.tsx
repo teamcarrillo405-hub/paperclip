@@ -63,6 +63,14 @@ export function SidebarNavItem({
         {alert && (
           <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500 shadow-[0_0_0_2px_hsl(var(--background))]" />
         )}
+        {collapsed && badge != null && badge > 0 && (
+          <span
+            className={cn(
+              "absolute top-1 right-1 h-2 w-2 rounded-full",
+              badgeTone === "danger" ? "bg-red-500" : "bg-primary",
+            )}
+          />
+        )}
       </span>
       {!collapsed && (
         <>
@@ -118,14 +126,6 @@ export function SidebarNavItem({
             )}
           </div>
         </>
-      )}
-      {collapsed && badge != null && badge > 0 && (
-        <span
-          className={cn(
-            "absolute top-1 right-1 h-2 w-2 rounded-full",
-            badgeTone === "danger" ? "bg-red-500" : "bg-primary",
-          )}
-        />
       )}
     </NavLink>
   );
