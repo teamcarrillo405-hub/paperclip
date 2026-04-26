@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { Fragment, useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCompany } from "../context/CompanyContext";
@@ -145,14 +145,15 @@ function KbdBadge({ keys }: { keys: string }) {
 // Entity type chip
 // ---------------------------------------------------------------------------
 
-function EntityChip({ type }: { type: "issue" | "agent" | "project" | "goal" }) {
-  const config: Record<string, { bg: string; Icon: typeof CircleDot }> = {
-    issue:   { bg: "bg-blue-500/10 text-blue-500",      Icon: CircleDot },
-    agent:   { bg: "bg-violet-500/10 text-violet-500",  Icon: Bot },
+function EntityChip({ type }: { type: "issue" | "agent" | "project" | "goal" | "routine" }) {
+  const config: Record<"issue" | "agent" | "project" | "goal" | "routine", { bg: string; Icon: typeof CircleDot }> = {
+    issue:   { bg: "bg-blue-500/10 text-blue-500",       Icon: CircleDot },
+    agent:   { bg: "bg-violet-500/10 text-violet-500",   Icon: Bot },
     project: { bg: "bg-emerald-500/10 text-emerald-500", Icon: FolderKanban },
-    goal:    { bg: "bg-amber-500/10 text-amber-500",    Icon: Target },
+    goal:    { bg: "bg-amber-500/10 text-amber-500",     Icon: Target },
+    routine: { bg: "bg-slate-500/10 text-slate-500",     Icon: Timer },
   };
-  const { bg, Icon } = config[type] ?? config.issue;
+  const { bg, Icon } = config[type];
   return (
     <span className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded", bg)}>
       <Icon className="h-3 w-3" />
@@ -469,9 +470,7 @@ export function CommandPalette() {
             value="new routine automation schedule"
             onSelect={() => { go("/routines?new=1", "New Routine"); }}
           >
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-slate-500/10 text-slate-500">
-              <Timer className="h-3 w-3" />
-            </span>
+            <EntityChip type="routine" />
             <span className="ml-2 flex-1">New Routine</span>
           </CommandItem>
         </CommandGroup>
@@ -507,9 +506,8 @@ export function CommandPalette() {
             <CommandSeparator />
             <CommandGroup heading="Agent Operations">
               {activeRunsByAgent.map((run) => (
-                <>
+                <Fragment key={run.id}>
                   <CommandItem
-                    key={`cancel-${run.id}`}
                     onSelect={() =>
                       runAction(`cancel-run-${run.id}`, `Cancel run — ${run.agentName}`, () =>
                         cancelRunMutation.mutate(run.id),
@@ -520,7 +518,6 @@ export function CommandPalette() {
                     <span className="flex-1 truncate">Cancel run &mdash; {run.agentName}</span>
                   </CommandItem>
                   <CommandItem
-                    key={`pause-${run.agentId}`}
                     onSelect={() =>
                       runAction(`pause-agent-${run.agentId}`, `Pause agent — ${run.agentName}`, () =>
                         pauseAgentMutation.mutate(run.agentId),
@@ -530,7 +527,7 @@ export function CommandPalette() {
                     <PauseCircle className="mr-2 h-4 w-4 text-muted-foreground" />
                     <span className="flex-1 truncate">Pause agent &mdash; {run.agentName}</span>
                   </CommandItem>
-                </>
+                </Fragment>
               ))}
             </CommandGroup>
           </>
@@ -544,9 +541,8 @@ export function CommandPalette() {
                 const payload = approval.payload as Record<string, unknown> | null;
                 const subject = approvalSubject(payload) ?? typeLabel[approval.type] ?? approval.type;
                 return (
-                  <>
+                  <Fragment key={approval.id}>
                     <CommandItem
-                      key={`approve-${approval.id}`}
                       onSelect={() =>
                         runAction(`approve-${approval.id}`, `Approve — ${subject}`, () =>
                           approveApprovalMutation.mutate(approval.id),
@@ -557,7 +553,6 @@ export function CommandPalette() {
                       <span className="flex-1 truncate">Approve &mdash; {subject}</span>
                     </CommandItem>
                     <CommandItem
-                      key={`reject-${approval.id}`}
                       onSelect={() =>
                         runAction(`reject-${approval.id}`, `Reject — ${subject}`, () =>
                           rejectApprovalMutation.mutate(approval.id),
@@ -567,7 +562,7 @@ export function CommandPalette() {
                       <XCircle className="mr-2 h-4 w-4 text-destructive/70" />
                       <span className="flex-1 truncate">Reject &mdash; {subject}</span>
                     </CommandItem>
-                  </>
+                  </Fragment>
                 );
               })}
             </CommandGroup>
