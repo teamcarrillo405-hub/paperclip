@@ -67,8 +67,8 @@ export function Approvals() {
   });
 
   const requestRevisionMutation = useMutation({
-    mutationFn: ({ id, note }: { id: string; note: string }) =>
-      approvalsApi.requestRevision(id, note),
+    mutationFn: ({ id, decisionNote }: { id: string; decisionNote: string }) =>
+      approvalsApi.requestRevision(id, decisionNote),
     onSuccess: () => {
       setActionError(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
@@ -274,7 +274,7 @@ export function Approvals() {
                   requesterAgent={approval.requestedByAgentId ? (agents ?? []).find((a) => a.id === approval.requestedByAgentId) ?? null : null}
                   onApprove={() => approveMutation.mutate(approval.id)}
                   onReject={() => rejectMutation.mutate(approval.id)}
-                  onRequestRevision={(note) => requestRevisionMutation.mutate({ id: approval.id, note })}
+                  onRequestRevision={(decisionNote) => requestRevisionMutation.mutate({ id: approval.id, decisionNote })}
                   detailLink={`/approvals/${approval.id}`}
                   isPending={approveMutation.isPending || rejectMutation.isPending || requestRevisionMutation.isPending || isBulkOperating}
                   pendingAction={
