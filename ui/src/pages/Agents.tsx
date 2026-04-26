@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "@/lib/router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
+import { costsApi } from "../api/costs";
 import { heartbeatsApi } from "../api/heartbeats";
 import { useCompany } from "../context/CompanyContext";
 import { useDialog } from "../context/DialogContext";
@@ -13,16 +14,19 @@ import { agentStatusDot, agentStatusDotDefault } from "../lib/status-colors";
 import { EntityRow } from "../components/EntityRow";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
-import { relativeTime, cn, agentRouteRef, agentUrl } from "../lib/utils";
+import { relativeTime, cn, agentRouteRef, agentUrl, formatCents } from "../lib/utils";
 import { PageTabBar } from "../components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Bot, Plus, List, GitBranch, SlidersHorizontal } from "lucide-react";
+import { Bot, Plus, List, GitBranch, SlidersHorizontal, Search, ChevronUp, Download } from "lucide-react";
 import { AGENT_ROLE_LABELS, type Agent } from "@paperclipai/shared";
 
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
 
 const roleLabels = AGENT_ROLE_LABELS as Record<string, string>;
+
+type SortCol = "name" | "status" | "lastActive" | "cost";
+type SortDir = "asc" | "desc";
 
 type FilterTab = "all" | "active" | "paused" | "error";
 
@@ -67,6 +71,9 @@ export function Agents() {
   const effectiveView: "list" | "org" = forceListView ? "list" : view;
   const [showTerminated, setShowTerminated] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sort, setSort] = useState<{ col: SortCol; dir: SortDir } | null>(null);
 
   const { data: agents, isLoading, error } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
@@ -87,7 +94,31 @@ export function Agents() {
     refetchInterval: 15_000,
   });
 
-  // Map agentId -> first live run + live run count
+  const mtdFrom = useMemo(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
+  }, []);
+
+  const { data: costByAgentData } = useQuery({
+    queryKey: [...queryKeys.costs(selectedCompanyId!, mtdFrom), "by-agent"],
+    queryFn: () => costsApi.byAgent(selectedCompanyId!, mtdFrom),
+    enabled: !!selectedCompanyId,
+  });
+
+  const costByAgentId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const row of costByAgentData ?? []) map.set(row.agentId, row.costCents);
+    return map;
+  }, [costByAgentData]);
+
+  const pauseMutation = useMutation({
+    mutationFn: (id: string) => agentsApi.pause(id, selectedCompanyId ?? undefined),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => agentsApi.remove(id, selectedCompanyId ?? undefined),
+  });
+
   const liveRunByAgent = useMemo(() => {
     const map = new Map<string, { runId: string; liveCount: number }>();
     for (const r of runs ?? []) {
@@ -108,6 +139,14 @@ export function Agents() {
     return map;
   }, [agents]);
 
+  const handleSort = useCallback((col: SortCol) => {
+    setSort((prev) =>
+      prev?.col === col
+        ? prev.dir === "asc" ? { col, dir: "desc" as SortDir } : null
+        : { col, dir: "asc" as SortDir }
+    );
+  }, []);
+
   useEffect(() => {
     setBreadcrumbs([{ label: "Agents" }]);
   }, [setBreadcrumbs]);
@@ -122,6 +161,100 @@ export function Agents() {
 
   const filtered = filterAgents(agents ?? [], tab, showTerminated);
   const filteredOrg = filterOrgTree(orgTree ?? [], tab, showTerminated);
+
+  const searchTrimmed = search.trim().toLowerCase();
+  const searchFiltered = searchTrimmed
+    ? filtered.filter((a) =>
+        a.name.toLowerCase().includes(searchTrimmed) ||
+        (a.role ?? "").toLowerCase().includes(searchTrimmed) ||
+        (a.adapterType ?? "").toLowerCase().includes(searchTrimmed) ||
+        (a.status ?? "").toLowerCase().includes(searchTrimmed)
+      )
+    : filtered;
+
+  const sortedAgents = sort
+    ? [...searchFiltered].sort((a, b) => {
+        const dir = sort.dir === "asc" ? 1 : -1;
+        if (sort.col === "name") return a.name.localeCompare(b.name) * dir;
+        if (sort.col === "status") return (a.status ?? "").localeCompare(b.status ?? "") * dir;
+        if (sort.col === "lastActive") {
+          const ta = a.lastHeartbeatAt ? new Date(a.lastHeartbeatAt).getTime() : 0;
+          const tb = b.lastHeartbeatAt ? new Date(b.lastHeartbeatAt).getTime() : 0;
+          return (ta - tb) * dir;
+        }
+        if (sort.col === "cost") {
+          return ((costByAgentId.get(a.id) ?? 0) - (costByAgentId.get(b.id) ?? 0)) * dir;
+        }
+        return 0;
+      })
+    : searchFiltered;
+
+  const allVisibleIds = sortedAgents.map((a) => a.id);
+  const allSelected = allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedIds.has(id));
+  const someSelected = selectedIds.size > 0;
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(allVisibleIds));
+    }
+  }
+
+  async function handleBulkPause() {
+    for (const id of selectedIds) {
+      await pauseMutation.mutateAsync(id);
+    }
+    setSelectedIds(new Set());
+  }
+
+  async function handleBulkDelete() {
+    const confirmed = window.confirm(
+      `Delete ${selectedIds.size} agent${selectedIds.size !== 1 ? "s" : ""}? This action cannot be undone.`,
+    );
+    if (!confirmed) return;
+    for (const id of selectedIds) {
+      await deleteMutation.mutateAsync(id);
+    }
+    setSelectedIds(new Set());
+  }
+
+  function handleExportCsv() {
+    const rows = [
+      ["Name", "Role", "Status", "Adapter", "MTD Cost ($)", "Last Active"].join(","),
+      ...sortedAgents
+        .filter((a) => selectedIds.has(a.id))
+        .map((a) =>
+          [
+            JSON.stringify(a.name),
+            JSON.stringify(a.role ?? ""),
+            a.status ?? "",
+            a.adapterType ?? "",
+            ((costByAgentId.get(a.id) ?? 0) / 100).toFixed(2),
+            a.lastHeartbeatAt ? new Date(a.lastHeartbeatAt).toISOString() : "",
+          ].join(",")
+        ),
+    ].join("\n");
+    const blob = new Blob([rows], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "agents.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="space-y-4">
@@ -139,7 +272,19 @@ export function Agents() {
           />
         </Tabs>
         <div className="flex items-center gap-2">
-          {/* Filters */}
+          <div className="relative flex items-center">
+            <Search className="pointer-events-none absolute left-2 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search agents..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={cn(
+                "h-7 w-44 rounded-none border border-border bg-background pl-7 pr-2 text-xs text-foreground placeholder:text-muted-foreground",
+                "focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-colors",
+              )}
+            />
+          </div>
           <div className="relative">
             <button
               className={cn(
@@ -169,7 +314,6 @@ export function Agents() {
               </div>
             )}
           </div>
-          {/* View toggle */}
           {!forceListView && (
             <div className="flex items-center border border-border">
               <button
@@ -199,8 +343,8 @@ export function Agents() {
         </div>
       </div>
 
-      {filtered.length > 0 && (
-        <p className="text-xs text-muted-foreground">{filtered.length} agent{filtered.length !== 1 ? "s" : ""}</p>
+      {sortedAgents.length > 0 && (
+        <p className="text-xs text-muted-foreground">{sortedAgents.length} agent{sortedAgents.length !== 1 ? "s" : ""}</p>
       )}
 
       {error && <p className="text-sm text-destructive">{error.message}</p>}
@@ -214,70 +358,116 @@ export function Agents() {
         />
       )}
 
-      {/* List view */}
-      {effectiveView === "list" && filtered.length > 0 && (
+      {effectiveView === "list" && sortedAgents.length > 0 && (
         <div className="border border-border">
-          {filtered.map((agent) => {
+          <div className="flex items-center gap-3 border-b border-border/60 px-3 py-1.5 bg-muted/20">
+            <button
+              type="button"
+              aria-label="Select all agents"
+              onClick={toggleSelectAll}
+              className={cn(
+                "flex h-4 w-4 shrink-0 items-center justify-center border border-border rounded-sm transition-colors",
+                allSelected ? "bg-foreground border-foreground" : "hover:border-foreground/50",
+              )}
+            >
+              {allSelected && (
+                <svg className="h-2.5 w-2.5 text-background" viewBox="0 0 10 10" fill="none">
+                  <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+              {!allSelected && someSelected && allVisibleIds.some((id) => selectedIds.has(id)) && (
+                <span className="h-1.5 w-1.5 rounded-sm bg-foreground/60" />
+              )}
+            </button>
+            <SortHeader col="name" label="Name" sort={sort} onSort={handleSort} className="flex-1" />
+            <div className="hidden sm:flex items-center gap-3">
+              <SortHeader col="status" label="Status" sort={sort} onSort={handleSort} className="w-20 justify-end" />
+              <SortHeader col="cost" label="MTD Cost" sort={sort} onSort={handleSort} className="w-20 justify-end" />
+              <SortHeader col="lastActive" label="Last Active" sort={sort} onSort={handleSort} className="w-28 justify-end" />
+              <span className="w-20" />
+            </div>
+          </div>
+          {sortedAgents.map((agent) => {
+            const isSelected = selectedIds.has(agent.id);
             return (
-              <EntityRow
-                key={agent.id}
-                title={agent.name}
-                subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
-                to={agentUrl(agent)}
-                className={agent.pausedAt && tab !== "paused" ? "opacity-50" : ""}
-                leading={
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span
-                      className={`absolute inline-flex h-full w-full rounded-full ${agentStatusDot[agent.status] ?? agentStatusDotDefault}`}
-                    />
-                  </span>
-                }
-                trailing={
-                  <div className="flex items-center gap-3">
-                    <span className="sm:hidden">
-                      {liveRunByAgent.has(agent.id) ? (
-                        <LiveRunIndicator
-                          agentRef={agentRouteRef(agent)}
-                          runId={liveRunByAgent.get(agent.id)!.runId}
-                          liveCount={liveRunByAgent.get(agent.id)!.liveCount}
+              <div key={agent.id} className="flex items-center">
+                <button
+                  type="button"
+                  aria-label={`Select ${agent.name}`}
+                  onClick={() => toggleSelect(agent.id)}
+                  className="ml-3 flex h-4 w-4 shrink-0 items-center justify-center border border-border rounded-sm transition-colors hover:border-foreground/50"
+                >
+                  {isSelected && (
+                    <svg className="h-2.5 w-2.5 text-foreground" viewBox="0 0 10 10" fill="none">
+                      <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <EntityRow
+                    title={agent.name}
+                    subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
+                    to={agentUrl(agent)}
+                    className={agent.pausedAt && tab !== "paused" ? "opacity-50" : ""}
+                    leading={
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span
+                          className={`absolute inline-flex h-full w-full rounded-full ${agentStatusDot[agent.status] ?? agentStatusDotDefault}`}
                         />
-                      ) : (
-                        <StatusBadge status={agent.status} />
-                      )}
-                    </span>
-                    <div className="hidden sm:flex items-center gap-3">
-                      {liveRunByAgent.has(agent.id) && (
-                        <LiveRunIndicator
-                          agentRef={agentRouteRef(agent)}
-                          runId={liveRunByAgent.get(agent.id)!.runId}
-                          liveCount={liveRunByAgent.get(agent.id)!.liveCount}
-                        />
-                      )}
-                      <span className="w-28 whitespace-nowrap text-right font-mono text-xs text-muted-foreground">
-                        {getAdapterLabel(agent.adapterType)}
                       </span>
-                      <span className="text-xs text-muted-foreground w-16 text-right">
-                        {agent.lastHeartbeatAt ? relativeTime(agent.lastHeartbeatAt) : "—"}
-                      </span>
-                      <span className="w-20 flex justify-end">
-                        <StatusBadge status={agent.status} />
-                      </span>
-                    </div>
-                  </div>
-                }
-              />
+                    }
+                    trailing={
+                      <div className="flex items-center gap-3">
+                        <span className="sm:hidden">
+                          {liveRunByAgent.has(agent.id) ? (
+                            <LiveRunIndicator
+                              agentRef={agentRouteRef(agent)}
+                              runId={liveRunByAgent.get(agent.id)!.runId}
+                              liveCount={liveRunByAgent.get(agent.id)!.liveCount}
+                            />
+                          ) : (
+                            <StatusBadge status={agent.status} />
+                          )}
+                        </span>
+                        <div className="hidden sm:flex items-center gap-3">
+                          {liveRunByAgent.has(agent.id) && (
+                            <LiveRunIndicator
+                              agentRef={agentRouteRef(agent)}
+                              runId={liveRunByAgent.get(agent.id)!.runId}
+                              liveCount={liveRunByAgent.get(agent.id)!.liveCount}
+                            />
+                          )}
+                          <span className="w-20 whitespace-nowrap text-right font-mono text-xs text-muted-foreground" title="Cost this month">
+                            {costByAgentId.has(agent.id) && costByAgentId.get(agent.id)! > 0
+                              ? formatCents(costByAgentId.get(agent.id)!)
+                              : <span className="text-muted-foreground/40">&mdash;</span>}
+                          </span>
+                          <span className="w-28 whitespace-nowrap text-right font-mono text-xs text-muted-foreground">
+                            {getAdapterLabel(agent.adapterType)}
+                          </span>
+                          <span className="text-xs text-muted-foreground w-16 text-right">
+                            {agent.lastHeartbeatAt ? relativeTime(agent.lastHeartbeatAt) : "\u2014"}
+                          </span>
+                          <span className="w-20 flex justify-end">
+                            <StatusBadge status={agent.status} />
+                          </span>
+                        </div>
+                      </div>
+                    }
+                  />
+                </div>
+              </div>
             );
           })}
         </div>
       )}
 
-      {effectiveView === "list" && agents && agents.length > 0 && filtered.length === 0 && (
+      {effectiveView === "list" && agents && agents.length > 0 && sortedAgents.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-8">
-          No agents match the selected filter.
+          {searchTrimmed ? "No agents match your search." : "No agents match the selected filter."}
         </p>
       )}
 
-      {/* Org chart view */}
       {effectiveView === "org" && filteredOrg.length > 0 && (
         <div className="border border-border py-1">
           {filteredOrg.map((node) => (
@@ -297,7 +487,80 @@ export function Agents() {
           No organizational hierarchy defined.
         </p>
       )}
+
+      {someSelected && (
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+          <div className="flex items-center gap-3 rounded-none border border-border bg-popover px-4 py-2.5 shadow-xl">
+            <span className="text-xs font-medium text-foreground">
+              {selectedIds.size} selected
+            </span>
+            <div className="h-4 w-px bg-border" />
+            <button
+              type="button"
+              onClick={handleBulkPause}
+              disabled={pauseMutation.isPending}
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+            >
+              Pause All
+            </button>
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Download className="h-3 w-3" />
+              Export CSV
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkDelete}
+              disabled={deleteMutation.isPending}
+              className="text-xs text-destructive transition-colors hover:text-destructive/70 disabled:opacity-50"
+            >
+              Delete All
+            </button>
+            <div className="h-4 w-px bg-border" />
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Deselect All
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function SortHeader({ col, label, sort, onSort, className }: {
+  col: SortCol;
+  label: string;
+  sort: { col: SortCol; dir: SortDir } | null;
+  onSort: (col: SortCol) => void;
+  className?: string;
+}) {
+  const active = sort?.col === col;
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(col)}
+      className={cn(
+        "flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer",
+        active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+        className,
+      )}
+    >
+      {label}
+      <ChevronUp
+        className={cn(
+          "h-3 w-3 transition-transform",
+          active && sort?.dir === "desc" && "rotate-180",
+          !active && "opacity-0",
+        )}
+      />
+    </button>
   );
 }
 
@@ -315,7 +578,6 @@ function OrgTreeNode({
   tab: FilterTab;
 }) {
   const agent = agentMap.get(node.id);
-
   const statusColor = agentStatusDot[node.status] ?? agentStatusDotDefault;
 
   return (
@@ -360,7 +622,7 @@ function OrgTreeNode({
                   {getAdapterLabel(agent.adapterType)}
                 </span>
                 <span className="text-xs text-muted-foreground w-16 text-right">
-                  {agent.lastHeartbeatAt ? relativeTime(agent.lastHeartbeatAt) : "—"}
+                  {agent.lastHeartbeatAt ? relativeTime(agent.lastHeartbeatAt) : "\u2014"}
                 </span>
               </>
             )}
