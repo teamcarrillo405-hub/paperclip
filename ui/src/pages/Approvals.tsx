@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { approvalsApi } from "../api/approvals";
@@ -24,6 +24,8 @@ export function Approvals() {
   const pathSegment = location.pathname.split("/").pop() ?? "pending";
   const statusFilter: StatusFilter = pathSegment === "all" ? "all" : "pending";
   const [actionError, setActionError] = useState<string | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const [isBulkOperating, setIsBulkOperating] = useState(false);
 
   useEffect(() => {
     setBreadcrumbs([{ label: "Approvals" }]);
@@ -64,15 +66,106 @@ export function Approvals() {
     },
   });
 
+  const requestRevisionMutation = useMutation({
+    mutationFn: ({ id, note }: { id: string; note: string }) =>
+      approvalsApi.requestRevision(id, note),
+    onSuccess: () => {
+      setActionError(null);
+      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+    },
+    onError: (err) => {
+      setActionError(err instanceof Error ? err.message : "Failed to request revision");
+    },
+  });
+
   const filtered = (data ?? [])
     .filter(
       (a) => statusFilter === "all" || a.status === "pending" || a.status === "revision_requested",
     )
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  const pendingCount = (data ?? []).filter(
+  const pendingItems = (data ?? []).filter(
     (a) => a.status === "pending" || a.status === "revision_requested",
-  ).length;
+  );
+  const pendingCount = pendingItems.length;
+
+  // J/K keyboard navigation + A/R approve/reject shortcuts
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      // Skip if user is typing in an input/textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+
+      if (e.key === "j" || e.key === "J") {
+        e.preventDefault();
+        setFocusedIndex((prev) => {
+          if (filtered.length === 0) return null;
+          if (prev === null) return 0;
+          return Math.min(prev + 1, filtered.length - 1);
+        });
+      } else if (e.key === "k" || e.key === "K") {
+        e.preventDefault();
+        setFocusedIndex((prev) => {
+          if (filtered.length === 0) return null;
+          if (prev === null) return filtered.length - 1;
+          return Math.max(prev - 1, 0);
+        });
+      } else if ((e.key === "a" || e.key === "A") && focusedIndex !== null) {
+        const item = filtered[focusedIndex];
+        if (item && (item.status === "pending" || item.status === "revision_requested")) {
+          e.preventDefault();
+          approveMutation.mutate(item.id);
+        }
+      } else if ((e.key === "r" || e.key === "R") && focusedIndex !== null) {
+        const item = filtered[focusedIndex];
+        if (item && (item.status === "pending" || item.status === "revision_requested")) {
+          e.preventDefault();
+          rejectMutation.mutate(item.id);
+        }
+      }
+    },
+    [filtered, focusedIndex, approveMutation, rejectMutation],
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Reset focused index when filter changes or data reloads
+  useEffect(() => {
+    setFocusedIndex(null);
+  }, [statusFilter]);
+
+  async function handleBulkApprove() {
+    setIsBulkOperating(true);
+    setActionError(null);
+    try {
+      for (const item of pendingItems) {
+        await approvalsApi.approve(item.id);
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Bulk approve failed");
+    } finally {
+      setIsBulkOperating(false);
+    }
+  }
+
+  async function handleBulkReject() {
+    setIsBulkOperating(true);
+    setActionError(null);
+    try {
+      for (const item of pendingItems) {
+        await approvalsApi.reject(item.id);
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Bulk reject failed");
+    } finally {
+      setIsBulkOperating(false);
+    }
+  }
 
   if (!selectedCompanyId) {
     return <p className="text-sm text-muted-foreground">Select a company first.</p>;
@@ -84,7 +177,7 @@ export function Approvals() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <Tabs value={statusFilter} onValueChange={(v) => navigate(`/approvals/${v}`)}>
           <PageTabBar items={[
             { value: "pending", label: <>Pending{pendingCount > 0 && (
@@ -98,6 +191,57 @@ export function Approvals() {
             { value: "all", label: "All" },
           ]} />
         </Tabs>
+
+        {/* Bulk approve/reject — only on Pending tab */}
+        {statusFilter === "pending" && pendingCount > 0 && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={isBulkOperating}
+              onClick={handleBulkApprove}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium border border-green-700/40 text-green-700 dark:text-green-400",
+                "bg-green-700/5 hover:bg-green-700/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+              )}
+            >
+              {isBulkOperating ? "Working..." : "Approve All"}
+            </button>
+            <button
+              type="button"
+              disabled={isBulkOperating}
+              onClick={handleBulkReject}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium border border-destructive/40 text-destructive",
+                "bg-destructive/5 hover:bg-destructive/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+              )}
+            >
+              {isBulkOperating ? "Working..." : "Reject All"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Keyboard shortcut legend */}
+      <div className="flex items-center gap-3 flex-wrap">
+        {[
+          { keys: ["J", "K"], label: "navigate" },
+          { keys: ["A"], label: "approve" },
+          { keys: ["R"], label: "reject" },
+        ].map(({ keys, label }) => (
+          <span key={label} className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
+            <span className="flex items-center gap-0.5">
+              {keys.map((k) => (
+                <kbd
+                  key={k}
+                  className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-border bg-muted px-1 text-[10px] font-mono font-semibold text-foreground/70 shadow-sm"
+                >
+                  {k}
+                </kbd>
+              ))}
+            </span>
+            <span>{label}</span>
+          </span>
+        ))}
       </div>
 
       {error && <p className="text-sm text-destructive">{error.message}</p>}
@@ -114,20 +258,32 @@ export function Approvals() {
 
       {filtered.length > 0 && (
         <div className="grid gap-3">
-          {filtered.map((approval) => (
-            <ApprovalCard
-              key={approval.id}
-              approval={approval}
-              requesterAgent={approval.requestedByAgentId ? (agents ?? []).find((a) => a.id === approval.requestedByAgentId) ?? null : null}
-              onApprove={() => approveMutation.mutate(approval.id)}
-              onReject={() => rejectMutation.mutate(approval.id)}
-              detailLink={`/approvals/${approval.id}`}
-              isPending={approveMutation.isPending || rejectMutation.isPending}
-              pendingAction={
-                approveMutation.isPending ? "approve" : rejectMutation.isPending ? "reject" : null
-              }
-            />
-          ))}
+          {filtered.map((approval, idx) => {
+            const isFocused = focusedIndex === idx;
+            return (
+              <div
+                key={approval.id}
+                className={cn(
+                  "rounded-xl transition-shadow",
+                  isFocused && "ring-2 ring-ring ring-offset-1 ring-offset-background",
+                )}
+                onClick={() => setFocusedIndex(idx)}
+              >
+                <ApprovalCard
+                  approval={approval}
+                  requesterAgent={approval.requestedByAgentId ? (agents ?? []).find((a) => a.id === approval.requestedByAgentId) ?? null : null}
+                  onApprove={() => approveMutation.mutate(approval.id)}
+                  onReject={() => rejectMutation.mutate(approval.id)}
+                  onRequestRevision={(note) => requestRevisionMutation.mutate({ id: approval.id, note })}
+                  detailLink={`/approvals/${approval.id}`}
+                  isPending={approveMutation.isPending || rejectMutation.isPending || requestRevisionMutation.isPending || isBulkOperating}
+                  pendingAction={
+                    approveMutation.isPending ? "approve" : rejectMutation.isPending ? "reject" : null
+                  }
+                />
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
