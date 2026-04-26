@@ -239,7 +239,7 @@ export function Agents() {
         .map((a) =>
           [
             JSON.stringify(a.name),
-            JSON.stringify(a.role ?? ""),
+            JSON.stringify(roleLabels[a.role] ?? a.role ?? ""),
             a.status ?? "",
             a.adapterType ?? "",
             ((costByAgentId.get(a.id) ?? 0) / 100).toFixed(2),
@@ -381,10 +381,10 @@ export function Agents() {
             </button>
             <SortHeader col="name" label="Name" sort={sort} onSort={handleSort} className="flex-1" />
             <div className="hidden sm:flex items-center gap-3">
-              <SortHeader col="status" label="Status" sort={sort} onSort={handleSort} className="w-20 justify-end" />
               <SortHeader col="cost" label="MTD Cost" sort={sort} onSort={handleSort} className="w-20 justify-end" />
-              <SortHeader col="lastActive" label="Last Active" sort={sort} onSort={handleSort} className="w-28 justify-end" />
-              <span className="w-20" />
+              <span className="w-28 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Adapter</span>
+              <SortHeader col="lastActive" label="Last Active" sort={sort} onSort={handleSort} className="w-16 justify-end" />
+              <SortHeader col="status" label="Status" sort={sort} onSort={handleSort} className="w-20 justify-end" />
             </div>
           </div>
           {sortedAgents.map((agent) => {
