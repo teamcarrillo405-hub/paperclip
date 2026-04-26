@@ -43,7 +43,6 @@ import {
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
 import { resolveRouteOnboardingOptions } from "../lib/onboarding-route";
-import { AsciiArtAnimation } from "./AsciiArtAnimation";
 import {
   Building2,
   Bot,
@@ -58,8 +57,20 @@ import {
 } from "lucide-react";
 
 
+const STARTER_TEMPLATES = [
+  { id: "competitor", label: "Research competitor pricing", description: "Analyze top 5 competitors and summarize their pricing tiers, positioning, and feature gaps." },
+  { id: "hiring",     label: "Write a hiring plan",         description: "Draft a detailed hiring plan with roles, interview process, timelines, and compensation bands." },
+  { id: "api-spec",   label: "Build an API spec",           description: "Generate a complete OpenAPI 3.0 spec for a REST API given a product description." },
+  { id: "content",    label: "Plan content calendar",       description: "Create a 4-week content calendar covering blog posts, social media, and newsletter topics." },
+] as const;
+
 type Step = 1 | 2 | 3 | 4;
 type AdapterType = string;
+
+// Detect platform once at module load — no re-render needed
+const isMac =
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPod|iPad/.test(navigator.platform);
 
 const DEFAULT_TASK_DESCRIPTION = `You are the CEO. You set the direction for the company.
 
@@ -120,7 +131,7 @@ export function OnboardingWizard() {
   const [forceUnsetAnthropicApiKey, setForceUnsetAnthropicApiKey] =
     useState(false);
   const [unsetAnthropicLoading, setUnsetAnthropicLoading] = useState(false);
-  const [showMoreAdapters, setShowMoreAdapters] = useState(false);
+  const [showMoreAdapters, setShowMoreAdapters] = useState(true);
 
   // Step 3
   const [taskTitle, setTaskTitle] = useState(
@@ -614,6 +625,20 @@ export function OnboardingWizard() {
 
   if (!effectiveOnboardingOpen) return null;
 
+  const STEPS = [
+    { step: 1 as Step, label: "Company", icon: Building2 },
+    { step: 2 as Step, label: "Agent", icon: Bot },
+    { step: 3 as Step, label: "Task", icon: ListTodo },
+    { step: 4 as Step, label: "Launch", icon: Rocket },
+  ] as const;
+
+  const stepHeadings: Record<Step, string> = {
+    1: "Name Your Company",
+    2: "Create Your First Agent",
+    3: "Give It Something to Do",
+    4: "Ready to Launch",
+  };
+
   return (
     <Dialog
       open={effectiveOnboardingOpen}
@@ -630,33 +655,121 @@ export function OnboardingWizard() {
             scroll container. A plain div preserves the background without scroll-locking. */}
         <div className="fixed inset-0 z-50 bg-background" />
         <div className="fixed inset-0 z-50 flex" onKeyDown={handleKeyDown}>
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            className="absolute top-4 left-4 z-10 rounded-sm p-1.5 text-muted-foreground/60 hover:text-foreground transition-colors"
-          >
-            <X className="h-5 w-5" />
-            <span className="sr-only">Close</span>
-          </button>
 
-          {/* Left half — form */}
-          <div
-            className={cn(
-              "w-full flex flex-col overflow-y-auto transition-[width] duration-500 ease-in-out",
-              step === 1 ? "md:w-1/2" : "md:w-full"
-            )}
-          >
+          {/* LEFT — HCC brand panel, desktop only */}
+          <div className="hidden md:flex md:w-[38%] flex-col bg-[#0B1220] relative overflow-hidden shrink-0">
+            {/* Gold accent bar at top */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-[#2F80FF]" />
+
+            {/* Logo + tagline */}
+            <div className="flex flex-col items-center pt-16 pb-8 px-8">
+              {/* AVERO logo */}
+              <div className="mb-6">
+                <img src="/branding/logo.svg" alt="AVERO" className="h-24 w-auto max-w-[360px]" />
+              </div>
+              <p className="text-white/40 text-[10px] tracking-[0.3em] uppercase mb-8">
+                We Build AI That Moves Your Business Forward
+              </p>
+            </div>
+
+            {/* Divider */}
+            <div className="mx-8 border-t border-white/10 mb-8" />
+
+            {/* Step progress — vertical stepper */}
+            <div className="flex flex-col px-10 gap-0 flex-1">
+              {STEPS.map(({ step: s, label }, idx) => {
+                const isDone = s < step;
+                const isActive = s === step;
+                return (
+                  <div key={s} className="flex items-start gap-4">
+                    {/* Circle + connector column */}
+                    <div className="flex flex-col items-center" style={{ width: 32 }}>
+                      <button
+                        onClick={() => isDone ? setStep(s) : undefined}
+                        className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all border-2",
+                          isDone
+                            ? "border-[#2F80FF] bg-[#2F80FF]/20 text-[#2F80FF] cursor-pointer hover:bg-[#2F80FF]/30"
+                            : isActive
+                            ? "border-[#2F80FF] bg-[#2F80FF] text-white cursor-default shadow-[0_0_0_4px_rgba(47,128,255,0.15)]"
+                            : "border-zinc-700 bg-transparent text-zinc-600 cursor-default"
+                        )}
+                        tabIndex={isDone ? 0 : -1}
+                        aria-label={`Go to step ${s}: ${label}`}
+                      >
+                        {isDone
+                          ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                          : <span>{s}</span>
+                        }
+                      </button>
+                      {idx < STEPS.length - 1 && (
+                        <div
+                          className="mt-1 mb-1 transition-all duration-300"
+                          style={{
+                            width: 2,
+                            height: 32,
+                            background: isDone
+                              ? "linear-gradient(to bottom, rgba(47,128,255,0.7), rgba(47,128,255,0.4))"
+                              : "repeating-linear-gradient(to bottom, #27303f 0px, #27303f 4px, transparent 4px, transparent 8px)"
+                          }}
+                        />
+                      )}
+                    </div>
+
+                    {/* Step label column */}
+                    <div className="pt-1.5 pb-1 flex flex-col gap-0.5">
+                      <p
+                        className={cn(
+                          "text-sm font-semibold leading-none transition-colors",
+                          isActive
+                            ? "text-white"
+                            : isDone
+                            ? "text-[#2F80FF]"
+                            : "text-zinc-600"
+                        )}
+                        style={isActive ? { fontFamily: "'Sora', sans-serif", letterSpacing: "0.03em" } : {}}
+                      >
+                        {label}
+                      </p>
+                      {isActive && (
+                        <p className="text-[10px] text-[#2F80FF] uppercase tracking-[0.18em] font-medium leading-none mt-0.5">
+                          In progress
+                        </p>
+                      )}
+                      {isDone && (
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-[0.18em] font-medium leading-none mt-0.5">
+                          Complete
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bottom wordmark */}
+            <div className="px-8 py-6 mt-auto">
+              <p className="text-zinc-600 text-[9px] tracking-[0.2em] uppercase text-center">
+                averoai.com
+              </p>
+            </div>
+          </div>
+
+          {/* RIGHT — form */}
+          <div className="flex-1 flex flex-col overflow-y-auto relative bg-white">
+            {/* Close button */}
+            <button
+              onClick={handleClose}
+              className="absolute top-4 right-4 z-10 rounded-sm p-1.5 text-zinc-400 hover:text-zinc-600 transition-colors"
+            >
+              <X className="h-5 w-5" />
+              <span className="sr-only">Close</span>
+            </button>
+
             <div className="w-full max-w-md mx-auto my-auto px-8 py-12 shrink-0">
-              {/* Progress tabs */}
-              <div className="flex items-center gap-0 mb-8 border-b border-border">
-                {(
-                  [
-                    { step: 1 as Step, label: "Company", icon: Building2 },
-                    { step: 2 as Step, label: "Agent", icon: Bot },
-                    { step: 3 as Step, label: "Task", icon: ListTodo },
-                    { step: 4 as Step, label: "Launch", icon: Rocket }
-                  ] as const
-                ).map(({ step: s, label, icon: Icon }) => (
+              {/* Mobile-only step tabs */}
+              <div className="flex items-center gap-0 mb-8 border-b border-border md:hidden">
+                {STEPS.map(({ step: s, label, icon: Icon }) => (
                   <button
                     key={s}
                     type="button"
@@ -664,7 +777,7 @@ export function OnboardingWizard() {
                     className={cn(
                       "flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 -mb-px transition-colors cursor-pointer",
                       s === step
-                        ? "border-foreground text-foreground"
+                        ? "border-[#2F80FF] text-[#2F80FF]"
                         : "border-transparent text-muted-foreground hover:text-foreground/70 hover:border-border"
                     )}
                   >
@@ -674,52 +787,42 @@ export function OnboardingWizard() {
                 ))}
               </div>
 
+              {/* Step heading + content — keyed so React remounts on step change, triggering enter animation */}
+              <div key={`wizard-step-${step}`} className="wizard-step-enter">
+
+              <div className="mb-7">
+                <p className="text-[#2F80FF] text-xs font-semibold tracking-[0.25em] uppercase mb-3">
+                  Step {step} of 4
+                  <span className="text-[11px] text-muted-foreground/60 ml-2 normal-case tracking-normal font-normal">
+                    ~2 min · {4 - step} step{4 - step !== 1 ? "s" : ""} remaining
+                  </span>
+                </p>
+                <h2
+                  className="text-4xl font-bold text-zinc-900 leading-tight"
+                  style={{ fontFamily: "'Sora', sans-serif" }}
+                >
+                  {stepHeadings[step]}
+                </h2>
+              </div>
+
               {/* Step content */}
               {step === 1 && (
                 <div className="space-y-5">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="bg-muted/50 p-2">
-                      <Building2 className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Name your company</h3>
-                      <p className="text-xs text-muted-foreground">
-                        This is the organization your agents will work for.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-3 group">
-                    <label
-                      className={cn(
-                        "text-xs mb-1 block transition-colors",
-                        companyName.trim()
-                          ? "text-foreground"
-                          : "text-muted-foreground group-focus-within:text-foreground"
-                      )}
-                    >
-                      Company name
-                    </label>
+                  <div className="mt-3">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                      className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:ring-2 focus:ring-[#2F80FF] focus:border-[#2F80FF] placeholder:text-zinc-400"
                       placeholder="Acme Corp"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       autoFocus
                     />
                   </div>
-                  <div className="group">
-                    <label
-                      className={cn(
-                        "text-xs mb-1 block transition-colors",
-                        companyGoal.trim()
-                          ? "text-foreground"
-                          : "text-muted-foreground group-focus-within:text-foreground"
-                      )}
-                    >
-                      Mission / goal (optional)
+                  <div>
+                    <label className="text-base font-medium text-zinc-800 mb-2 block">
+                      Mission / goal <span className="font-normal text-zinc-400">(optional)</span>
                     </label>
                     <textarea
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[60px]"
+                      className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:ring-2 focus:ring-[#2F80FF] focus:border-[#2F80FF] placeholder:text-zinc-400 resize-none min-h-[80px]"
                       placeholder="What is this company trying to achieve?"
                       value={companyGoal}
                       onChange={(e) => setCompanyGoal(e.target.value)}
@@ -730,23 +833,12 @@ export function OnboardingWizard() {
 
               {step === 2 && (
                 <div className="space-y-5">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="bg-muted/50 p-2">
-                      <Bot className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Create your first agent</h3>
-                      <p className="text-xs text-muted-foreground">
-                        Choose how this agent will run tasks.
-                      </p>
-                    </div>
-                  </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
+                    <label className="text-base font-medium text-zinc-800 mb-2 block">
                       Agent name
                     </label>
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                      className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:ring-2 focus:ring-[#2F80FF] focus:border-[#2F80FF] placeholder:text-zinc-400"
                       placeholder="CEO"
                       value={agentName}
                       onChange={(e) => setAgentName(e.target.value)}
@@ -756,7 +848,7 @@ export function OnboardingWizard() {
 
                   {/* Adapter type radio cards */}
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">
+                    <label className="text-sm font-medium text-zinc-800 mb-2 block">
                       Adapter type
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -766,8 +858,8 @@ export function OnboardingWizard() {
                           className={cn(
                             "flex flex-col items-center gap-1.5 rounded-md border p-3 text-xs transition-colors relative",
                             adapterType === opt.type
-                              ? "border-foreground bg-accent"
-                              : "border-border hover:bg-accent/50"
+                              ? "border-[#2F80FF] bg-[#2F80FF]/10 text-[#2F80FF]"
+                              : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-zinc-400"
                           )}
                           onClick={() => {
                             const nextType = opt.type;
@@ -816,10 +908,10 @@ export function OnboardingWizard() {
                              className={cn(
                                "flex flex-col items-center gap-1.5 rounded-md border p-3 text-xs transition-colors relative",
                                opt.comingSoon
-                                 ? "border-border opacity-40 cursor-not-allowed"
+                                 ? "border-zinc-100 bg-zinc-50 opacity-40 cursor-not-allowed"
                                  : adapterType === opt.type
-                                 ? "border-foreground bg-accent"
-                                 : "border-border hover:bg-accent/50"
+                                 ? "border-[#2F80FF] bg-[#2F80FF]/10 text-[#2F80FF]"
+                                 : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-zinc-400"
                              )}
                              onClick={() => {
                                if (opt.comingSoon) return;
@@ -859,7 +951,7 @@ export function OnboardingWizard() {
                   {isLocalAdapter && (
                     <div className="space-y-3">
                       <div>
-                        <label className="text-xs text-muted-foreground mb-1 block">
+                        <label className="text-base font-medium text-zinc-800 mb-2 block">
                           Model
                         </label>
                         <Popover
@@ -870,7 +962,7 @@ export function OnboardingWizard() {
                           }}
                         >
                           <PopoverTrigger asChild>
-                            <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
+                            <button className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 hover:border-zinc-400 transition-colors w-full justify-between">
                               <span
                                 className={cn(
                                   !model && "text-muted-foreground"
@@ -1079,13 +1171,13 @@ export function OnboardingWizard() {
                   {(adapterType === "http" ||
                     adapterType === "openclaw_gateway") && (
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">
+                      <label className="text-base font-medium text-zinc-800 mb-2 block">
                         {adapterType === "openclaw_gateway"
                           ? "Gateway URL"
                           : "Webhook URL"}
                       </label>
                       <input
-                        className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm font-mono outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                        className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 font-mono outline-none focus:ring-2 focus:ring-[#2F80FF] focus:border-[#2F80FF] placeholder:text-zinc-400"
                         placeholder={
                           adapterType === "openclaw_gateway"
                             ? "ws://127.0.0.1:18789"
@@ -1096,29 +1188,28 @@ export function OnboardingWizard() {
                       />
                     </div>
                   )}
+
+                  {/* Agent Preview card — live updates as user types */}
+                  <AgentPreviewCard
+                    agentName={agentName}
+                    adapterType={adapterType}
+                    recommendedAdapters={recommendedAdapters}
+                    moreAdapters={moreAdapters}
+                  />
                 </div>
               )}
 
               {step === 3 && (
                 <div className="space-y-5">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="bg-muted/50 p-2">
-                      <ListTodo className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Give it something to do</h3>
-                      <p className="text-xs text-muted-foreground">
-                        Give your agent a small task to start with — a bug fix,
-                        a research question, writing a script.
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-sm text-zinc-600 -mt-2">
+                    Give your agent a small task to start — a bug fix, a research question, writing a script.
+                  </p>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
+                    <label className="text-base font-medium text-zinc-800 mb-2 block">
                       Task title
                     </label>
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                      className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:ring-2 focus:ring-[#2F80FF] focus:border-[#2F80FF] placeholder:text-zinc-400"
                       placeholder="e.g. Research competitor pricing"
                       value={taskTitle}
                       onChange={(e) => setTaskTitle(e.target.value)}
@@ -1126,12 +1217,34 @@ export function OnboardingWizard() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Description (optional)
+                    <label className="text-base font-medium text-zinc-800 mb-2 block">
+                      Description <span className="font-normal text-zinc-400">(optional)</span>
                     </label>
+                    {/* Template picker */}
+                    <div className="mb-4">
+                      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Quick start</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {STARTER_TEMPLATES.map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => setTaskDescription(t.description)}
+                            className={cn(
+                              "text-left rounded-lg border p-3 text-xs transition-colors",
+                              taskDescription === t.description
+                                ? "border-primary bg-primary/10 text-foreground"
+                                : "border-border/60 bg-card hover:border-primary/50 hover:bg-accent/40 text-muted-foreground",
+                            )}
+                          >
+                            <span className="font-semibold block text-foreground mb-0.5">{t.label}</span>
+                            <span className="text-muted-foreground/80 leading-relaxed">{t.description}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <textarea
                       ref={textareaRef}
-                      className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[120px] max-h-[300px] overflow-y-auto"
+                      className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:ring-2 focus:ring-[#2F80FF] focus:border-[#2F80FF] placeholder:text-zinc-400 resize-none min-h-[120px] max-h-[300px] overflow-y-auto"
                       placeholder="Add more detail about what the agent should do..."
                       value={taskDescription}
                       onChange={(e) => setTaskDescription(e.target.value)}
@@ -1142,19 +1255,10 @@ export function OnboardingWizard() {
 
               {step === 4 && (
                 <div className="space-y-5">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="bg-muted/50 p-2">
-                      <Rocket className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Ready to launch</h3>
-                      <p className="text-xs text-muted-foreground">
-                        Everything is set up. Launching now will create the
-                        starter task, wake the agent, and open the issue.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="border border-border divide-y divide-border">
+                  <p className="text-sm text-zinc-600 -mt-2">
+                    Everything is set up. Launching will create the starter task, wake the agent, and open the issue.
+                  </p>
+                  <div className="border border-[#2F80FF]/20 divide-y divide-border rounded-md overflow-hidden">
                     <div className="flex items-center gap-3 px-3 py-2.5">
                       <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -1163,7 +1267,7 @@ export function OnboardingWizard() {
                         </p>
                         <p className="text-xs text-muted-foreground">Company</p>
                       </div>
-                      <Check className="h-4 w-4 text-green-500 shrink-0" />
+                      <Check className="h-4 w-4 text-[#2F80FF] shrink-0" />
                     </div>
                     <div className="flex items-center gap-3 px-3 py-2.5">
                       <Bot className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -1175,7 +1279,7 @@ export function OnboardingWizard() {
                           {getUIAdapter(adapterType).label}
                         </p>
                       </div>
-                      <Check className="h-4 w-4 text-green-500 shrink-0" />
+                      <Check className="h-4 w-4 text-[#2F80FF] shrink-0" />
                     </div>
                     <div className="flex items-center gap-3 px-3 py-2.5">
                       <ListTodo className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -1185,7 +1289,7 @@ export function OnboardingWizard() {
                         </p>
                         <p className="text-xs text-muted-foreground">Task</p>
                       </div>
-                      <Check className="h-4 w-4 text-green-500 shrink-0" />
+                      <Check className="h-4 w-4 text-[#2F80FF] shrink-0" />
                     </div>
                   </div>
                 </div>
@@ -1197,6 +1301,8 @@ export function OnboardingWizard() {
                   <p className="text-xs text-destructive">{error}</p>
                 </div>
               )}
+
+              </div>{/* end wizard-step-enter */}
 
               {/* Footer navigation */}
               <div className="flex items-center justify-between mt-8">
@@ -1213,78 +1319,146 @@ export function OnboardingWizard() {
                     </Button>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  {step === 1 && (
-                    <Button
-                      size="sm"
-                      disabled={!companyName.trim() || loading}
-                      onClick={handleStep1Next}
-                    >
-                      {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {loading ? "Creating..." : "Next"}
-                    </Button>
-                  )}
-                  {step === 2 && (
-                    <Button
-                      size="sm"
-                      disabled={
-                        !agentName.trim() || loading || adapterEnvLoading
-                      }
-                      onClick={handleStep2Next}
-                    >
-                      {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {loading ? "Creating..." : "Next"}
-                    </Button>
-                  )}
-                  {step === 3 && (
-                    <Button
-                      size="sm"
-                      disabled={!taskTitle.trim() || loading}
-                      onClick={handleStep3Next}
-                    >
-                      {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {loading ? "Creating..." : "Next"}
-                    </Button>
-                  )}
-                  {step === 4 && (
-                    <Button size="sm" disabled={loading} onClick={handleLaunch}>
-                      {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {loading ? "Creating..." : "Create & Open Issue"}
-                    </Button>
-                  )}
+                <div className="flex flex-col items-end gap-1.5">
+                  <div className="flex items-center gap-2">
+                    {step === 1 && (
+                      <Button
+                        size="sm"
+                        className="bg-[#2F80FF] hover:bg-[#1A6FE8] text-white font-semibold border-0 disabled:opacity-50"
+                        disabled={!companyName.trim() || loading}
+                        onClick={handleStep1Next}
+                      >
+                        {loading ? (
+                          <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                        ) : (
+                          <ArrowRight className="h-3.5 w-3.5 mr-1" />
+                        )}
+                        {loading ? "Creating..." : "Next"}
+                      </Button>
+                    )}
+                    {step === 2 && (
+                      <Button
+                        size="sm"
+                        className="bg-[#2F80FF] hover:bg-[#1A6FE8] text-white font-semibold border-0 disabled:opacity-50"
+                        disabled={
+                          !agentName.trim() || loading || adapterEnvLoading
+                        }
+                        onClick={handleStep2Next}
+                      >
+                        {loading ? (
+                          <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                        ) : (
+                          <ArrowRight className="h-3.5 w-3.5 mr-1" />
+                        )}
+                        {loading ? "Creating..." : "Next"}
+                      </Button>
+                    )}
+                    {step === 3 && (
+                      <Button
+                        size="sm"
+                        className="bg-[#2F80FF] hover:bg-[#1A6FE8] text-white font-semibold border-0 disabled:opacity-50"
+                        disabled={!taskTitle.trim() || loading}
+                        onClick={handleStep3Next}
+                      >
+                        {loading ? (
+                          <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                        ) : (
+                          <ArrowRight className="h-3.5 w-3.5 mr-1" />
+                        )}
+                        {loading ? "Creating..." : "Next"}
+                      </Button>
+                    )}
+                    {step === 4 && (
+                      <Button
+                        size="sm"
+                        className="bg-[#2F80FF] hover:bg-[#1A6FE8] text-white font-semibold border-0 disabled:opacity-50"
+                        disabled={loading}
+                        onClick={handleLaunch}
+                      >
+                        {loading ? (
+                          <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                        ) : (
+                          <ArrowRight className="h-3.5 w-3.5 mr-1" />
+                        )}
+                        {loading ? "Creating..." : "Create & Open Issue"}
+                      </Button>
+                    )}
+                  </div>
+                  {/* Keyboard shortcut hint */}
+                  <p className="text-[11px] text-zinc-400 tabular-nums select-none">
+                    {isMac ? "Cmd" : "Ctrl"}+Enter to continue
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Right half — ASCII art (hidden on mobile) */}
-          <div
-            className={cn(
-              "hidden md:block overflow-hidden bg-[#1d1d1d] transition-[width,opacity] duration-500 ease-in-out",
-              step === 1 ? "w-1/2 opacity-100" : "w-0 opacity-0"
-            )}
-          >
-            <AsciiArtAnimation />
-          </div>
         </div>
       </DialogPortal>
     </Dialog>
+  );
+}
+
+// Adapter display info shape used by AgentPreviewCard
+interface AdapterDisplayEntry {
+  type: string;
+  label: string;
+  recommended?: boolean;
+  comingSoon?: boolean;
+}
+
+function AgentPreviewCard({
+  agentName,
+  adapterType,
+  recommendedAdapters,
+  moreAdapters,
+}: {
+  agentName: string;
+  adapterType: string;
+  recommendedAdapters: AdapterDisplayEntry[];
+  moreAdapters: AdapterDisplayEntry[];
+}) {
+  const allAdapters = [...recommendedAdapters, ...moreAdapters];
+  const adapterDisplay = allAdapters.find((a) => a.type === adapterType);
+  const adapterLabel = adapterDisplay?.label ?? adapterType;
+  const displayName = agentName.trim() || "Unnamed Agent";
+
+  return (
+    <div
+      className="rounded-lg border border-[#2F80FF]/20 bg-zinc-50 p-4 space-y-3 transition-all duration-200"
+      style={{ borderRadius: "var(--radius-lg)" }}
+    >
+      {/* Card header */}
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#2F80FF]">
+          Agent Preview
+        </p>
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-[#2F80FF]/15 text-[#2F80FF] border border-[#2F80FF]/25 uppercase tracking-wide">
+          Ready to deploy
+        </span>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-zinc-200" />
+
+      {/* Agent name */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-0.5">
+          <p className="text-[10px] text-zinc-400 uppercase tracking-[0.15em]">Name</p>
+          <p
+            className="text-sm font-semibold text-zinc-900 leading-snug transition-all duration-150"
+            style={{ fontFamily: "'Sora', sans-serif" }}
+          >
+            {displayName}
+          </p>
+        </div>
+        <div className="flex flex-col gap-0.5 items-end">
+          <p className="text-[10px] text-zinc-400 uppercase tracking-[0.15em]">Adapter</p>
+          <p className="text-sm font-medium text-zinc-600 leading-snug transition-all duration-150">
+            {adapterLabel}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
