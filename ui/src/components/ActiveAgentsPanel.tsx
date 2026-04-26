@@ -140,7 +140,7 @@ export function ActiveAgentsPanel({ companyId, isLive = false }: ActiveAgentsPan
           className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-border/50 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent/30 hover:text-foreground"
         >
           <LayoutGrid className="h-3.5 w-3.5" />
-          Show all {runs.length} running agents
+          View all running agents
         </Link>
       )}
     </div>
@@ -334,25 +334,23 @@ const AgentRunCard = memo(function AgentRunCard({
         </button>
       </div>
 
-      {transcriptExpanded && (
-        <Dialog open={transcriptExpanded} onOpenChange={setTranscriptExpanded}>
-          <DialogContent className="max-w-3xl h-[70vh] flex flex-col">
-            <DialogHeader>
-              <DialogTitle className="text-sm font-semibold">
-                {run.agentName ?? "Agent"} — Live Transcript
-              </DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <RunChatSurface
-                run={run}
-                transcript={transcript}
-                hasOutput={hasOutput}
-                companyId={companyId}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <Dialog open={transcriptExpanded} onOpenChange={setTranscriptExpanded}>
+        <DialogContent className="max-w-3xl h-[70vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold">
+              {run.agentName ?? "Agent"} — Live Transcript
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <RunChatSurface
+              run={run}
+              transcript={transcript}
+              hasOutput={hasOutput}
+              companyId={companyId}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 });
