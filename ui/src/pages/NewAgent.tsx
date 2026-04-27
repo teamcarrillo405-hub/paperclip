@@ -239,7 +239,7 @@ export function NewAgent() {
             <label htmlFor="new-agent-title" className="text-sm font-medium">Title</label>
             <input
               id="new-agent-title"
-              className="w-full bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm text-muted-foreground placeholder:text-muted-foreground/40"
+              className="w-full bg-transparent border-b border-input outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm text-muted-foreground placeholder:text-muted-foreground/40"
               placeholder="Title (e.g. VP of Engineering)"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -267,7 +267,7 @@ export function NewAgent() {
                   aria-expanded={roleOpen}
                   aria-haspopup="menu"
                   aria-controls="role-menu"
-                  aria-disabled={isFirstAgent ? "true" : undefined}
+                  aria-disabled={isFirstAgent || undefined}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors",
                     isFirstAgent && "opacity-60 cursor-not-allowed"

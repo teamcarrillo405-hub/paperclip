@@ -482,11 +482,18 @@ export function Costs() {
             ) : null}
           </span>
         ),
+        ariaLabel: `All providers — ${formatTokens(allTokens)} tokens, ${formatCents(allCents)}`,
       },
-      ...providerKeys.map((provider) => ({
-        value: provider,
-        label: <ProviderTabLabel provider={provider} rows={byProvider.get(provider) ?? []} />,
-      })),
+      ...providerKeys.map((provider) => {
+        const rows = byProvider.get(provider) ?? [];
+        const tokenCount = rows.reduce((sum, row) => sum + row.inputTokens + row.cachedInputTokens + row.outputTokens, 0);
+        const cost = rows.reduce((sum, row) => sum + row.costCents, 0);
+        return {
+          value: provider,
+          label: <ProviderTabLabel provider={provider} rows={rows} />,
+          ariaLabel: `${providerDisplayName(provider)} — ${formatTokens(tokenCount)} tokens, ${formatCents(cost)}`,
+        };
+      }),
     ];
   }, [byProvider]);
 
@@ -514,11 +521,18 @@ export function Costs() {
             ) : null}
           </span>
         ),
+        ariaLabel: `All billers — ${formatTokens(allTokens)} tokens, ${formatCents(allCents)}`,
       },
-      ...billerKeys.map((biller) => ({
-        value: biller,
-        label: <BillerTabLabel biller={biller} rows={byBiller.get(biller) ?? []} />,
-      })),
+      ...billerKeys.map((biller) => {
+        const rows = byBiller.get(biller) ?? [];
+        const tokenCount = rows.reduce((sum, row) => sum + row.inputTokens + row.cachedInputTokens + row.outputTokens, 0);
+        const cost = rows.reduce((sum, row) => sum + row.costCents, 0);
+        return {
+          value: biller,
+          label: <BillerTabLabel biller={biller} rows={rows} />,
+          ariaLabel: `${providerDisplayName(biller)} — ${formatTokens(tokenCount)} tokens, ${formatCents(cost)}`,
+        };
+      }),
     ];
   }, [byBiller]);
 

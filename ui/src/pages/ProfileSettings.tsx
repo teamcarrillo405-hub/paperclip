@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Camera, LoaderCircle, Save, Trash2, UserRoundPen } from "lucide-react";
+import { AlertCircle, Camera, LoaderCircle, Save, Trash2, UserRoundPen, X } from "lucide-react";
 import type { AuthSession, CurrentUserProfile, UpdateCurrentUserProfile } from "@paperclipai/shared";
 import { authApi } from "@/api/auth";
 import { assetsApi } from "@/api/assets";
@@ -172,7 +172,7 @@ export function ProfileSettings() {
         <div role="alert" className="flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
           <span className="flex-1">{actionError}</span>
-          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="ml-1 flex h-6 w-6 items-center justify-center text-destructive/70 hover:text-destructive"><span aria-hidden="true">×</span></button>
+          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="ml-1 flex h-6 w-6 items-center justify-center text-destructive/70 hover:text-destructive"><X className="h-4 w-4" aria-hidden="true" /></button>
         </div>
       ) : null}
 
@@ -220,6 +220,7 @@ export function ProfileSettings() {
                     type="button"
                     variant="secondary"
                     aria-label={currentImage ? "Change profile photo" : "Upload profile photo"}
+                    aria-describedby="avatar-upload-hint"
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={!selectedCompanyId || isSavingProfile}
                   >
@@ -246,7 +247,7 @@ export function ProfileSettings() {
                   <p className="truncate text-2xl font-semibold text-foreground" aria-hidden="true">{currentName}</p>
                   <p className="truncate text-sm text-muted-foreground">{sessionQuery.data.user.email ?? "No email"}</p>
                 </div>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                <p id="avatar-upload-hint" className="max-w-2xl text-sm leading-6 text-muted-foreground">
                   Select the avatar to upload a new image. {uploadHint}
                 </p>
               </div>

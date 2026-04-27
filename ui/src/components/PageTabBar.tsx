@@ -5,6 +5,7 @@ import { useSidebar } from "../context/SidebarContext";
 export interface PageTabItem {
   value: string;
   label: ReactNode;
+  ariaLabel?: string;
 }
 
 interface PageTabBarProps {
@@ -37,7 +38,7 @@ export function PageTabBar({ items, value, onValueChange, align = "center", "ari
   return (
     <TabsList variant="line" className={align === "start" ? "justify-start" : undefined} aria-label={ariaLabel}>
       {items.map((item) => (
-        <TabsTrigger key={item.value} value={item.value}>
+        <TabsTrigger key={item.value} value={item.value} aria-label={item.ariaLabel}>
           {item.label}
         </TabsTrigger>
       ))}

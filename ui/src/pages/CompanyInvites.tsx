@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Check, ExternalLink, LoaderCircle, MailPlus } from "lucide-react";
 import { EmptyState } from "../components/EmptyState";
@@ -55,6 +55,8 @@ export function CompanyInvites() {
   const [latestInviteUrl, setLatestInviteUrl] = useState<string | null>(null);
   const [latestInviteCopied, setLatestInviteCopied] = useState(false);
   const [revokingIds, setRevokingIds] = useState<Set<string>>(new Set());
+  const [loadMoreAnnouncement, setLoadMoreAnnouncement] = useState("");
+  const wasFetchingNextPage = useRef(false);
 
   useEffect(() => {
     if (!latestInviteCopied) return;
@@ -109,6 +111,16 @@ export function CompanyInvites() {
       ) ?? [],
     [invitesQuery.data?.pages],
   );
+
+  useEffect(() => {
+    if (wasFetchingNextPage.current && !invitesQuery.isFetchingNextPage) {
+      setLoadMoreAnnouncement("Loaded more invites");
+      const timeout = window.setTimeout(() => setLoadMoreAnnouncement(""), 2000);
+      wasFetchingNextPage.current = false;
+      return () => window.clearTimeout(timeout);
+    }
+    wasFetchingNextPage.current = invitesQuery.isFetchingNextPage;
+  }, [invitesQuery.isFetchingNextPage]);
 
   const createInviteMutation = useMutation({
     mutationFn: () =>
@@ -321,6 +333,7 @@ export function CompanyInvites() {
           <div className="border-t border-border">
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm" aria-label="Invite history">
+                <caption className="sr-only">Invite history for this company</caption>
                 <thead>
                   <tr className="border-b border-border">
                     <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">State</th>
@@ -392,6 +405,7 @@ export function CompanyInvites() {
                   {invitesQuery.isFetchingNextPage && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
                   {invitesQuery.isFetchingNextPage ? "Loading more…" : "View more"}
                 </Button>
+                <p className="sr-only" aria-live="polite" aria-atomic="true">{loadMoreAnnouncement}</p>
               </div>
             ) : null}
           </div>

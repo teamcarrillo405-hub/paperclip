@@ -496,7 +496,7 @@ function SkillList({
                 expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
               )}
             >
-              <div className="min-h-0 overflow-hidden" inert={!expanded ? true : undefined}>
+              <div className="min-h-0 overflow-hidden" inert={!expanded ? true : undefined} aria-hidden={!expanded || undefined}>
                 <SkillTree
                   nodes={tree}
                   skillId={skill.id}
@@ -1305,9 +1305,9 @@ export function CompanySkills() {
                 variant="ghost"
                 onClick={handleAddSkillSource}
                 disabled={importSkill.isPending}
-                aria-label={importSkill.isPending ? "Adding skill..." : undefined}
+                aria-label={importSkill.isPending ? "Adding skill..." : "Import skill source"}
               >
-                {importSkill.isPending ? <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Add"}
+                {importSkill.isPending ? <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Import"}
               </Button>
             </div>
             {scanStatusMessage && (
