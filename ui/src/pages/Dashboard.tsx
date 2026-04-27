@@ -279,12 +279,13 @@ export function Dashboard() {
       {hasNoAgents && (
         <div className="flex items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-500/25 dark:bg-amber-950/60">
           <div className="flex items-center gap-2.5">
-            <Bot className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <Bot className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" aria-hidden="true" />
             <p className="text-sm text-amber-900 dark:text-amber-100">
               You have no agents.
             </p>
           </div>
           <button
+            type="button"
             onClick={() => openOnboarding({ initialStep: 2, companyId: selectedCompanyId! })}
             className="text-sm font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100 underline underline-offset-2 shrink-0"
           >
@@ -298,9 +299,9 @@ export function Dashboard() {
       {data && (
         <>
           {data.budgets.activeIncidents > 0 ? (
-            <div className="flex items-start justify-between gap-3 rounded-xl border border-red-500/20 bg-[linear-gradient(180deg,rgba(255,80,80,0.12),rgba(255,255,255,0.02))] px-4 py-3">
+            <div role="alert" className="flex items-start justify-between gap-3 rounded-xl border border-red-500/20 bg-[linear-gradient(180deg,rgba(255,80,80,0.12),rgba(255,255,255,0.02))] px-4 py-3">
               <div className="flex items-start gap-2.5">
-                <PauseCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
+                <PauseCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" aria-hidden="true" />
                 <div>
                   <p className="text-sm font-medium text-red-50">
                     {data.budgets.activeIncidents} active budget incident{data.budgets.activeIncidents === 1 ? "" : "s"}
@@ -373,11 +374,16 @@ export function Dashboard() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-foreground">Activity</h2>
-              <div className="flex items-center gap-0.5 rounded-md border border-border/60 bg-muted/30 p-0.5">
+              <div
+                role="group"
+                aria-label="Chart time range"
+                className="flex items-center gap-0.5 rounded-md border border-border/60 bg-muted/30 p-0.5"
+              >
                 {([7, 14, 30] as const).map((d) => (
                   <button
                     key={d}
                     type="button"
+                    aria-pressed={chartDays === d}
                     onClick={() => setChartDays(d)}
                     className={cn(
                       "px-2.5 py-1 text-[11px] font-medium rounded transition-colors",
