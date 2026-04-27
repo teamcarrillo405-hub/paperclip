@@ -62,6 +62,17 @@ const catchUpPolicyDescriptions: Record<string, string> = {
   enqueue_missed_with_cap: "Catch up missed schedule windows in capped batches after recovery.",
 };
 
+const CONCURRENCY_POLICY_LABELS: Record<string, string> = {
+  coalesce_if_active: "Coalesce if active",
+  always_enqueue: "Always enqueue",
+  skip_if_active: "Skip if active",
+};
+
+const CATCH_UP_POLICY_LABELS: Record<string, string> = {
+  skip_missed: "Skip missed",
+  enqueue_missed_with_cap: "Enqueue missed (capped)",
+};
+
 function autoResizeTextarea(element: HTMLTextAreaElement | null) {
   if (!element) return;
   element.style.height = "auto";
@@ -208,6 +219,7 @@ function RoutineListRow({
   return (
     <Link
       to={href}
+      aria-busy={runningRoutineId === routine.id}
       className="group flex flex-col gap-3 border-b border-border px-3 py-3 transition-colors hover:bg-accent/50 last:border-b-0 sm:flex-row sm:items-center no-underline text-inherit"
     >
       <div className="min-w-0 flex-1 space-y-1.5">
@@ -650,6 +662,7 @@ export function Routines() {
                       key={value}
                       role="radio"
                       aria-checked={routineViewState.groupBy === value}
+                      aria-label={label}
                       className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm ${
                         routineViewState.groupBy === value
                           ? "bg-accent/50 text-foreground"
@@ -693,11 +706,11 @@ export function Routines() {
           showCloseButton={false}
           className="flex max-h-[calc(100dvh-2rem)] max-w-3xl flex-col gap-0 overflow-hidden p-0"
         >
-          <DialogTitle className="sr-only">Create Routine</DialogTitle>
-
           <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">New routine</p>
+              <DialogTitle className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                New routine
+              </DialogTitle>
               <p className="text-sm text-muted-foreground">
                 Define the recurring work first. Default project and agent are optional for draft routines.
               </p>
@@ -896,7 +909,9 @@ export function Routines() {
                         </SelectTrigger>
                         <SelectContent>
                           {concurrencyPolicies.map((value) => (
-                            <SelectItem key={value} value={value}>{value.replaceAll("_", " ")}</SelectItem>
+                            <SelectItem key={value} value={value}>
+                              {CONCURRENCY_POLICY_LABELS[value] ?? value}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -913,7 +928,9 @@ export function Routines() {
                         </SelectTrigger>
                         <SelectContent>
                           {catchUpPolicies.map((value) => (
-                            <SelectItem key={value} value={value}>{value.replaceAll("_", " ")}</SelectItem>
+                            <SelectItem key={value} value={value}>
+                              {CATCH_UP_POLICY_LABELS[value] ?? value}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
