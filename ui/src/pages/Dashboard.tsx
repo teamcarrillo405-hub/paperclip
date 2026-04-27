@@ -187,10 +187,13 @@ export function Dashboard() {
     };
   }, []);
 
+  // Interval changed from 10_000 to 1_000 so the "just now" / "Xs ago"
+  // counter updates smoothly. The previous 10 s tick meant the display lagged
+  // visibly behind the 5 s "just now" threshold.
   useEffect(() => {
     const id = setInterval(() => {
       setSyncedSecondsAgo(Math.floor((Date.now() - lastSyncRef.current) / 1000));
-    }, 10_000);
+    }, 1_000);
     return () => clearInterval(id);
   }, []);
 
@@ -265,7 +268,8 @@ export function Dashboard() {
 
       {/* Page header: company name + live agent count + last-synced */}
       <div>
-        <h1 className="text-xl font-bold text-foreground">
+        {/* h1 size: text-xl font-bold -> text-2xl font-semibold tracking-tight (project heading standard) */}
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {selectedCompany?.name ?? "Dashboard"}
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
@@ -277,17 +281,20 @@ export function Dashboard() {
       </div>
 
       {hasNoAgents && (
-        <div className="flex items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-500/25 dark:bg-amber-950/60">
+        // Amber tokens replaced with yellow-500 opacity variants — works in both
+        // light and dark mode without requiring a custom warning semantic token.
+        <div className="flex items-center justify-between gap-3 rounded-md border border-yellow-500/30 bg-yellow-500/5 px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <Bot className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" aria-hidden="true" />
-            <p className="text-sm text-amber-900 dark:text-amber-100">
+            <Bot className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
+            <p className="text-sm text-foreground">
               You have no agents.
             </p>
           </div>
+          {/* focus-visible ring added so this bare <button> is keyboard-accessible */}
           <button
             type="button"
             onClick={() => openOnboarding({ initialStep: 2, companyId: selectedCompanyId! })}
-            className="text-sm font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100 underline underline-offset-2 shrink-0"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-2 shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           >
             Create one here
           </button>
@@ -299,19 +306,21 @@ export function Dashboard() {
       {data && (
         <>
           {data.budgets.activeIncidents > 0 ? (
-            <div role="alert" className="flex items-start justify-between gap-3 rounded-xl border border-red-500/20 bg-[linear-gradient(180deg,rgba(255,80,80,0.12),rgba(255,255,255,0.02))] px-4 py-3">
+            // Budget alert: hardcoded red gradient replaced with semantic destructive tokens
+            // so the banner adapts correctly in both light and dark mode.
+            <div role="alert" className="flex items-start justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
               <div className="flex items-start gap-2.5">
-                <PauseCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" aria-hidden="true" />
+                <PauseCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
                 <div>
-                  <p className="text-sm font-medium text-red-50">
+                  <p className="text-sm font-medium text-destructive">
                     {data.budgets.activeIncidents} active budget incident{data.budgets.activeIncidents === 1 ? "" : "s"}
                   </p>
-                  <p className="text-xs text-red-100/70">
+                  <p className="text-xs text-destructive/70">
                     {data.budgets.pausedAgents} agents paused · {data.budgets.pausedProjects} projects paused · {data.budgets.pendingApprovals} pending budget approvals
                   </p>
                 </div>
               </div>
-              <Link to="/costs" className="text-sm underline underline-offset-2 text-red-100">
+              <Link to="/costs" className="text-sm underline underline-offset-2 text-destructive">
                 Open budgets
               </Link>
             </div>
