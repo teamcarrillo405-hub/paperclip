@@ -394,6 +394,13 @@ export function Routines() {
       });
       navigate(`/routines/${routine.id}?tab=triggers`);
     },
+    onError: (mutationError) => {
+      pushToast({
+        title: "Failed to create routine",
+        body: mutationError instanceof Error ? mutationError.message : "Paperclip could not create the routine.",
+        tone: "error",
+      });
+    },
   });
   const updateIssue = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
@@ -648,7 +655,7 @@ export function Routines() {
                       onClick={() => updateRoutineView({ groupBy: value, collapsedGroups: [] })}
                     >
                       <span>{label}</span>
-                      {routineViewState.groupBy === value ? <Check className="h-3.5 w-3.5" /> : null}
+                      {routineViewState.groupBy === value ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
                     </button>
                   ))}
                 </div>
@@ -705,7 +712,9 @@ export function Routines() {
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="px-5 pt-5 pb-3">
+              <label htmlFor="routine-title-input" className="sr-only">Routine title</label>
               <textarea
+                id="routine-title-input"
                 ref={titleInputRef}
                 className="w-full resize-none overflow-hidden bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/50"
                 placeholder="Routine title"
