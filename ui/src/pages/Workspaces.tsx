@@ -8,7 +8,7 @@ import { issuesApi } from "../api/issues";
 import { projectsApi } from "../api/projects";
 import { ProjectWorkspacesContent } from "../components/ProjectWorkspacesContent";
 import { PageSkeleton } from "../components/PageSkeleton";
-import { AlertCircle, GitBranch, Settings } from "lucide-react";
+import { AlertCircle, Building2, GitBranch, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "../components/EmptyState";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -127,10 +127,14 @@ export function Workspaces() {
       </div>
       <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
         disabled={experimentalSettingsQuery.isRefetching}
+        aria-busy={experimentalSettingsQuery.isRefetching}
         onClick={() => experimentalSettingsQuery.refetch()}>
         {experimentalSettingsQuery.isRefetching ? "Retrying…" : "Retry"}
       </Button>
     </div>
+  );
+  if (!selectedCompanyId) return (
+    <EmptyState icon={Building2} message="Select a company to view workspaces." />
   );
   if (!isolatedWorkspacesEnabled) return (
     <EmptyState icon={Settings} message="Isolated workspaces are disabled for this instance. Contact your administrator to enable them in instance settings." />
@@ -152,6 +156,7 @@ export function Workspaces() {
         </div>
         <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
           disabled={isDataRetrying}
+          aria-busy={isDataRetrying}
           onClick={refetchAll}>
           {isDataRetrying ? "Retrying…" : "Retry"}
         </Button>

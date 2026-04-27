@@ -102,6 +102,7 @@ export function CompanySettings() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      pushToast({ title: "Settings saved.", tone: "success" });
     },
     onError: (err) => {
       pushToast({
@@ -202,7 +203,10 @@ export function CompanySettings() {
       syncLogoState(company.logoUrl);
       setLogoUploadError(null);
       pushToast({ title: "Logo updated", tone: "success" });
-    }
+    },
+    onError: (error) => {
+      pushToast({ title: error instanceof Error ? error.message : "Failed to upload logo.", tone: "error" });
+    },
   });
 
   const clearLogoMutation = useMutation({
@@ -434,6 +438,7 @@ export function CompanySettings() {
           onClick={handleSaveGeneral}
           disabled={generalMutation.isPending || !companyName.trim()}
           className={generalDirty ? "" : "invisible"}
+          tabIndex={generalDirty ? undefined : -1}
         >
           {generalMutation.isPending ? "Saving..." : "Save changes"}
         </Button>

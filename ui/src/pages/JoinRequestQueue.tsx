@@ -96,6 +96,7 @@ export function JoinRequestQueue() {
         </div>
         {!(requestsQuery.error instanceof ApiError && requestsQuery.error.status === 403) ? (
           <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            disabled={requestsQuery.isRefetching}
             onClick={() => requestsQuery.refetch()}>
             Retry
           </Button>
@@ -173,7 +174,7 @@ export function JoinRequestQueue() {
               const isPending = pendingIds.has(request.id);
 
               return (
-                <li key={request.id} className={cn("rounded-xl border border-border bg-card p-4", request.status === "rejected" && "opacity-60")}>
+                <li key={request.id} aria-label={`Join request from ${requesterName}`} className={cn("rounded-xl border border-border bg-card p-4", request.status === "rejected" && "opacity-60")}>
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
@@ -181,10 +182,11 @@ export function JoinRequestQueue() {
                           variant={request.status === "pending_approval" ? "secondary" : request.status === "approved" ? "outline" : "destructive"}
                           className={request.status === "approved" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 forced-colors:outline forced-colors:outline-1" : undefined}
                           data-status={request.status === "approved" ? "approved" : undefined}
-                          aria-label={`Status: ${request.status.replace(/_/g, " ")}`}
+                          aria-hidden="true"
                         >
                           {request.status.replace("_", " ")}
                         </Badge>
+                        <span className="sr-only">Status: {request.status.replace(/_/g, " ")}</span>
                         <Badge variant="outline">{request.requestType}</Badge>
                         {request.adapterType ? <Badge variant="outline" aria-label={`Adapter: ${request.adapterType}`}>{request.adapterType}</Badge> : null}
                       </div>
