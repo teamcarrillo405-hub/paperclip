@@ -155,19 +155,19 @@ function touchCenter(a: React.Touch, b: React.Touch, container: HTMLDivElement):
   };
 }
 
-// ── Status dot colors (raw hex for SVG) ─────────────────────────────────
-
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
 
-const statusDotColor: Record<string, string> = {
-  running: "#22d3ee",
-  active: "#4ade80",
-  paused: "#facc15",
-  idle: "#facc15",
-  error: "#f87171",
-  terminated: "#a3a3a3",
+// ── Status dot colors (Tailwind classes) ────────────────────────────────
+
+const STATUS_DOT_CLASS: Record<string, string> = {
+  running: "bg-cyan-400",
+  active: "bg-green-400",
+  paused: "bg-yellow-400",
+  idle: "bg-yellow-400",
+  error: "bg-red-400",
+  terminated: "bg-neutral-400",
 };
-const defaultDotColor = "#a3a3a3";
+const DEFAULT_DOT_CLASS = "bg-neutral-400";
 
 // ── Main component ──────────────────────────────────────────────────────
 
@@ -176,7 +176,7 @@ export function OrgChart() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
 
-  const { data: orgTree, isLoading, isError, refetch: refetchOrgTree } = useQuery({
+  const { data: orgTree, isLoading, isError, error: orgError, refetch: refetchOrgTree } = useQuery({
     queryKey: queryKeys.org(selectedCompanyId!),
     queryFn: () => agentsApi.org(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -218,6 +218,7 @@ export function OrgChart() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [announcedZoom, setAnnouncedZoom] = useState(zoom);
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   const touchGesture = useRef<TouchGesture>({
@@ -239,6 +240,11 @@ export function OrgChart() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setAnnouncedZoom(zoom), 400);
+    return () => clearTimeout(t);
+  }, [zoom]);
 
   // Center the chart on first load
   const hasInitialized = useRef(false);
@@ -438,10 +444,11 @@ export function OrgChart() {
   }
 
   if (isError) {
+    const errMsg = (orgError as Error)?.message;
     return (
       <EmptyState
         icon={Network}
-        message="Failed to load org chart. Check your connection and try again."
+        message={errMsg ? `Failed to load org chart: ${errMsg}` : "Failed to load org chart. Check your connection and try again."}
         action="Retry"
         onAction={() => void refetchOrgTree()}
       />
@@ -500,7 +507,7 @@ export function OrgChart() {
         onTouchCancel={handleTouchEnd}
       >
         {/* Zoom controls */}
-        <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
+        <div role="group" aria-label="Zoom controls" className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
           {/* Fix 6: focus-visible ring on zoom buttons */}
           <button
             className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
@@ -544,7 +551,7 @@ export function OrgChart() {
           </button>
           {/* Zoom level aria-live announcement for screen readers */}
           <span className="sr-only" aria-live="polite" aria-atomic="true">
-            Zoom: {Math.round(zoom * 100)}%
+            Zoom: {Math.round(announcedZoom * 100)}%
           </span>
         </div>
 
@@ -589,16 +596,15 @@ export function OrgChart() {
         >
           {allNodes.map((node) => {
             const agent = agentMap.get(node.id);
-            const dotColor = statusDotColor[node.status] ?? defaultDotColor;
+            const dotClass = STATUS_DOT_CLASS[node.status] ?? DEFAULT_DOT_CLASS;
 
             return (
-              <div
+              <button
+                type="button"
                 key={node.id}
                 data-org-card
-                role="button"
-                tabIndex={0}
                 aria-label={`${node.name}, ${agent?.title ?? roleLabel(node.role)}, status: ${node.status}`}
-                className="absolute bg-card border border-border rounded-lg shadow-sm hover:shadow-md hover:border-foreground/20 transition-[box-shadow,border-color] duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                className="absolute bg-card border border-border rounded-lg shadow-sm hover:shadow-md hover:border-foreground/20 transition-[box-shadow,border-color] duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset text-left"
                 style={{
                   left: node.x,
                   top: node.y,
@@ -606,12 +612,6 @@ export function OrgChart() {
                   minHeight: CARD_H,
                 }}
                 onClick={() => navigate(agent ? agentUrl(agent) : `/agents/${node.id}`)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    navigate(agent ? agentUrl(agent) : `/agents/${node.id}`);
-                  }
-                }}
                 onClickCapture={(e) => {
                   if (!suppressNextCardClick.current) return;
                   suppressNextCardClick.current = false;
@@ -629,8 +629,7 @@ export function OrgChart() {
                     <span
                       role="img"
                       aria-label={`Status: ${node.status}`}
-                      className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card"
-                      style={{ backgroundColor: dotColor }}
+                      className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card ${dotClass}`}
                     />
                   </div>
                   {/* Name + role + adapter type */}
@@ -656,7 +655,7 @@ export function OrgChart() {
                     )}
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
