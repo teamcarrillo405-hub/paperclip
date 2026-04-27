@@ -317,12 +317,12 @@ function SkillTree({
   depth?: number;
 }) {
   return (
-    <div>
+    <div role={depth === 0 ? "tree" : undefined}>
       {nodes.map((node) => {
         const expanded = node.kind === "dir" && node.path ? expandedDirs.has(node.path) : false;
         if (node.kind === "dir") {
           return (
-            <div key={node.path ?? node.name}>
+            <div key={node.path ?? node.name} role="treeitem">
               {/* FIX: Collapsed the two buttons (main-row + chevron) into one full-row button.
                   The redundant unnamed main-row button was removed; the single button now
                   covers the full row and carries the descriptive aria-label from the former
@@ -336,6 +336,7 @@ function SkillTree({
                 style={{ paddingLeft: `${SKILL_TREE_BASE_INDENT + depth * SKILL_TREE_STEP_INDENT}px` }}
                 onClick={() => node.path && onToggleDir(node.path)}
                 aria-label={expanded ? `Collapse ${node.name}` : `Expand ${node.name}`}
+                aria-expanded={expanded}
               >
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                   {expanded ? (
@@ -372,6 +373,7 @@ function SkillTree({
         return (
           <Link
             key={node.path ?? node.name}
+            role="treeitem"
             className={cn(
               "flex w-full items-center gap-2 pr-3 text-left text-sm text-muted-foreground hover:bg-accent/30 hover:text-foreground",
               SKILL_TREE_ROW_HEIGHT_CLASS,
@@ -488,7 +490,7 @@ function SkillList({
                 expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
               )}
             >
-              <div className="min-h-0 overflow-hidden">
+              <div className="min-h-0 overflow-hidden" {...(!expanded ? { inert: "" } : {})}>
                 <SkillTree
                   nodes={tree}
                   skillId={skill.id}
@@ -602,6 +604,7 @@ function SkillPane({
                 onClick={onDelete}
                 disabled={deletePending}
                 title={removeDisabledReason ?? undefined}
+                className={cn(removeBlocked && "opacity-50 cursor-not-allowed")}
               >
                 <Trash2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                 {deletePending ? "Removing..." : "Remove"}
@@ -611,13 +614,14 @@ function SkillPane({
               )}
             </div>
             {detail.editable ? (
-              // FIX: aria-expanded + aria-controls on the edit toggle button
+              // FIX: aria-expanded + aria-controls on the edit toggle button; disabled during save
               <button
                 type="button"
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
                 onClick={() => setEditMode(!editMode)}
                 aria-expanded={editMode}
                 aria-controls="skill-edit-panel"
+                disabled={savePending}
               >
                 <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                 {editMode ? "Stop editing" : "Edit"}

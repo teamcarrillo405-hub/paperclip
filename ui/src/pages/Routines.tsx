@@ -226,7 +226,7 @@ function RoutineListRow({
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-medium">{routine.title}</span>
           {(isArchived || routine.status === "paused" || isDraft) ? (
-            <span className="ml-1 rounded px-1 py-0.5 text-[10px] font-medium uppercase bg-muted text-muted-foreground">
+            <span className="ml-1 rounded px-1 py-0.5 text-xs font-medium uppercase bg-muted text-muted-foreground">
               {isArchived ? "archived" : isDraft ? "draft" : "paused"}
             </span>
           ) : null}
@@ -792,6 +792,7 @@ export function Routines() {
                 setAdvancedOpen(false);
               }}
               disabled={createRoutine.isPending}
+              aria-disabled={createRoutine.isPending}
             >
               Cancel
             </Button>

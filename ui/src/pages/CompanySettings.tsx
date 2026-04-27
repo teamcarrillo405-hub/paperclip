@@ -428,17 +428,16 @@ export function CompanySettings() {
       </div>
 
       {/* Save button for General + Appearance */}
-      {generalDirty && (
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            onClick={handleSaveGeneral}
-            disabled={generalMutation.isPending || !companyName.trim()}
-          >
-            {generalMutation.isPending ? "Saving..." : "Save changes"}
-          </Button>
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          onClick={handleSaveGeneral}
+          disabled={generalMutation.isPending || !companyName.trim()}
+          className={generalDirty ? "" : "invisible"}
+        >
+          {generalMutation.isPending ? "Saving..." : "Save changes"}
+        </Button>
+      </div>
 
       {/* Hiring */}
       <div className="space-y-4" data-testid="company-settings-team-section">
@@ -557,10 +556,14 @@ export function CompanySettings() {
                 <textarea
                   data-testid="company-settings-invites-snippet-textarea"
                   aria-label="OpenClaw invite prompt snippet"
+                  aria-readonly="true"
                   className="max-h-[28rem] overflow-y-auto w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                   value={inviteSnippet}
                   readOnly
                 />
+                <span aria-live="polite" aria-atomic="true" className="sr-only">
+                  {inviteGenerated ? "Invite prompt generated." : ""}
+                </span>
                 <div className="flex justify-end">
                   <Button
                     data-testid="company-settings-invites-copy-button"

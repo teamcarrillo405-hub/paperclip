@@ -267,13 +267,13 @@ export function FailedRunInboxRow({
     )}>
       <div className="flex items-start gap-2 sm:items-center">
         {showUnreadSlot ? (
-          <span className="hidden sm:inline-flex h-4 w-4 shrink-0 items-center justify-center self-center">
+          <span className="hidden sm:inline-flex h-6 w-6 shrink-0 items-center justify-center self-center">
             {showUnreadDot ? (
               <button
                 type="button"
                 onClick={onMarkRead}
                 className={cn(
-                  "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
+                  "inline-flex h-6 w-6 min-h-6 min-w-6 items-center justify-center rounded-full transition-colors",
                   "hover:bg-blue-500/20",
                 )}
                 aria-label="Mark as read"

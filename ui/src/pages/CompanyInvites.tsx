@@ -181,8 +181,9 @@ export function CompanyInvites() {
         </div>
         {!(invitesQuery.error instanceof ApiError && invitesQuery.error.status === 403) ? (
           <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            disabled={invitesQuery.isRefetching}
             onClick={() => invitesQuery.refetch()}>
-            Retry
+            {invitesQuery.isRefetching ? "Retrying\u2026" : "Retry"}
           </Button>
         ) : null}
       </div>
@@ -312,8 +313,8 @@ export function CompanyInvites() {
         </div>
 
         {inviteHistory.length === 0 ? (
-          <div className="border-t border-border px-5 py-8 text-sm text-muted-foreground">
-            No invites have been created for this company yet.
+          <div className="border-t border-border py-8">
+            <EmptyState icon={MailPlus} message="No invites have been created yet." />
           </div>
         ) : (
           <div className="border-t border-border">
@@ -364,10 +365,10 @@ export function CompanyInvites() {
                             variant="outline"
                             aria-label={`Revoke invite created ${new Date(invite.createdAt).toLocaleDateString()}`}
                             onClick={() => revokeMutation.mutate(invite.id)}
-                            disabled={revokeMutation.isPending}
+                            disabled={revokeMutation.isPending && revokingId === invite.id}
                           >
-                            {revokeMutation.isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-                            {revokeMutation.isPending ? "Revoking\u2026" : "Revoke"}
+                            {revokeMutation.isPending && revokingId === invite.id ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
+                            {revokeMutation.isPending && revokingId === invite.id ? "Revoking\u2026" : "Revoke"}
                           </Button>
                         ) : (
                           <span className="text-xs text-muted-foreground">Inactive</span>
