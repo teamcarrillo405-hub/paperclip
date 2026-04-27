@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useMemo, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace } from "@paperclipai/shared";
@@ -193,14 +193,16 @@ function Field({
   hint?: string;
   children: React.ReactNode;
 }) {
+  const generatedId = useId();
+  const child = isValidElement(children) ? cloneElement(children as React.ReactElement<{ id?: string }>, { id: generatedId }) : children;
   return (
-    <label className="block space-y-2">
+    <div className="block space-y-2">
       <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
-        <span className="text-sm font-medium text-foreground">{label}</span>
+        <label htmlFor={generatedId} className="text-sm font-medium text-foreground">{label}</label>
         {hint ? <span className="text-xs text-muted-foreground sm:text-right">{hint}</span> : null}
       </div>
-      {children}
-    </label>
+      {child}
+    </div>
   );
 }
 
@@ -213,9 +215,9 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function StatusPill({ children, className }: { children: React.ReactNode; className?: string }) {
+function StatusPill({ children, className, "aria-hidden": ariaHidden }: { children: React.ReactNode; className?: string; "aria-hidden"?: boolean | "true" | "false" }) {
   return (
-    <div className={cn("inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground", className)}>
+    <div aria-hidden={ariaHidden} className={cn("inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground", className)}>
       {children}
     </div>
   );
@@ -523,9 +525,11 @@ export function ExecutionWorkspaceDetail() {
           </Button>
           <StatusPill>{workspace.mode}</StatusPill>
           <StatusPill>{workspace.providerType}</StatusPill>
-          <StatusPill className={workspace.status === "active" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : undefined}>
-            {workspace.status === "active" ? <span aria-hidden="true">{"● "}</span> : <span aria-hidden="true">{"○ "}</span>}{workspace.status}
-          </StatusPill>
+          <span aria-label={`Workspace status: ${workspace.status}`}>
+            <StatusPill className={workspace.status === "active" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : undefined} aria-hidden="true">
+              {workspace.status === "active" ? <span aria-hidden="true">{"● "}</span> : <span aria-hidden="true">{"○ "}</span>}{workspace.status}
+            </StatusPill>
+          </span>
         </div>
 
         <div className="space-y-2">
@@ -538,40 +542,6 @@ export function ExecutionWorkspaceDetail() {
             <span className="hidden sm:inline"> These settings stay attached to the execution workspace so future runs can keep local paths, repo refs, provisioning, teardown, and runtime-service behavior in sync with the actual workspace being reused.</span>
           </p>
         </div>
-
-        <Card className="rounded-none">
-          <CardHeader>
-            <CardTitle>Services and jobs</CardTitle>
-            <CardDescription>
-              Source: {runtimeConfigSource === "execution_workspace"
-                ? "execution workspace override"
-                : runtimeConfigSource === "project_workspace"
-                  ? "project workspace default"
-                  : "none"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-          <WorkspaceRuntimeControls
-            sections={runtimeControlSections}
-            isPending={controlRuntimeServices.isPending}
-            pendingRequest={pendingRuntimeAction}
-            serviceEmptyMessage={
-              effectiveRuntimeConfig
-                ? "No services have been started for this execution workspace yet."
-                : "No workspace command config is defined for this execution workspace yet."
-            }
-            jobEmptyMessage="No one-shot jobs are configured for this execution workspace yet."
-            disabledHint={
-              canStartRuntimeServices
-                ? null
-                : "Execution workspaces need a working directory before local commands can run, and services also need runtime config."
-            }
-            onAction={(request) => controlRuntimeServices.mutate(request)}
-          />
-          {runtimeActionErrorMessage ? <p role="alert" className="mt-4 text-sm text-destructive">{runtimeActionErrorMessage}</p> : null}
-          {!runtimeActionErrorMessage && runtimeActionMessage ? <p className="mt-4 text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
-          </CardContent>
-        </Card>
 
         <Tabs value={activeTab ?? "configuration"} onValueChange={(value) => handleTabChange(value as ExecutionWorkspaceTab)}>
           <PageTabBar
@@ -587,6 +557,40 @@ export function ExecutionWorkspaceDetail() {
 
           <TabsContent value="configuration">
             <div className="space-y-4 sm:space-y-6">
+              <Card className="rounded-none">
+                <CardHeader>
+                  <CardTitle>Services and jobs</CardTitle>
+                  <CardDescription>
+                    Source: {runtimeConfigSource === "execution_workspace"
+                      ? "execution workspace override"
+                      : runtimeConfigSource === "project_workspace"
+                        ? "project workspace default"
+                        : "none"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                <WorkspaceRuntimeControls
+                  sections={runtimeControlSections}
+                  isPending={controlRuntimeServices.isPending}
+                  pendingRequest={pendingRuntimeAction}
+                  serviceEmptyMessage={
+                    effectiveRuntimeConfig
+                      ? "No services have been started for this execution workspace yet."
+                      : "No workspace command config is defined for this execution workspace yet."
+                  }
+                  jobEmptyMessage="No one-shot jobs are configured for this execution workspace yet."
+                  disabledHint={
+                    canStartRuntimeServices
+                      ? null
+                      : "Execution workspaces need a working directory before local commands can run, and services also need runtime config."
+                  }
+                  onAction={(request) => controlRuntimeServices.mutate(request)}
+                />
+                {runtimeActionErrorMessage ? <p role="alert" className="mt-4 text-sm text-destructive">{runtimeActionErrorMessage}</p> : null}
+                {!runtimeActionErrorMessage && runtimeActionMessage ? <p className="mt-4 text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
+                </CardContent>
+              </Card>
+
               <Card className="rounded-none">
                 <CardHeader>
                   <CardTitle>Workspace settings</CardTitle>
