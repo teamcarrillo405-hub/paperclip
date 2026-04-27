@@ -51,21 +51,17 @@ export function useDensity(): { density: Density; setDensity: (d: Density) => vo
 }
 
 interface DensityToggleProps {
-  /** When true, render icon-only (single-letter abbr) without full labels */
+  /** When true, render icon-only (single-letter abbr) compact variant */
   collapsed?: boolean;
 }
 
 export function DensityToggle({ collapsed = false }: DensityToggleProps) {
   const { density, setDensity } = useDensity();
 
-  if (collapsed) {
-    return null;
-  }
-
   return (
     <div
       className="flex items-center gap-px rounded border border-border bg-muted p-0.5"
-      role="group"
+      role="radiogroup"
       aria-label="UI density"
     >
       {DENSITIES.map(({ value, label, abbr }) => {
@@ -76,15 +72,17 @@ export function DensityToggle({ collapsed = false }: DensityToggleProps) {
             type="button"
             onClick={() => setDensity(value)}
             title={label}
-            aria-pressed={isActive}
+            role="radio"
+            aria-checked={isActive}
             className={cn(
-              "flex h-5 items-center justify-center rounded-sm px-1.5 font-mono text-[10px] font-medium leading-none transition-colors",
+              "flex h-5 items-center justify-center rounded-sm font-mono text-[10px] font-medium leading-none transition-colors",
+              collapsed ? "w-5" : "px-1.5",
               isActive
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
             )}
           >
-            {abbr}
+            {collapsed ? abbr : abbr}
           </button>
         );
       })}
