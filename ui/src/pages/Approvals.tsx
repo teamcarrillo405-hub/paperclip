@@ -27,6 +27,7 @@ export function Approvals() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [isBulkOperating, setIsBulkOperating] = useState(false);
+  const [optimisticStatus, setOptimisticStatus] = useState<Record<string, "approved" | "rejected">>({});
 
   const { isConnected, lastEvent } = useCompanyLiveEvents(selectedCompanyId ?? undefined);
 
@@ -53,23 +54,33 @@ export function Approvals() {
 
   const approveMutation = useMutation({
     mutationFn: (id: string) => approvalsApi.approve(id),
+    onMutate: (id) => {
+      setOptimisticStatus((prev) => ({ ...prev, [id]: "approved" }));
+    },
     onSuccess: (_approval, id) => {
       setActionError(null);
+      setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
       navigate(`/approvals/${id}?resolved=approved`);
     },
-    onError: (err) => {
+    onError: (err, id) => {
+      setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
       setActionError(err instanceof Error ? err.message : "Failed to approve");
     },
   });
 
   const rejectMutation = useMutation({
     mutationFn: (id: string) => approvalsApi.reject(id),
-    onSuccess: () => {
+    onMutate: (id) => {
+      setOptimisticStatus((prev) => ({ ...prev, [id]: "rejected" }));
+    },
+    onSuccess: (_data, id) => {
       setActionError(null);
+      setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
     },
-    onError: (err) => {
+    onError: (err, id) => {
+      setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
       setActionError(err instanceof Error ? err.message : "Failed to reject");
     },
   });
@@ -307,8 +318,9 @@ export function Approvals() {
               <div
                 key={approval.id}
                 className={cn(
-                  "rounded-xl transition-shadow",
+                  "rounded-xl transition-all duration-300",
                   isFocused && "ring-2 ring-ring ring-offset-1 ring-offset-background",
+                  optimisticStatus[approval.id] && "opacity-40 scale-[0.99] pointer-events-none",
                 )}
                 onClick={() => setFocusedIndex(idx)}
               >
