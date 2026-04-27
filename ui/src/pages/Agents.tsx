@@ -18,7 +18,7 @@ import { relativeTime, cn, agentRouteRef, agentUrl, formatCents } from "../lib/u
 import { PageTabBar } from "../components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Bot, Plus, List, GitBranch, SlidersHorizontal, Search, ChevronUp, Download } from "lucide-react";
+import { Bot, Plus, List, GitBranch, SlidersHorizontal, Search, ChevronUp, Download, AlertCircle } from "lucide-react";
 import { AGENT_ROLE_LABELS, type Agent } from "@paperclipai/shared";
 
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
@@ -76,7 +76,7 @@ export function Agents() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<{ col: SortCol; dir: SortDir } | null>(null);
 
-  const { data: agents, isLoading, error } = useQuery({
+  const { data: agents, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -117,12 +117,18 @@ export function Agents() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
     },
+    onError: (err: Error) => {
+      alert(`Failed to pause agent: ${err.message}`);
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => agentsApi.remove(id, selectedCompanyId ?? undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
+    },
+    onError: (err: Error) => {
+      alert(`Failed to delete agent: ${err.message}`);
     },
   });
 
@@ -285,6 +291,7 @@ export function Agents() {
             <Search className="pointer-events-none absolute left-2 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
+              aria-label="Search agents"
               placeholder="Search agents..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -391,7 +398,23 @@ export function Agents() {
         </div>
       )}
 
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{error.message || "Failed to load agents."}</p>
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            disabled={isRefetching}
+            onClick={() => refetch()}
+          >
+            {isRefetching ? "Retrying…" : "Retry"}
+          </Button>
+        </div>
+      )}
 
       {agents && agents.length === 0 && (
         <EmptyState
