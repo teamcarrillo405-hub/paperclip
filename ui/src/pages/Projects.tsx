@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { projectsApi } from "../api/projects";
 import { useCompany } from "../context/CompanyContext";
@@ -22,13 +22,18 @@ export function Projects() {
     setBreadcrumbs([{ label: "Projects" }]);
   }, [setBreadcrumbs]);
 
-  const { data: allProjects, isLoading, error, refetch } = useQuery({
+  const [showArchived, setShowArchived] = useState(false);
+  const { data: allProjects, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const projects = useMemo(
-    () => (allProjects ?? []).filter((p) => !p.archivedAt),
+    () => (allProjects ?? []).filter((p) => showArchived || !p.archivedAt),
+    [allProjects, showArchived],
+  );
+  const archivedCount = useMemo(
+    () => (allProjects ?? []).filter((p) => !!p.archivedAt).length,
     [allProjects],
   );
 
@@ -47,25 +52,38 @@ export function Projects() {
           Projects
           <span className="ml-2 text-base text-muted-foreground font-normal">({projects.length})</span>
         </h1>
-        <Button size="sm" variant="outline" onClick={openNewProject}>
-          <Plus className="h-4 w-4 mr-1" />
-          Add Project
-        </Button>
+        <div className="flex items-center gap-2">
+          {archivedCount > 0 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-xs text-muted-foreground"
+              onClick={() => setShowArchived((v) => !v)}
+            >
+              {showArchived ? "Hide archived" : `Show archived (${archivedCount})`}
+            </Button>
+          )}
+          <Button size="sm" variant="default" onClick={openNewProject}>
+            <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
+            Add Project
+          </Button>
+        </div>
       </div>
 
       {error && (
-        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-destructive">{error.message}</p>
+            <p className="text-sm text-destructive">{error.message || "Failed to load projects."}</p>
           </div>
           <Button
             size="sm"
             variant="ghost"
             className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            disabled={isRefetching}
             onClick={() => refetch()}
           >
-            Retry
+            {isRefetching ? "Retrying…" : "Retry"}
           </Button>
         </div>
       )}
@@ -89,15 +107,17 @@ export function Projects() {
               to={projectUrl(project)}
               leading={
                 <span
-                  className="h-2 w-2 rounded-full shrink-0"
+                  className="h-2.5 w-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: project.color ?? "#64748b" }}
+                  role="img"
+                  aria-label={`Color: ${project.color ?? "default"}`}
                 />
               }
               trailing={
                 <div className="flex items-center gap-3">
                   {project.targetDate && (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
+                      <Calendar className="h-3 w-3" aria-hidden="true" />
                       {formatDate(project.targetDate)}
                     </span>
                   )}

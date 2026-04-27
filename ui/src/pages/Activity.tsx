@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { History, AlertCircle } from "lucide-react";
+import { History, AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const ACTIVITY_PAGE_LIMIT = 200;
@@ -121,8 +121,8 @@ export function Activity() {
   return (
     <div className="space-y-4">
       {!error && (
-        <div className="flex items-center justify-end">
-          <Select value={filter} onValueChange={setFilter}>
+        <div className="flex items-center justify-end gap-2">
+          <Select value={filter} onValueChange={setFilter} aria-label="Filter activity by type">
             <SelectTrigger className="w-[140px] h-8 text-xs">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
@@ -135,6 +135,16 @@ export function Activity() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 shrink-0"
+            aria-label="Refresh activity"
+            disabled={isRefetching}
+            onClick={() => refetch()}
+          >
+            <RotateCcw className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`} aria-hidden="true" />
+          </Button>
         </div>
       )}
 
@@ -149,7 +159,7 @@ export function Activity() {
             variant="ghost"
             className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
             disabled={isRefetching}
-            onClick={() => { setFilter("all"); refetch(); }}
+            onClick={() => refetch()}
           >
             {isRefetching ? "Retrying…" : "Retry"}
           </Button>
@@ -159,10 +169,15 @@ export function Activity() {
       {filtered && filtered.length === 0 && (
         <EmptyState
           icon={History}
-          message={filter !== "all" ? `No ${filter} events found.` : "No activity yet."}
+          message={
+            filter !== "all"
+              ? `No ${filter.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} events found.`
+              : "No activity yet."
+          }
         />
       )}
 
+      <div aria-live="polite" aria-atomic="false">
       {filtered && filtered.length > 0 && (
         <>
           <div className="rounded-lg border border-border divide-y divide-border overflow-hidden">
@@ -184,6 +199,7 @@ export function Activity() {
           )}
         </>
       )}
+      </div>
     </div>
   );
 }
