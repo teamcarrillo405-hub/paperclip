@@ -580,6 +580,25 @@ export function Routines() {
         </Button>
       </div>
 
+      {error ? (
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">
+              {error instanceof Error ? error.message : "Failed to load routines"}
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            onClick={() => refetch()}
+          >
+            Retry
+          </Button>
+        </div>
+      ) : null}
+
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <PageTabBar
           align="start"
@@ -907,25 +926,6 @@ export function Routines() {
         </DialogContent>
       </Dialog>
 
-      {error ? (
-        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-destructive">
-              {error instanceof Error ? error.message : "Failed to load routines"}
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
-            onClick={() => refetch()}
-          >
-            Retry
-          </Button>
-        </div>
-      ) : null}
-
       {activeTab === "routines" ? (
         <div>
           {(routines ?? []).length === 0 ? (
@@ -936,7 +936,7 @@ export function Routines() {
               />
             </div>
           ) : (
-            <div className="rounded-lg border border-border">
+            <div className="rounded-lg border border-border overflow-hidden">
               {routineGroups.map((group) => (
                 <Collapsible
                   key={group.key}
@@ -953,7 +953,7 @@ export function Routines() {
                     <div className="flex items-center gap-2 border-b border-border px-3 py-2">
                       <CollapsibleTrigger className="flex items-center gap-1.5">
                         <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
-                        <span className="text-sm font-semibold uppercase tracking-wide">
+                        <span className="text-sm font-semibold uppercase tracking-widest">
                           {group.label}
                         </span>
                       </CollapsibleTrigger>
