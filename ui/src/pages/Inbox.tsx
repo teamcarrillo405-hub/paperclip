@@ -481,7 +481,7 @@ function ApprovalInboxRow({
           <div className="hidden shrink-0 items-center gap-2 sm:flex">
             <Button
               size="sm"
-              className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
+              className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
               onClick={onApprove}
               disabled={isPending}
             >
@@ -503,7 +503,7 @@ function ApprovalInboxRow({
         <div className="mt-3 flex gap-2 sm:hidden">
           <Button
             size="sm"
-            className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
+            className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
             onClick={onApprove}
             disabled={isPending}
           >
@@ -609,7 +609,7 @@ function JoinRequestInboxRow({
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           <Button
             size="sm"
-            className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
+            className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
             onClick={onApprove}
             disabled={isPending}
           >
@@ -629,7 +629,7 @@ function JoinRequestInboxRow({
       <div className="mt-3 flex gap-2 sm:hidden">
         <Button
           size="sm"
-          className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
+          className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
           onClick={onApprove}
           disabled={isPending}
         >
@@ -2001,8 +2001,8 @@ export function Inbox() {
                   <button
                     key={value}
                     type="button"
-                    role="radio"
-                    aria-checked={groupBy === value}
+                    role="button"
+                    aria-pressed={groupBy === value}
                     className={cn(
                       "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
                       groupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
@@ -2334,9 +2334,9 @@ export function Inbox() {
                     previousTimestamp = item.timestamp > 0 ? item.timestamp : previousTimestamp;
                     if (showTodayDivider) {
                       elements.push(
-                        <div key={`today-divider-${group.key}-${index}`} className="my-2 flex items-center gap-3 px-4">
-                          <div className="flex-1 border-t border-zinc-600" />
-                          <span className="shrink-0 text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+                        <div key={`today-divider-${group.key}-${index}`} role="separator" aria-label="Earlier" className="my-2 flex items-center gap-3 px-4">
+                          <div className="flex-1 border-t border-border" />
+                          <span className="shrink-0 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                             Earlier
                           </span>
                         </div>,
