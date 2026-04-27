@@ -734,9 +734,14 @@ export function OnboardingWizard() {
                         {label}
                       </p>
                       {isActive && (
-                        <p className="text-[10px] text-[#2F80FF] uppercase tracking-[0.18em] font-medium leading-none mt-0.5">
-                          In progress
-                        </p>
+                        <>
+                          <p className="text-[10px] text-[#2F80FF] uppercase tracking-[0.18em] font-medium leading-none mt-0.5">
+                            In progress
+                          </p>
+                          <p className="text-[10px] text-white/30 leading-none mt-0.5">
+                            {STEPS.length - s} step{STEPS.length - s !== 1 ? "s" : ""} left
+                          </p>
+                        </>
                       )}
                       {isDone && (
                         <p className="text-[10px] text-zinc-500 uppercase tracking-[0.18em] font-medium leading-none mt-0.5">
@@ -768,7 +773,7 @@ export function OnboardingWizard() {
               <span className="sr-only">Close</span>
             </button>
 
-            <div className="w-full max-w-md mx-auto my-auto px-8 py-12 shrink-0">
+            <div key={step} className="w-full max-w-md mx-auto my-auto px-8 py-12 shrink-0 animate-in fade-in-0 slide-in-from-bottom-3 duration-200">
               {/* Mobile-only step tabs */}
               <div className="flex items-center gap-0 mb-8 border-b border-border md:hidden">
                 {STEPS.map(({ step: s, label, icon: Icon }) => (
@@ -1248,6 +1253,16 @@ export function OnboardingWizard() {
                           </button>
                         ))}
                       </div>
+                      {selectedTemplateId && (() => {
+                        const tpl = STARTER_TEMPLATES.find((t) => t.id === selectedTemplateId);
+                        if (!tpl) return null;
+                        return (
+                          <div className="rounded-lg border border-primary/20 bg-primary/5 px-3.5 py-3 text-xs animate-in fade-in-0 duration-150">
+                            <p className="font-semibold text-foreground mb-1">{tpl.label}</p>
+                            <p className="leading-relaxed text-muted-foreground">{tpl.description}</p>
+                          </div>
+                        );
+                      })()}
                     </div>
                     <textarea
                       ref={textareaRef}
