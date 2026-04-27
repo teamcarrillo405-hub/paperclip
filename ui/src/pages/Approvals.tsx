@@ -27,7 +27,9 @@ export function Approvals() {
   const statusFilter: StatusFilter = pathSegment === "all" ? "all" : "pending";
   const [actionError, setActionError] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const [isBulkOperating, setIsBulkOperating] = useState(false);
+  const [isBulkApproving, setIsBulkApproving] = useState(false);
+  const [isBulkRejecting, setIsBulkRejecting] = useState(false);
+  const isBulkOperating = isBulkApproving || isBulkRejecting;
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [optimisticStatus, setOptimisticStatus] = useState<Record<string, "approved" | "rejected">>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -204,7 +206,7 @@ export function Approvals() {
     const targets = selectedIds.size > 0
       ? pendingItems.filter((item) => selectedIds.has(item.id))
       : pendingItems;
-    setIsBulkOperating(true);
+    setIsBulkApproving(true);
     setActionError(null);
     try {
       for (const item of targets) {
@@ -215,7 +217,7 @@ export function Approvals() {
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Bulk approve failed");
     } finally {
-      setIsBulkOperating(false);
+      setIsBulkApproving(false);
     }
   }
 
@@ -223,7 +225,7 @@ export function Approvals() {
     const targets = selectedIds.size > 0
       ? pendingItems.filter((item) => selectedIds.has(item.id))
       : pendingItems;
-    setIsBulkOperating(true);
+    setIsBulkRejecting(true);
     setActionError(null);
     try {
       for (const item of targets) {
@@ -234,7 +236,7 @@ export function Approvals() {
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Bulk reject failed");
     } finally {
-      setIsBulkOperating(false);
+      setIsBulkRejecting(false);
     }
   }
 
@@ -305,14 +307,15 @@ export function Approvals() {
             <button
               type="button"
               disabled={isBulkOperating}
-              aria-busy={isBulkOperating}
+              aria-busy={isBulkApproving}
+              aria-label={isBulkApproving ? "Approving..." : selectedIds.size > 0 ? `Approve ${selectedIds.size} selected` : "Approve all pending"}
               onClick={handleBulkApprove}
               className={cn(
                 "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-green-700/40 text-green-700 dark:text-green-400",
                 "bg-green-700/5 hover:bg-green-700/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
-              {isBulkOperating ? (
+              {isBulkApproving ? (
                 <>
                   <LoaderCircle className="h-3 w-3 animate-spin" aria-hidden="true" />
                   Working...
@@ -322,14 +325,15 @@ export function Approvals() {
             <button
               type="button"
               disabled={isBulkOperating}
-              aria-busy={isBulkOperating}
+              aria-busy={isBulkRejecting}
+              aria-label={isBulkRejecting ? "Rejecting..." : selectedIds.size > 0 ? `Reject ${selectedIds.size} selected` : "Reject all pending"}
               onClick={handleBulkReject}
               className={cn(
                 "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-destructive/40 text-destructive",
                 "bg-destructive/5 hover:bg-destructive/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
-              {isBulkOperating ? (
+              {isBulkRejecting ? (
                 <>
                   <LoaderCircle className="h-3 w-3 animate-spin" aria-hidden="true" />
                   Working...
@@ -409,7 +413,7 @@ export function Approvals() {
       )}
 
       {filtered.length > 0 && (
-        <div className="grid gap-3">
+        <div role="feed" className="grid gap-3">
           {filtered.map((approval, idx) => {
             const isFocused = focusedIndex === idx;
             const isSelected = selectedIds.has(approval.id);
@@ -420,6 +424,8 @@ export function Approvals() {
                 ref={(el) => { cardRefs.current[idx] = el; }}
                 tabIndex={-1}
                 role="article"
+                aria-posinset={idx + 1}
+                aria-setsize={filtered.length}
                 className={cn(
                   "relative rounded-xl transition-all duration-300 focus:outline-none",
                   isFocused && "ring-2 ring-ring ring-offset-1 ring-offset-background",

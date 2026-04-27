@@ -217,12 +217,12 @@ function RoutineListRow({
   const isDraft = !isArchived && !routine.assigneeAgentId;
 
   return (
-    <Link
-      to={href}
-      className="group flex flex-col gap-3 border-b border-border px-3 py-3 transition-colors hover:bg-accent/50 last:border-b-0 sm:flex-row sm:items-center no-underline text-inherit"
-    >
+    <div className="group flex flex-col gap-3 border-b border-border px-3 py-3 transition-colors hover:bg-accent/50 last:border-b-0 sm:flex-row sm:items-center">
       {runningRoutineId === routine.id && <span className="sr-only">Running</span>}
-      <div className="min-w-0 flex-1 space-y-1.5">
+      <Link
+        to={href}
+        className="min-w-0 flex-1 space-y-1.5 no-underline text-inherit"
+      >
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-medium">{routine.title}</span>
           {(isArchived || routine.status === "paused" || isDraft) ? (
@@ -248,9 +248,9 @@ function RoutineListRow({
             {routine.lastRun ? ` · ${formatRoutineRunStatus(routine.lastRun.status)}` : ""}
           </span>
         </div>
-      </div>
+      </Link>
 
-      <div className="flex items-center gap-3" onClick={(event) => { event.preventDefault(); event.stopPropagation(); }}>
+      <div className="flex items-center gap-3">
         <div className="flex items-center gap-3">
           <ToggleSwitch
             size="lg"
@@ -296,7 +296,7 @@ function RoutineListRow({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -354,12 +354,12 @@ export function Routines() {
     queryFn: () => routinesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const { data: agents } = useQuery({
+  const { data: agents, error: agentsError } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const { data: projects } = useQuery({
+  const { data: projects, error: projectsError } = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -658,21 +658,28 @@ export function Routines() {
                     ["assignee", "Agent"],
                     ["none", "None"],
                   ] as const).map(([value, label]) => (
-                    <button
+                    <div
                       key={value}
                       role="radio"
                       aria-checked={routineViewState.groupBy === value}
                       aria-label={label}
-                      className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm ${
+                      tabIndex={0}
+                      className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm cursor-pointer ${
                         routineViewState.groupBy === value
                           ? "bg-accent/50 text-foreground"
                           : "text-muted-foreground hover:bg-accent/50"
                       }`}
                       onClick={() => updateRoutineView({ groupBy: value, collapsedGroups: [] })}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          updateRoutineView({ groupBy: value, collapsedGroups: [] });
+                        }
+                      }}
                     >
                       <span>{label}</span>
                       {routineViewState.groupBy === value ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
-                    </button>
+                    </div>
                   ))}
                 </div>
               </PopoverContent>
@@ -920,6 +927,12 @@ export function Routines() {
                   />
                 </div>
               </div>
+              {agentsError && (
+                <p role="alert" className="text-xs text-destructive">Could not load agents.</p>
+              )}
+              {projectsError && (
+                <p role="alert" className="text-xs text-destructive">Could not load projects.</p>
+              )}
             </div>
 
             <div className="border-t border-border/60 px-5 py-4">

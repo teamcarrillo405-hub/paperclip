@@ -440,9 +440,12 @@ export function Agents() {
 
       {effectiveView === "list" && sortedAgents.length > 0 && (
         <div className="border border-border">
-          <div className="flex items-center gap-3 border-b border-border/60 px-3 py-1.5 bg-muted/20">
+          <div role="rowgroup">
+          <div role="row" className="flex items-center gap-3 border-b border-border/60 px-3 py-1.5 bg-muted/20">
             <button
               type="button"
+              role="checkbox"
+              aria-checked={allSelected ? true : someSelected ? ("mixed" as const) : false}
               aria-label="Select all agents"
               onClick={toggleSelectAll}
               className={cn(
@@ -459,18 +462,20 @@ export function Agents() {
                 <span className="h-1.5 w-1.5 rounded-sm bg-foreground/60" />
               )}
             </button>
-            <SortHeader col="name" label="Name" sort={sort} onSort={handleSort} className="flex-1" />
+            <div role="columnheader" className="flex-1"><SortHeader col="name" label="Name" sort={sort} onSort={handleSort} className="flex-1" /></div>
             <div className="hidden sm:flex items-center gap-3">
-              <SortHeader col="cost" label="MTD Cost" sort={sort} onSort={handleSort} className="w-20 justify-end" />
-              <span className="w-28 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Adapter</span>
-              <SortHeader col="lastActive" label="Last Active" sort={sort} onSort={handleSort} className="w-16 justify-end" />
-              <SortHeader col="status" label="Status" sort={sort} onSort={handleSort} className="w-20 justify-end" />
+              <div role="columnheader"><SortHeader col="cost" label="MTD Cost" sort={sort} onSort={handleSort} className="w-20 justify-end" /></div>
+              <span role="columnheader" className="w-28 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Adapter</span>
+              <div role="columnheader"><SortHeader col="lastActive" label="Last Active" sort={sort} onSort={handleSort} className="w-16 justify-end" /></div>
+              <div role="columnheader"><SortHeader col="status" label="Status" sort={sort} onSort={handleSort} className="w-20 justify-end" /></div>
             </div>
           </div>
+          </div>
+          <div role="rowgroup">
           {sortedAgents.map((agent) => {
             const isSelected = selectedIds.has(agent.id);
             return (
-              <div key={agent.id} className="flex items-center hover:bg-accent/30 transition-colors">
+              <div role="row" key={agent.id} className="flex items-center hover:bg-accent/30 transition-colors">
                 <button
                   type="button"
                   role="checkbox"
@@ -485,7 +490,7 @@ export function Agents() {
                     </svg>
                   )}
                 </button>
-                <div className="flex-1 min-w-0">
+                <div role="cell" className="flex-1 min-w-0">
                   <EntityRow
                     title={agent.name}
                     subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
@@ -511,6 +516,7 @@ export function Agents() {
                               agentRef={agentRouteRef(agent)}
                               runId={liveRunByAgent.get(agent.id)!.runId}
                               liveCount={liveRunByAgent.get(agent.id)!.liveCount}
+                              agentName={agent.name}
                             />
                           ) : (
                             <StatusBadge status={agent.status} />
@@ -527,6 +533,7 @@ export function Agents() {
                               agentRef={agentRouteRef(agent)}
                               runId={liveRunByAgent.get(agent.id)!.runId}
                               liveCount={liveRunByAgent.get(agent.id)!.liveCount}
+                              agentName={agent.name}
                             />
                           )}
                           <span className="w-20 whitespace-nowrap text-right font-mono text-xs text-muted-foreground" title="Cost this month">
@@ -551,6 +558,7 @@ export function Agents() {
               </div>
             );
           })}
+          </div>
         </div>
       )}
 
@@ -730,6 +738,7 @@ function OrgTreeNode({
                 agentRef={agent ? agentRouteRef(agent) : node.id}
                 runId={liveRunByAgent.get(node.id)!.runId}
                 liveCount={liveRunByAgent.get(node.id)!.liveCount}
+                agentName={node.name}
               />
             ) : (
               <StatusBadge status={node.status} />
@@ -741,6 +750,7 @@ function OrgTreeNode({
                 agentRef={agent ? agentRouteRef(agent) : node.id}
                 runId={liveRunByAgent.get(node.id)!.runId}
                 liveCount={liveRunByAgent.get(node.id)!.liveCount}
+                agentName={node.name}
               />
             )}
             {agent && (
@@ -774,14 +784,17 @@ function LiveRunIndicator({
   agentRef,
   runId,
   liveCount,
+  agentName,
 }: {
   agentRef: string;
   runId: string;
   liveCount: number;
+  agentName?: string;
 }) {
   return (
     <Link
       to={`/agents/${agentRef}/runs/${runId}`}
+      aria-label={agentName ? `View live run for ${agentName}` : "View live run"}
       className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 hover:bg-blue-500/20 transition-colors no-underline"
       onClick={(e) => e.stopPropagation()}
     >
