@@ -153,7 +153,7 @@ export function JoinRequestQueue() {
 
       <div className="space-y-4">
         {(requestsQuery.data ?? []).length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+          <div role="status" className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
             No join requests match the current filters.
           </div>
         ) : (
@@ -184,7 +184,7 @@ export function JoinRequestQueue() {
                           {request.status.replace("_", " ")}
                         </Badge>
                         <Badge variant="outline">{request.requestType}</Badge>
-                        {request.adapterType ? <Badge variant="outline">{request.adapterType}</Badge> : null}
+                        {request.adapterType ? <Badge variant="outline" aria-label={`Adapter: ${request.adapterType}`}>{request.adapterType}</Badge> : null}
                       </div>
                       <div>
                         <div className="text-base font-medium">
@@ -207,6 +207,7 @@ export function JoinRequestQueue() {
                         <Button
                           variant="outline"
                           aria-label={`Reject request from ${requesterName}`}
+                          aria-busy={isPending}
                           onClick={() => {
                             const id = request.id;
                             setPendingIds((prev) => new Set(prev).add(id));
@@ -222,13 +223,12 @@ export function JoinRequestQueue() {
                           }}
                           disabled={isPending}
                         >
-                          {isPending && rejectMutation.isPending && (
-                            <LoaderCircle className="size-3 animate-spin" aria-hidden="true" />
-                          )}
+                          {isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
                           Reject
                         </Button>
                         <Button
                           aria-label={`Approve request from ${requesterName}`}
+                          aria-busy={isPending}
                           onClick={() => {
                             const id = request.id;
                             setPendingIds((prev) => new Set(prev).add(id));
@@ -244,9 +244,7 @@ export function JoinRequestQueue() {
                           }}
                           disabled={isPending}
                         >
-                          {isPending && approveMutation.isPending && (
-                            <LoaderCircle className="size-3 animate-spin" aria-hidden="true" />
-                          )}
+                          {isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
                           Approve
                         </Button>
                       </div>

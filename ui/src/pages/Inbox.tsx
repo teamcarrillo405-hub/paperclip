@@ -484,6 +484,7 @@ function ApprovalInboxRow({
               className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
               onClick={onApprove}
               disabled={isPending}
+              aria-label={`Approve: ${label}`}
             >
               Approve
             </Button>
@@ -493,6 +494,7 @@ function ApprovalInboxRow({
               className="h-8 px-3"
               onClick={onReject}
               disabled={isPending}
+              aria-label={`Reject: ${label}`}
             >
               Reject
             </Button>
@@ -506,6 +508,7 @@ function ApprovalInboxRow({
             className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
             onClick={onApprove}
             disabled={isPending}
+            aria-label={`Approve: ${label}`}
           >
             Approve
           </Button>
@@ -515,6 +518,7 @@ function ApprovalInboxRow({
             className="h-8 px-3"
             onClick={onReject}
             disabled={isPending}
+            aria-label={`Reject: ${label}`}
           >
             Reject
           </Button>
@@ -612,6 +616,7 @@ function JoinRequestInboxRow({
             className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
             onClick={onApprove}
             disabled={isPending}
+            aria-label={`Approve: ${label}`}
           >
             Approve
           </Button>
@@ -621,6 +626,7 @@ function JoinRequestInboxRow({
             className="h-8 px-3"
             onClick={onReject}
             disabled={isPending}
+            aria-label={`Reject: ${label}`}
           >
             Reject
           </Button>
@@ -632,6 +638,7 @@ function JoinRequestInboxRow({
           className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
           onClick={onApprove}
           disabled={isPending}
+          aria-label={`Approve: ${label}`}
         >
           Approve
         </Button>
@@ -641,6 +648,7 @@ function JoinRequestInboxRow({
           className="h-8 px-3"
           onClick={onReject}
           disabled={isPending}
+          aria-label={`Reject: ${label}`}
         >
           Reject
         </Button>
@@ -1399,6 +1407,9 @@ export function Inbox() {
       queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(originalRun.companyId, originalRun.agentId) });
       navigate(`/agents/${originalRun.agentId}/runs/${newRun.id}`);
     },
+    onError: (err) => {
+      setActionError(err instanceof Error ? err.message : "Failed to retry run.");
+    },
     onSettled: (_data, _error, run) => {
       if (!run) return;
       setRetryingRunIds((prev) => {
@@ -1885,6 +1896,7 @@ export function Inbox() {
           <Input
             type="search"
             placeholder="Search inbox…"
+            aria-label="Search inbox"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -1932,6 +1944,7 @@ export function Inbox() {
             <Input
               type="search"
               placeholder="Search inbox…"
+              aria-label="Search inbox"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -2026,6 +2039,7 @@ export function Inbox() {
           />
           {canMarkAllRead && (
             <>
+              <div className="w-px h-5 bg-border" aria-hidden="true" />
               <Button
                 type="button"
                 variant="outline"
@@ -2529,7 +2543,7 @@ export function Inbox() {
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Alerts
             </h3>
-            <div className="divide-y divide-border border border-border">
+            <div className="divide-y divide-border rounded-xl overflow-hidden border border-border">
               {showAggregateAgentError && (
                 <div role="alert" className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
                   <Link
@@ -2558,7 +2572,7 @@ export function Inbox() {
                     to="/costs"
                     className="flex flex-1 cursor-pointer items-center gap-3 no-underline text-inherit"
                   >
-                    <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0 text-yellow-400" />
+                    <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
                     <span className="text-sm">
                       Budget at{" "}
                       <span className="font-medium">{dashboard!.costs.monthUtilizationPercent}%</span>{" "}
