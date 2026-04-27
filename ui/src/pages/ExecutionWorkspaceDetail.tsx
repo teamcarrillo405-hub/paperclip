@@ -18,6 +18,7 @@ import { issuesApi } from "../api/issues";
 import { projectsApi } from "../api/projects";
 import { IssuesList } from "../components/IssuesList";
 import { PageTabBar } from "../components/PageTabBar";
+import { PageSkeleton } from "../components/PageSkeleton";
 import {
   buildWorkspaceRuntimeControlSections,
   WorkspaceRuntimeControls,
@@ -450,7 +451,7 @@ export function ExecutionWorkspaceDetail() {
     },
   });
 
-  if (workspaceQuery.isLoading) return <p className="text-sm text-muted-foreground">Loading workspace…</p>;
+  if (workspaceQuery.isLoading) return <PageSkeleton variant="detail" />;
   if (workspaceQuery.error) {
     return (
       <p className="text-sm text-destructive">
@@ -520,7 +521,7 @@ export function ExecutionWorkspaceDetail() {
           <StatusPill>{workspace.mode}</StatusPill>
           <StatusPill>{workspace.providerType}</StatusPill>
           <StatusPill className={workspace.status === "active" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : undefined}>
-            {workspace.status}
+            {workspace.status === "active" ? "● " : "○ "}{workspace.status}
           </StatusPill>
         </div>
 

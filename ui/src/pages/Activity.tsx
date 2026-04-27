@@ -121,7 +121,12 @@ export function Activity() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Activity</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Activity
+          {filtered !== undefined && (
+            <span className="ml-2 text-base text-muted-foreground font-normal">({filtered.length})</span>
+          )}
+        </h1>
       </div>
       {(!error || data) && (
         <div className="flex items-center justify-end gap-2">

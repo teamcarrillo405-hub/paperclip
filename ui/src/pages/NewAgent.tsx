@@ -67,7 +67,7 @@ export function NewAgent() {
   const [roleOpen, setRoleOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const { data: agents } = useQuery({
+  const { data: agents, isLoading: agentsLoading } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -92,7 +92,7 @@ export function NewAgent() {
     enabled: Boolean(selectedCompanyId),
   });
 
-  const isFirstAgent = !agents || agents.length === 0;
+  const isFirstAgent = !agentsLoading && (!agents || agents.length === 0);
   const effectiveRole = isFirstAgent ? "ceo" : role;
 
   useEffect(() => {
@@ -269,7 +269,10 @@ export function NewAgent() {
           />
         </div>
 
-        {/* Shared config form */}
+        {/* AI Adapter section */}
+        <div className="border-t border-border px-4 py-3">
+          <h2 className="text-sm font-medium">AI Adapter</h2>
+        </div>
         <AgentConfigForm
           mode="create"
           values={configValues}

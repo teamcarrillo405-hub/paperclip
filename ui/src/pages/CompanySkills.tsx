@@ -687,20 +687,24 @@ function SkillPane({
             {file?.markdown && !editMode && (
               <div className="flex items-center border border-border">
                 <button
-                  className={cn("px-3 py-1.5 text-sm", viewMode === "preview" && "text-foreground", viewMode !== "preview" && "text-muted-foreground")}
+                  type="button"
+                  aria-pressed={viewMode === "preview"}
+                  className={cn("px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring", viewMode === "preview" && "text-foreground", viewMode !== "preview" && "text-muted-foreground")}
                   onClick={() => setViewMode("preview")}
                 >
                   <span className="flex items-center gap-1.5">
-                    <Eye className="h-3.5 w-3.5" />
+                    <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                     View
                   </span>
                 </button>
                 <button
-                  className={cn("border-l border-border px-3 py-1.5 text-sm", viewMode === "code" && "text-foreground", viewMode !== "code" && "text-muted-foreground")}
+                  type="button"
+                  aria-pressed={viewMode === "code"}
+                  className={cn("border-l border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring", viewMode === "code" && "text-foreground", viewMode !== "code" && "text-muted-foreground")}
                   onClick={() => setViewMode("code")}
                 >
                   <span className="flex items-center gap-1.5">
-                    <Code2 className="h-3.5 w-3.5" />
+                    <Code2 className="h-3.5 w-3.5" aria-hidden="true" />
                     Code
                   </span>
                 </button>
@@ -1200,7 +1204,8 @@ export function CompanySkills() {
                 value={skillFilter}
                 onChange={(event) => setSkillFilter(event.target.value)}
                 placeholder="Filter skills"
-                className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                aria-label="Filter skills"
+                className="w-full bg-transparent text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring placeholder:text-muted-foreground"
               />
             </div>
 
@@ -1209,7 +1214,8 @@ export function CompanySkills() {
                 value={source}
                 onChange={(event) => setSource(event.target.value)}
                 placeholder="Paste path, GitHub URL, or skills.sh command"
-                className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                aria-label="Import skill source"
+                className="w-full bg-transparent text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring placeholder:text-muted-foreground"
               />
               <Button
                 size="sm"
@@ -1238,7 +1244,12 @@ export function CompanySkills() {
           {skillsQuery.isLoading ? (
             <PageSkeleton variant="list" />
           ) : skillsQuery.error ? (
-            <div className="px-4 py-6 text-sm text-destructive">{skillsQuery.error.message}</div>
+            <div role="alert" className="px-4 py-6 space-y-2">
+              <p className="text-sm text-destructive">{skillsQuery.error.message}</p>
+              <button type="button" className="text-xs text-destructive/70 hover:text-destructive underline" onClick={() => skillsQuery.refetch()}>
+                Retry
+              </button>
+            </div>
           ) : (
             <SkillList
               skills={skillsQuery.data ?? []}

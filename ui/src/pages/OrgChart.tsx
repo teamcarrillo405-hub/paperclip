@@ -525,6 +525,7 @@ export function OrgChart() {
 
         {/* SVG layer for edges */}
         <svg
+          aria-hidden="true"
           className="absolute inset-0 pointer-events-none"
           style={{
             width: "100%",
