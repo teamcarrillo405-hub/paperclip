@@ -160,6 +160,14 @@ function EntityChip({ type }: { type: "issue" | "agent" | "project" | "goal" | "
   );
 }
 
+function ActionChip({ icon: Icon, bg, color }: { icon: typeof StopCircle; bg: string; color: string }) {
+  return (
+    <span className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded mr-2", bg)}>
+      <Icon className={cn("h-3 w-3", color)} />
+    </span>
+  );
+}
+
 function HighlightMatch({ text, query }: { text: string; query: string }) {
   if (!query) return <>{text}</>;
   const tl = text.toLowerCase();
@@ -543,9 +551,7 @@ export function CommandPalette() {
                   className="group/item flex items-center justify-between"
                 >
                   <span className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted">
-                      <item.icon className="h-3 w-3 text-muted-foreground" />
-                    </span>
+                    <ActionChip icon={item.icon} bg="bg-muted" color="text-muted-foreground" />
                     <HighlightMatch text={item.label} query={searchQuery} />
                   </span>
                   <span className="flex items-center gap-2 ml-2">
@@ -582,9 +588,7 @@ export function CommandPalette() {
                       )
                     }
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-destructive/10 mr-2">
-                      <StopCircle className="h-3 w-3 text-destructive" />
-                    </span>
+                    <ActionChip icon={StopCircle} bg="bg-destructive/10" color="text-destructive" />
                     <span className="flex-1 truncate">Cancel run &mdash; {run.agentName}</span>
                   </CommandItem>
                   <CommandItem
@@ -594,9 +598,7 @@ export function CommandPalette() {
                       )
                     }
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-amber-500/10 mr-2">
-                      <PauseCircle className="h-3 w-3 text-amber-500" />
-                    </span>
+                    <ActionChip icon={PauseCircle} bg="bg-amber-500/10" color="text-amber-500" />
                     <span className="flex-1 truncate">Pause agent &mdash; {run.agentName}</span>
                   </CommandItem>
                 </Fragment>
@@ -630,9 +632,7 @@ export function CommandPalette() {
                         )
                       }
                     >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-green-500/10 mr-2">
-                        <CheckCircle2 className="h-3 w-3 text-green-600" />
-                      </span>
+                      <ActionChip icon={CheckCircle2} bg="bg-green-500/10" color="text-green-600" />
                       <span className="flex-1 truncate">Approve &mdash; {subject}</span>
                     </CommandItem>
                     <CommandItem
@@ -642,9 +642,7 @@ export function CommandPalette() {
                         )
                       }
                     >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-destructive/10 mr-2">
-                        <XCircle className="h-3 w-3 text-destructive" />
-                      </span>
+                      <ActionChip icon={XCircle} bg="bg-destructive/10" color="text-destructive" />
                       <span className="flex-1 truncate">Reject &mdash; {subject}</span>
                     </CommandItem>
                   </Fragment>

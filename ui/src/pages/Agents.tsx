@@ -434,7 +434,7 @@ export function Agents() {
           {sortedAgents.map((agent) => {
             const isSelected = selectedIds.has(agent.id);
             return (
-              <div key={agent.id} className="flex items-center">
+              <div key={agent.id} className="flex items-center hover:bg-accent/30 transition-colors">
                 <button
                   type="button"
                   aria-label={`Select ${agent.name}`}
@@ -477,11 +477,11 @@ export function Agents() {
                           ) : (
                             <StatusBadge status={agent.status} />
                           )}
-                          {costByAgentId.has(agent.id) && costByAgentId.get(agent.id)! > 0 && (
-                            <span className="font-mono text-xs text-muted-foreground">
-                              {formatCents(costByAgentId.get(agent.id)!)}
-                            </span>
-                          )}
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {(costByAgentId.get(agent.id) ?? 0) > 0
+                              ? formatCents(costByAgentId.get(agent.id)!)
+                              : <span className="text-muted-foreground/40">&mdash;</span>}
+                          </span>
                         </span>
                         <div className="hidden sm:flex items-center gap-3">
                           {liveRunByAgent.has(agent.id) && (

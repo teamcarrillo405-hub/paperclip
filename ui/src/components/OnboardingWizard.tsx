@@ -773,7 +773,7 @@ export function OnboardingWizard() {
               <span className="sr-only">Close</span>
             </button>
 
-            <div key={step} className="w-full max-w-md mx-auto my-auto px-8 py-12 shrink-0 animate-in fade-in-0 slide-in-from-bottom-3 duration-200">
+            <div className="w-full max-w-md mx-auto my-auto px-8 py-12 shrink-0">
               {/* Mobile-only step tabs */}
               <div className="flex items-center gap-0 mb-8 border-b border-border md:hidden">
                 {STEPS.map(({ step: s, label, icon: Icon }) => (
@@ -798,7 +798,7 @@ export function OnboardingWizard() {
               </div>
 
               {/* Step heading + content — keyed so React remounts on step change, triggering enter animation */}
-              <div key={`wizard-step-${step}`} className="wizard-step-enter">
+              <div key={`wizard-step-${step}`} className="wizard-step-enter animate-in fade-in-0 slide-in-from-bottom-3 duration-200">
 
               <div className="mb-7">
                 <p className="text-[#2F80FF] text-xs font-semibold tracking-[0.25em] uppercase mb-3">
@@ -1501,7 +1501,7 @@ function AgentPreviewCard({
         <div className="flex flex-col gap-0.5">
           <p className="text-[10px] text-zinc-400 uppercase tracking-[0.15em]">Name</p>
           <p
-            className="text-sm font-semibold text-zinc-900 leading-snug transition-all duration-150"
+            className="text-sm font-semibold text-[#2F80FF] leading-snug transition-all duration-150"
             style={{ fontFamily: "'Sora', sans-serif" }}
           >
             {displayName}

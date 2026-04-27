@@ -202,7 +202,7 @@ export function Sidebar() {
           size="icon-sm"
           className="text-muted-foreground shrink-0"
           onClick={openSearch}
-          title="Search"
+          title="Search (⌘K)"
         >
           <Search className="h-4 w-4" />
         </Button>
@@ -216,11 +216,14 @@ export function Sidebar() {
             <div className="px-3 py-1.5">
               <span
                 className={cn(
-                  "block text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
+                  "flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
                   collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
                 )}
               >
                 Favorites
+                <span className="px-1 py-0.5 rounded bg-muted text-muted-foreground/60 text-[9px] font-semibold tabular-nums leading-none">
+                  {favoritePaths.length}
+                </span>
               </span>
             </div>
             <div className="flex flex-col gap-0.5">
