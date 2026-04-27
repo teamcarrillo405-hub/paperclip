@@ -461,9 +461,14 @@ export function ExecutionWorkspaceDetail() {
   if (workspaceQuery.isLoading) return <PageSkeleton variant="detail" />;
   if (workspaceQuery.error) {
     return (
-      <p role="alert" className="text-sm text-destructive">
-        {workspaceQuery.error instanceof Error ? workspaceQuery.error.message : "Failed to load workspace"}
-      </p>
+      <div className="flex items-center gap-3">
+        <p role="alert" className="text-sm text-destructive">
+          {workspaceQuery.error instanceof Error ? workspaceQuery.error.message : "Failed to load workspace"}
+        </p>
+        <Button size="sm" variant="ghost" onClick={() => void workspaceQuery.refetch()} disabled={workspaceQuery.isRefetching}>
+          {workspaceQuery.isRefetching ? "Retrying…" : "Retry"}
+        </Button>
+      </div>
     );
   }
   if (!workspace || !form || !initialState) return <PageSkeleton variant="detail" />;
@@ -616,7 +621,7 @@ export function ExecutionWorkspaceDetail() {
 
                 <div className="space-y-6">
                   <div className="space-y-4">
-                    <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">General</div>
+                    <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">General</h3>
                     <Field label="Workspace name">
                       <Input
                         value={form.name}
@@ -629,7 +634,7 @@ export function ExecutionWorkspaceDetail() {
                   <Separator />
 
                   <div className="space-y-4">
-                    <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Source control</div>
+                    <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Source control</h3>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Field label="Branch name" hint="Useful for isolated worktrees">
                         <Input
@@ -662,7 +667,7 @@ export function ExecutionWorkspaceDetail() {
                   <Separator />
 
                   <div className="space-y-4">
-                    <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Paths</div>
+                    <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Paths</h3>
                     <Field label="Working directory">
                       <Input
                         className="font-mono"
@@ -685,7 +690,7 @@ export function ExecutionWorkspaceDetail() {
                   <Separator />
 
                   <div className="space-y-4">
-                    <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Lifecycle commands</div>
+                    <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Lifecycle commands</h3>
                     <Field label="Provision command" hint="Runs when Paperclip prepares this execution workspace">
                       <Textarea
                         className="min-h-20 font-mono"
@@ -717,7 +722,7 @@ export function ExecutionWorkspaceDetail() {
                   <Separator />
 
                   <div className="space-y-4">
-                    <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Runtime config</div>
+                    <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Runtime config</h3>
                     <div className="rounded-md border border-dashed border-border/70 bg-background px-4 py-3">
                       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                         <div className="space-y-1">
@@ -794,7 +799,9 @@ export function ExecutionWorkspaceDetail() {
                               />
                               <label htmlFor="inherit-runtime-config">Inherit project workspace runtime config</label>
                             </div>
+                            <label htmlFor="runtime-json-editor" className="sr-only">Advanced runtime JSON</label>
                             <Textarea
+                              id="runtime-json-editor"
                               className="min-h-64 font-mono sm:min-h-96"
                               value={form.workspaceRuntime}
                               onChange={(event) => setForm((current) => current ? { ...current, workspaceRuntime: event.target.value } : current)}

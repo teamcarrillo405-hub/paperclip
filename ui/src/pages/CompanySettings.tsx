@@ -172,7 +172,7 @@ export function CompanySettings() {
         setSnippetCopyDelightId((prev) => prev + 1);
         setTimeout(() => setSnippetCopied(false), 2000);
       } catch {
-        /* clipboard may not be available */
+        setInviteError("Could not copy to clipboard. Try copying manually.");
       }
       queryClient.invalidateQueries({
         queryKey: queryKeys.sidebarBadges(selectedCompanyId!)
@@ -290,9 +290,9 @@ export function CompanySettings() {
 
       {/* General */}
       <div className="space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           General
-        </div>
+        </h2>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
           <Field label="Company name" hint="The display name for your company.">
             <input
@@ -319,9 +319,9 @@ export function CompanySettings() {
 
       {/* Appearance */}
       <div className="space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Appearance
-        </div>
+        </h2>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
           <div className="flex items-start gap-4">
             <div className="shrink-0">
@@ -358,17 +358,16 @@ export function CompanySettings() {
                       </Button>
                     </div>
                   )}
-                  {(logoUploadMutation.isError || logoUploadError) && (
+                  {(logoUploadError || logoUploadMutation.isError || clearLogoMutation.isError) && (
                     <span role="alert" className="text-xs text-destructive">
                       {logoUploadError ??
-                        (logoUploadMutation.error instanceof Error
-                          ? logoUploadMutation.error.message
-                          : "Logo upload failed")}
-                    </span>
-                  )}
-                  {clearLogoMutation.isError && (
-                    <span role="alert" className="text-xs text-destructive">
-                      {clearLogoMutation.error.message}
+                        (logoUploadMutation.isError
+                          ? (logoUploadMutation.error instanceof Error
+                              ? logoUploadMutation.error.message
+                              : "Logo upload failed")
+                          : (clearLogoMutation.error instanceof Error
+                              ? clearLogoMutation.error.message
+                              : "Failed to remove logo"))}
                     </span>
                   )}
                   {logoUploadMutation.isPending && (
@@ -382,12 +381,6 @@ export function CompanySettings() {
                 htmlFor="brand-color-hex"
               >
                 <div className="flex items-center gap-2">
-                  <label
-                    htmlFor="brand-color-picker"
-                    className="text-xs text-muted-foreground sr-only"
-                  >
-                    Brand color picker
-                  </label>
                   <input
                     id="brand-color-picker"
                     type="color"
@@ -441,9 +434,9 @@ export function CompanySettings() {
 
       {/* Hiring */}
       <div className="space-y-4" data-testid="company-settings-team-section">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Hiring
-        </div>
+        </h2>
         <div className="rounded-md border border-border px-4 py-3">
           <ToggleField
             label="Require board approval for new hires"
@@ -457,9 +450,9 @@ export function CompanySettings() {
       </div>
 
       <div className="space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Feedback Sharing
-        </div>
+        </h2>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
           <ToggleField
             label="Allow sharing voted AI outputs with Paperclip Labs"
@@ -501,9 +494,9 @@ export function CompanySettings() {
 
       {/* Invites */}
       <div className="space-y-4" data-testid="company-settings-invites-section">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Invites
-        </div>
+        </h2>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-muted-foreground">
@@ -556,7 +549,7 @@ export function CompanySettings() {
                 <textarea
                   data-testid="company-settings-invites-snippet-textarea"
                   aria-label="OpenClaw invite prompt snippet"
-                  className="h-[28rem] w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                  className="max-h-[28rem] overflow-y-auto w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                   value={inviteSnippet}
                   readOnly
                 />
@@ -572,7 +565,7 @@ export function CompanySettings() {
                         setSnippetCopyDelightId((prev) => prev + 1);
                         setTimeout(() => setSnippetCopied(false), 2000);
                       } catch {
-                        /* clipboard may not be available */
+                        setInviteError("Could not copy to clipboard. Try copying manually.");
                       }
                     }}
                   >
@@ -587,9 +580,9 @@ export function CompanySettings() {
 
       {/* Import / Export */}
       <div className="space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Company Packages
-        </div>
+        </h2>
         <div className="rounded-md border border-border px-4 py-4">
           <p className="text-sm text-muted-foreground">
             Access import, export, and package templates from the links below.
@@ -619,9 +612,9 @@ export function CompanySettings() {
 
       {/* Danger Zone */}
       <div className="space-y-4">
-        <div className="text-xs font-medium text-destructive uppercase tracking-wide">
+        <h2 className="text-xs font-medium text-destructive uppercase tracking-wide">
           Danger Zone
-        </div>
+        </h2>
         <div className="space-y-3 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-4">
           <p className="text-sm text-muted-foreground">
             Archive this company to hide it from the sidebar. This persists in
