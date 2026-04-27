@@ -598,6 +598,7 @@ export function Agents() {
               type="button"
               onClick={handleBulkPause}
               disabled={pauseMutation.isPending}
+              aria-busy={pauseMutation.isPending}
               className="text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
             >
               Pause All
@@ -614,6 +615,7 @@ export function Agents() {
               type="button"
               onClick={() => setConfirmDeleteOpen(true)}
               disabled={deleteMutation.isPending}
+              aria-busy={deleteMutation.isPending}
               className="text-xs text-destructive transition-colors hover:text-destructive/70 disabled:opacity-50"
             >
               Delete All
@@ -708,7 +710,11 @@ function OrgTreeNode({
           {(node.status === "active" || node.status === "running") && (
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-50 ${agentStatusDot[node.status] ?? agentStatusDotDefault}`} aria-hidden="true" />
           )}
-          <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${agentStatusDot[node.status] ?? agentStatusDotDefault}`} />
+          <span
+            role="img"
+            aria-label={`Status: ${node.status}`}
+            className={`relative inline-flex h-2.5 w-2.5 rounded-full ${agentStatusDot[node.status] ?? agentStatusDotDefault}`}
+          />
         </span>
         <div className="flex-1 min-w-0">
           <span className="text-sm font-medium">{node.name}</span>

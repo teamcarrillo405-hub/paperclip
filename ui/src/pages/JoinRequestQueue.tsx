@@ -19,7 +19,7 @@ export function JoinRequestQueue() {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<"pending_approval" | "approved" | "rejected">("pending_approval");
   const [requestType, setRequestType] = useState<"all" | "human" | "agent">("all");
-  const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setBreadcrumbs([
@@ -55,9 +55,6 @@ export function JoinRequestQueue() {
           : "Failed to approve join request. Please try again.";
       pushToast({ title: message, tone: "error" });
     },
-    onSettled: () => {
-      setPendingRequestId(null);
-    },
   });
 
   const rejectMutation = useMutation({
@@ -72,9 +69,6 @@ export function JoinRequestQueue() {
           ? error.message
           : "Failed to reject join request. Please try again.";
       pushToast({ title: message, tone: "error" });
-    },
-    onSettled: () => {
-      setPendingRequestId(null);
     },
   });
 
@@ -175,6 +169,8 @@ export function JoinRequestQueue() {
                   ? request.requesterUser?.email || request.requestEmailSnapshot || request.requestingUserId
                   : request.capabilities || request.requestIp;
 
+              const isPending = pendingIds.has(request.id);
+
               return (
                 <li key={request.id} className="rounded-xl border border-border bg-card p-4">
                   <div className="flex flex-wrap items-start justify-between gap-4">
@@ -212,12 +208,21 @@ export function JoinRequestQueue() {
                           variant="outline"
                           aria-label={`Reject request from ${requesterName}`}
                           onClick={() => {
-                            setPendingRequestId(request.id);
-                            rejectMutation.mutate(request.id);
+                            const id = request.id;
+                            setPendingIds((prev) => new Set(prev).add(id));
+                            rejectMutation.mutate(id, {
+                              onSettled: () => {
+                                setPendingIds((prev) => {
+                                  const next = new Set(prev);
+                                  next.delete(id);
+                                  return next;
+                                });
+                              },
+                            });
                           }}
-                          disabled={pendingRequestId === request.id}
+                          disabled={isPending}
                         >
-                          {pendingRequestId === request.id && rejectMutation.isPending && (
+                          {isPending && rejectMutation.isPending && (
                             <LoaderCircle className="size-3 animate-spin" aria-hidden="true" />
                           )}
                           Reject
@@ -225,12 +230,21 @@ export function JoinRequestQueue() {
                         <Button
                           aria-label={`Approve request from ${requesterName}`}
                           onClick={() => {
-                            setPendingRequestId(request.id);
-                            approveMutation.mutate(request.id);
+                            const id = request.id;
+                            setPendingIds((prev) => new Set(prev).add(id));
+                            approveMutation.mutate(id, {
+                              onSettled: () => {
+                                setPendingIds((prev) => {
+                                  const next = new Set(prev);
+                                  next.delete(id);
+                                  return next;
+                                });
+                              },
+                            });
                           }}
-                          disabled={pendingRequestId === request.id}
+                          disabled={isPending}
                         >
-                          {pendingRequestId === request.id && approveMutation.isPending && (
+                          {isPending && approveMutation.isPending && (
                             <LoaderCircle className="size-3 animate-spin" aria-hidden="true" />
                           )}
                           Approve
