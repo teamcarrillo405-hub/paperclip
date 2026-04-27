@@ -43,10 +43,10 @@ export function Projects() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-foreground">
+        <h1 className="text-2xl font-semibold tracking-tight">
           Projects
-          <span className="ml-1.5 text-muted-foreground font-normal">({projects.length})</span>
-        </h2>
+          <span className="ml-2 text-base text-muted-foreground font-normal">({projects.length})</span>
+        </h1>
         <Button size="sm" variant="outline" onClick={openNewProject}>
           <Plus className="h-4 w-4 mr-1" />
           Add Project

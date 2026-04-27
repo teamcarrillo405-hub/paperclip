@@ -1,7 +1,7 @@
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "@/lib/router";
-import { Check, ChevronDown, ChevronRight, Layers, MoreHorizontal, Plus, Repeat } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, ChevronRight, Layers, MoreHorizontal, Plus, Repeat } from "lucide-react";
 import { routinesApi } from "../api/routines";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
@@ -29,7 +29,6 @@ import {
 } from "../components/RoutineRunVariablesDialog";
 import { RoutineVariablesEditor } from "../components/RoutineVariablesEditor";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
@@ -337,7 +336,7 @@ export function Routines() {
     setRoutineViewState(getRoutineViewState(routineViewStateKey));
   }, [routineViewStateKey]);
 
-  const { data: routines, isLoading, error } = useQuery({
+  const { data: routines, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.routines.list(selectedCompanyId!),
     queryFn: () => routinesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -657,7 +656,7 @@ export function Routines() {
         >
           <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">New routine</p>
+              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">New routine</p>
               <p className="text-sm text-muted-foreground">
                 Define the recurring work first. Default project and agent are optional for draft routines.
               </p>
@@ -844,7 +843,7 @@ export function Routines() {
                 <CollapsibleContent className="pt-3">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Concurrency</p>
+                      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Concurrency</p>
                       <Select
                         value={draft.concurrencyPolicy}
                         onValueChange={(concurrencyPolicy) => setDraft((current) => ({ ...current, concurrencyPolicy }))}
@@ -861,7 +860,7 @@ export function Routines() {
                       <p className="text-xs text-muted-foreground">{concurrencyPolicyDescriptions[draft.concurrencyPolicy]}</p>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Catch-up</p>
+                      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Catch-up</p>
                       <Select
                         value={draft.catchUpPolicy}
                         onValueChange={(catchUpPolicy) => setDraft((current) => ({ ...current, catchUpPolicy }))}
@@ -909,11 +908,22 @@ export function Routines() {
       </Dialog>
 
       {error ? (
-        <Card>
-          <CardContent className="pt-6 text-sm text-destructive">
-            {error instanceof Error ? error.message : "Failed to load routines"}
-          </CardContent>
-        </Card>
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">
+              {error instanceof Error ? error.message : "Failed to load routines"}
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            onClick={() => refetch()}
+          >
+            Retry
+          </Button>
+        </div>
       ) : null}
 
       {activeTab === "routines" ? (

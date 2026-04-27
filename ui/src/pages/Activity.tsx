@@ -148,8 +148,8 @@ export function Activity() {
             size="sm"
             variant="ghost"
             className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
-            onClick={() => refetch()}
             disabled={isRefetching}
+            onClick={() => { setFilter("all"); refetch(); }}
           >
             {isRefetching ? "Retrying…" : "Retry"}
           </Button>
