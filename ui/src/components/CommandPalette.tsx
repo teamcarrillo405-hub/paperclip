@@ -86,13 +86,13 @@ interface PinnedCommand {
   path: string;
 }
 
-const NAV_ITEMS: Array<{ id: string; label: string; path: string; icon: LucideIcon }> = [
-  { id: "nav:/dashboard", label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { id: "nav:/inbox", label: "Inbox", path: "/inbox", icon: Inbox },
-  { id: "nav:/issues", label: "Issues", path: "/issues", icon: CircleDot },
-  { id: "nav:/projects", label: "Projects", path: "/projects", icon: Hexagon },
-  { id: "nav:/goals", label: "Goals", path: "/goals", icon: Target },
-  { id: "nav:/agents", label: "Agents", path: "/agents", icon: Bot },
+const NAV_ITEMS: Array<{ id: string; label: string; path: string; icon: LucideIcon; kbd?: string }> = [
+  { id: "nav:/dashboard", label: "Dashboard", path: "/dashboard", icon: LayoutDashboard, kbd: "D" },
+  { id: "nav:/inbox", label: "Inbox", path: "/inbox", icon: Inbox, kbd: "I" },
+  { id: "nav:/issues", label: "Issues", path: "/issues", icon: CircleDot, kbd: "S" },
+  { id: "nav:/projects", label: "Projects", path: "/projects", icon: Hexagon, kbd: "P" },
+  { id: "nav:/goals", label: "Goals", path: "/goals", icon: Target, kbd: "G" },
+  { id: "nav:/agents", label: "Agents", path: "/agents", icon: Bot, kbd: "A" },
   { id: "nav:/costs", label: "Costs", path: "/costs", icon: DollarSign },
   { id: "nav:/activity", label: "Activity", path: "/activity", icon: History },
 ];
@@ -352,12 +352,14 @@ export function CommandPalette() {
       actionId: "new-agent",
       fn: () => openNewAgent(),
       icon: <Plus className="mr-2 h-4 w-4" />,
+      kbd: "A",
     },
     {
       id: "action-new-project",
       label: "Create new project",
       path: "/projects",
       icon: <Plus className="mr-2 h-4 w-4" />,
+      kbd: "P",
     },
     {
       id: "action-new-goal",
@@ -365,6 +367,7 @@ export function CommandPalette() {
       value: "new goal create goal",
       path: "/goals?new=1",
       icon: <EntityChip type="goal" />,
+      kbd: "G",
     },
     {
       id: "action-new-routine",
@@ -537,28 +540,37 @@ export function CommandPalette() {
                   className="group/item flex items-center justify-between"
                 >
                   <span className="flex items-center gap-2 min-w-0 flex-1">
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    {item.label}
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted">
+                      <item.icon className="h-3 w-3 text-muted-foreground" />
+                    </span>
+                    <HighlightMatch text={item.label} query={searchQuery} />
                   </span>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); togglePin({ id: item.id, label: item.label, path: item.path }); }}
-                    className="opacity-0 group-hover/item:opacity-100 transition-opacity ml-2 p-0.5 text-muted-foreground hover:text-primary shrink-0"
-                    title={isPinned(item.id) ? "Unpin" : "Pin"}
-                  >
-                    {isPinned(item.id) ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
-                  </button>
+                  <span className="flex items-center gap-2 ml-2">
+                    {item.kbd && <KbdBadge keys={item.kbd} />}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); togglePin({ id: item.id, label: item.label, path: item.path }); }}
+                      className="opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-muted-foreground hover:text-primary shrink-0"
+                      title={isPinned(item.id) ? "Unpin" : "Pin"}
+                    >
+                      {isPinned(item.id) ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
+                    </button>
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
           );
         })()}
 
-        {activeRunsByAgent.length > 0 && (
+        {(() => {
+          const filteredRuns = searchQuery.length === 0
+            ? activeRunsByAgent
+            : activeRunsByAgent.filter((r) => r.agentName?.toLowerCase().includes(searchQuery.toLowerCase()));
+          return filteredRuns.length > 0 ? (
           <>
             <CommandSeparator />
             <CommandGroup heading="Agent Operations">
-              {activeRunsByAgent.map((run) => (
+              {filteredRuns.map((run) => (
                 <Fragment key={run.id}>
                   <CommandItem
                     onSelect={() =>
@@ -584,7 +596,8 @@ export function CommandPalette() {
               ))}
             </CommandGroup>
           </>
-        )}
+          ) : null;
+        })()}
 
         {pendingApprovalsFiltered.length > 0 && (
           <>
@@ -670,7 +683,7 @@ export function CommandPalette() {
                   <EntityChip type="agent" />
                   <span
                     className={cn(
-                      "ml-1.5 h-1.5 w-1.5 rounded-full shrink-0",
+                      "ml-2 h-1.5 w-1.5 rounded-full shrink-0",
                       agent.status === "active" || agent.status === "running"
                         ? "bg-emerald-500"
                         : agent.status === "paused"
@@ -680,7 +693,7 @@ export function CommandPalette() {
                         : "bg-muted-foreground/30",
                     )}
                   />
-                  <span className="ml-1.5 flex-1 truncate">
+                  <span className="ml-2 flex-1 truncate">
                     <HighlightMatch text={agent.name} query={searchQuery} />
                   </span>
                   <span className="text-xs text-muted-foreground ml-2">{agent.role}</span>
