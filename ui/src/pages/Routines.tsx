@@ -242,9 +242,9 @@ function RoutineListRow({
         <div className="flex items-center gap-3">
           <ToggleSwitch
             size="lg"
-            checked={enabled}
+            checked={isStatusPending ? !enabled : enabled}
             onCheckedChange={() => onToggleEnabled(routine, enabled)}
-            disabled={isStatusPending || isArchived}
+            disabled={isArchived}
             aria-label={enabled ? `Disable ${routine.title}` : `Enable ${routine.title}`}
           />
           <span className="w-12 text-xs text-muted-foreground">
@@ -820,6 +820,17 @@ export function Routines() {
                 }}
               />
             </div>
+
+            {(draft.variables.length > 0 || draft.title.includes("{{") || draft.description.includes("{{")) && (
+              <div className="border-t border-border/60 px-5 py-3">
+                <RoutineVariablesEditor
+                  title={draft.title}
+                  description={draft.description}
+                  value={draft.variables}
+                  onChange={(variables) => setDraft((c) => ({ ...c, variables }))}
+                />
+              </div>
+            )}
 
             <div className="border-t border-border/60 px-5 py-3">
               <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>

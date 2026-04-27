@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { History, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const ACTIVITY_PAGE_LIMIT = 200;
 
@@ -119,21 +120,23 @@ export function Activity() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-[140px] h-8 text-xs">
-            <SelectValue placeholder="Filter by type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-            {entityTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {!error && (
+        <div className="flex items-center justify-end">
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-[140px] h-8 text-xs">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All types</SelectItem>
+              {entityTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {error && (
         <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
@@ -141,17 +144,22 @@ export function Activity() {
           <div className="flex-1 min-w-0">
             <p className="text-sm text-destructive">{error.message}</p>
           </div>
-          <button
-            className="text-xs text-destructive/70 hover:text-destructive underline shrink-0"
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
             onClick={() => refetch()}
           >
             Retry
-          </button>
+          </Button>
         </div>
       )}
 
       {filtered && filtered.length === 0 && (
-        <EmptyState icon={History} message="No activity yet." />
+        <EmptyState
+          icon={History}
+          message={filter !== "all" ? `No ${filter} events found.` : "No activity yet."}
+        />
       )}
 
       {filtered && filtered.length > 0 && (

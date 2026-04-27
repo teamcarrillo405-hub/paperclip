@@ -42,7 +42,13 @@ export function Projects() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-foreground">
+          Projects
+          {projects.length > 0 && (
+            <span className="ml-1.5 text-muted-foreground font-normal">({projects.length})</span>
+          )}
+        </h2>
         <Button size="sm" variant="outline" onClick={openNewProject}>
           <Plus className="h-4 w-4 mr-1" />
           Add Project
@@ -55,12 +61,14 @@ export function Projects() {
           <div className="flex-1 min-w-0">
             <p className="text-sm text-destructive">{error.message}</p>
           </div>
-          <button
-            className="text-xs text-destructive/70 hover:text-destructive underline shrink-0"
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
             onClick={() => refetch()}
           >
             Retry
-          </button>
+          </Button>
         </div>
       )}
 
@@ -81,6 +89,12 @@ export function Projects() {
               title={project.name}
               subtitle={project.description ?? undefined}
               to={projectUrl(project)}
+              leading={
+                <span
+                  className="h-2 w-2 rounded-full shrink-0"
+                  style={{ backgroundColor: project.color ?? "#64748b" }}
+                />
+              }
               trailing={
                 <div className="flex items-center gap-3">
                   {project.targetDate && (
