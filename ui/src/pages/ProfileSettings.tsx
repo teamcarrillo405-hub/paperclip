@@ -169,7 +169,7 @@ export function ProfileSettings() {
         <div role="alert" className="flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
           <span className="flex-1">{actionError}</span>
-          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="ml-1 flex h-6 w-6 items-center justify-center text-destructive/70 hover:text-destructive">×</button>
+          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="ml-1 flex h-6 w-6 items-center justify-center text-destructive/70 hover:text-destructive"><span aria-hidden="true">×</span></button>
         </div>
       ) : null}
 
@@ -179,7 +179,7 @@ export function ProfileSettings() {
 
       <section className="space-y-8">
         <div className="relative overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-sm">
-          <div className="absolute inset-x-0 top-0 h-32 bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(var(--accent))_58%,color-mix(in_oklab,hsl(var(--background))_76%,white_24%)_100%)]" />
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-br from-primary/30 to-accent/20 bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(var(--accent))_58%,color-mix(in_oklab,hsl(var(--background))_76%,white_24%)_100%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_36%)]" />
           <div className="relative p-6 pt-10">
             <div className="flex flex-wrap items-end gap-5 rounded-[24px] border border-border/70 bg-background/92 p-5 shadow-[0_18px_44px_-28px_rgba(0,0,0,0.45)] backdrop-blur-sm">

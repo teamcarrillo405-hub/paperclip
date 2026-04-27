@@ -178,7 +178,8 @@ export function JoinRequestQueue() {
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge
                           variant={request.status === "pending_approval" ? "secondary" : request.status === "approved" ? "outline" : "destructive"}
-                          className={request.status === "approved" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : undefined}
+                          className={request.status === "approved" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 forced-colors:outline forced-colors:outline-1" : undefined}
+                          data-status={request.status === "approved" ? "approved" : undefined}
                           aria-label={`Status: ${request.status.replace(/_/g, " ")}`}
                         >
                           {request.status.replace("_", " ")}
@@ -257,7 +258,7 @@ export function JoinRequestQueue() {
                       <div className="mt-2">
                         {request.invite
                           ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
-                          : "Invite metadata unavailable"}
+                          : <span className="italic text-muted-foreground/70">Invite metadata unavailable</span>}
                       </div>
                       {request.invite?.inviteMessage ? (
                         <div className="mt-2 text-foreground">{request.invite.inviteMessage}</div>

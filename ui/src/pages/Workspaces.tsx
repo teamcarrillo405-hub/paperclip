@@ -196,7 +196,7 @@ export function Workspaces() {
                   </span>
                   {group.runningServiceCount > 0 && (
                     <span
-                      className="text-xs text-emerald-600 dark:text-emerald-400"
+                      className="border-l border-border pl-2 text-xs text-emerald-600 dark:text-emerald-400"
                       aria-label={`${group.runningServiceCount} running service${group.runningServiceCount === 1 ? "" : "s"}`}
                     >
                       {group.runningServiceCount} running

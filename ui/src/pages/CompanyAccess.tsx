@@ -284,7 +284,7 @@ export function CompanyAccess() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">Company Access</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Company Access</h1>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
           Manage company user memberships, membership status, and explicit permission grants for {selectedCompany?.name}.
@@ -549,13 +549,13 @@ export function CompanyAccess() {
               }}
               disabled={updateMemberMutation.isPending}
             >
-              {updateMemberMutation.isPending ? "Saving..." : "Save access"}
+              {updateMemberMutation.isPending ? "Saving…" : "Save access"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!removingMember} onOpenChange={(open) => !open && setRemovingMemberId(null)}>
+      <Dialog open={!!removingMember} onOpenChange={(open) => { if (!open && archiveMemberMutation.isPending) return; setRemovingMemberId(null); }}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>Remove member</DialogTitle>
@@ -574,6 +574,9 @@ export function CompanyAccess() {
                       ? "Checking assigned issues..."
                       : `${assignedIssues.length} open assigned issue${assignedIssues.length === 1 ? "" : "s"}`}
                   </span>
+                  {assignedIssuesQuery.isError && (
+                    <p role="alert" className="text-xs text-destructive">Could not load assigned issues. You may proceed, but reassignment may be needed manually.</p>
+                  )}
                 </div>
               </div>
 

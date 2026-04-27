@@ -200,12 +200,12 @@ export function NewAgent() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">New Agent</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Advanced agent configuration
+          Configure identity, adapter, and optional skills for the new agent.
         </p>
       </div>
 
       <div className="border border-border rounded-lg overflow-hidden">
-        <fieldset className="contents">
+        <fieldset className="space-y-4 border-0 p-0 m-0">
           <legend className="sr-only">Agent identity</legend>
           {/* Name */}
           <div className="px-4 pt-4 pb-2">
@@ -290,6 +290,9 @@ export function NewAgent() {
             />
           )}
         </div>
+        {isFirstAgent && (
+          <p className="px-4 pb-2 text-xs text-muted-foreground">This agent will be the CEO — role and reporting are fixed.</p>
+        )}
 
         {/* AI Adapter section */}
         <div className="border-t border-border px-4 py-3">
