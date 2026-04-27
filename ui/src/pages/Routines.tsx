@@ -2,6 +2,7 @@ import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "@/lib/router";
 import { AlertCircle, Check, ChevronDown, ChevronRight, Layers, MoreHorizontal, Plus, Repeat } from "lucide-react";
+import { cn } from "../lib/utils";
 import { routinesApi } from "../api/routines";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
@@ -400,6 +401,13 @@ export function Routines() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: [...queryKeys.issues.list(selectedCompanyId!), "routine-executions"] });
     },
+    onError: (mutationError) => {
+      pushToast({
+        title: "Failed to update issue",
+        body: mutationError instanceof Error ? mutationError.message : "Paperclip could not update the issue.",
+        tone: "error",
+      });
+    },
   });
 
   const updateRoutineStatus = useMutation({
@@ -622,7 +630,7 @@ export function Routines() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-44 p-0">
-                <div className="p-2 space-y-0.5">
+                <div className="p-2 space-y-0.5" role="radiogroup" aria-label="Group routines by">
                   {([
                     ["project", "Project"],
                     ["assignee", "Agent"],
@@ -630,6 +638,8 @@ export function Routines() {
                   ] as const).map(([value, label]) => (
                     <button
                       key={value}
+                      role="radio"
+                      aria-checked={routineViewState.groupBy === value}
                       className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm ${
                         routineViewState.groupBy === value
                           ? "bg-accent/50 text-foreground"
@@ -950,16 +960,22 @@ export function Routines() {
                   }}
                 >
                   {group.label ? (
-                    <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-                      <CollapsibleTrigger className="flex items-center gap-1.5">
+                    <div className={cn(
+                      "flex items-center gap-2 px-3 py-2",
+                      !routineViewState.collapsedGroups.includes(group.key) && "border-b border-border",
+                    )}>
+                      <CollapsibleTrigger
+                        className="flex items-center gap-1.5"
+                        aria-label={`${group.label}, ${group.items.length} item${group.items.length === 1 ? "" : "s"}`}
+                      >
                         <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
                         <span className="text-sm font-semibold uppercase tracking-widest">
                           {group.label}
                         </span>
+                        <span className="text-xs text-muted-foreground">
+                          {group.items.length}
+                        </span>
                       </CollapsibleTrigger>
-                      <span className="text-xs text-muted-foreground">
-                        {group.items.length}
-                      </span>
                     </div>
                   ) : null}
                   <CollapsibleContent>
