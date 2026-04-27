@@ -36,6 +36,7 @@ export function Approvals() {
   const [optimisticStatus, setOptimisticStatus] = useState<Record<string, "approved" | "rejected">>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [processingApprovalId, setProcessingApprovalId] = useState<string | null>(null);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -224,10 +225,12 @@ export function Approvals() {
       ? pendingItems.filter((item) => selectedIds.has(item.id))
       : pendingItems;
     setIsBulkApproving(true);
+    setBulkProgress({ done: 0, total: targets.length });
     setActionError(null);
     try {
       for (const item of targets) {
         await approvalsApi.approve(item.id);
+        setBulkProgress((prev) => prev ? { ...prev, done: prev.done + 1 } : null);
       }
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
@@ -235,6 +238,7 @@ export function Approvals() {
       setActionError(err instanceof Error ? err.message : "Bulk approve failed");
     } finally {
       setIsBulkApproving(false);
+      setBulkProgress(null);
     }
   }
 
@@ -243,10 +247,12 @@ export function Approvals() {
       ? pendingItems.filter((item) => selectedIds.has(item.id))
       : pendingItems;
     setIsBulkRejecting(true);
+    setBulkProgress({ done: 0, total: targets.length });
     setActionError(null);
     try {
       for (const item of targets) {
         await approvalsApi.reject(item.id);
+        setBulkProgress((prev) => prev ? { ...prev, done: prev.done + 1 } : null);
       }
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
@@ -254,6 +260,7 @@ export function Approvals() {
       setActionError(err instanceof Error ? err.message : "Bulk reject failed");
     } finally {
       setIsBulkRejecting(false);
+      setBulkProgress(null);
     }
   }
 
@@ -336,7 +343,7 @@ export function Approvals() {
               {isBulkApproving ? (
                 <>
                   <LoaderCircle className="h-3 w-3 animate-spin" aria-hidden="true" />
-                  Working...
+                  Working...{bulkProgress ? ` (${bulkProgress.done}/${bulkProgress.total})` : ""}
                 </>
               ) : selectedIds.size > 0 ? `Approve (${selectedIds.size})` : "Approve All"}
             </button>
@@ -354,7 +361,7 @@ export function Approvals() {
               {isBulkRejecting ? (
                 <>
                   <LoaderCircle className="h-3 w-3 animate-spin" aria-hidden="true" />
-                  Working...
+                  Working...{bulkProgress ? ` (${bulkProgress.done}/${bulkProgress.total})` : ""}
                 </>
               ) : selectedIds.size > 0 ? `Reject (${selectedIds.size})` : "Reject All"}
             </button>
@@ -431,7 +438,7 @@ export function Approvals() {
       )}
 
       {filtered.length > 0 && (
-        <div role="feed" aria-label={statusFilter === "all" ? "All approvals" : "Pending approvals"} className="grid gap-3">
+        <div role="feed" aria-label={statusFilter === "all" ? "All approvals" : "Pending approvals"} aria-busy={isBulkOperating} className="grid gap-3">
           {filtered.map((approval, idx) => {
             const isFocused = focusedIndex === idx;
             const isSelected = selectedIds.has(approval.id);

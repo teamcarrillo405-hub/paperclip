@@ -217,7 +217,10 @@ function RoutineListRow({
   const isDraft = !isArchived && !routine.assigneeAgentId;
 
   return (
-    <div className="group flex flex-col gap-3 border-b border-border px-3 py-3 transition-colors hover:bg-accent/50 last:border-b-0 sm:flex-row sm:items-center">
+    <div className={cn(
+      "group flex flex-col gap-3 border-b border-border px-3 py-3 transition-colors hover:bg-accent/50 last:border-b-0 sm:flex-row sm:items-center",
+      isStatusPending && "opacity-60 pointer-events-none",
+    )}>
       {runningRoutineId === routine.id && <span className="sr-only">Running</span>}
       <Link
         to={href}
@@ -799,7 +802,7 @@ export function Routines() {
         >
           <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
             <div>
-              <DialogTitle className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              <DialogTitle className="text-lg font-semibold">
                 New routine
               </DialogTitle>
               <p className="text-sm text-muted-foreground">

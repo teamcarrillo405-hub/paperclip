@@ -562,10 +562,15 @@ function JoinRequestInboxRow({
   const showUnreadDot = unreadState === "visible" || unreadState === "fading";
 
   return (
-    <div className={cn(
-      "group border-b border-border px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
-      className,
-    )}>
+    <div
+      role="article"
+      tabIndex={0}
+      className={cn(
+        "group border-b border-border px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+        className,
+      )}
+    >
       <div className="flex items-start gap-2 sm:items-center">
         {showUnreadSlot ? (
           <span className="hidden sm:inline-flex h-4 w-4 shrink-0 items-center justify-center self-center">
