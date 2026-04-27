@@ -359,7 +359,11 @@ export function Agents() {
             {
               label: "Active Now",
               value: String(
-                (runs ?? []).filter((r) => r.status === "running" || r.status === "queued").length,
+                new Set(
+                  (runs ?? [])
+                    .filter((r) => r.status === "running" || r.status === "queued")
+                    .map((r) => r.agentId),
+                ).size,
               ),
             },
             {
@@ -369,7 +373,10 @@ export function Agents() {
                 return total > 0 ? formatCents(total) : "—";
               })(),
             },
-            { label: "Runs Today", value: String((runs ?? []).length) },
+            {
+              label: "Live Runs",
+              value: String((runs ?? []).filter((r) => r.status === "running" || r.status === "queued").length),
+            },
           ].map(({ label, value }) => (
             <div
               key={label}
