@@ -39,9 +39,9 @@ export function GoalPropertiesToggleButton({
         panelVisible ? "opacity-0 pointer-events-none w-0 overflow-hidden" : "opacity-100",
       )}
       onClick={onShowProperties}
-      title="Show properties"
+      aria-label="Show properties"
     >
-      <SlidersHorizontal className="h-4 w-4" />
+      <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
     </Button>
   );
 }
@@ -59,6 +59,7 @@ export function GoalDetail() {
     isLoading,
     error,
     refetch,
+    isRefetching,
   } = useQuery({
     queryKey: queryKeys.goals.detail(goalId!),
     queryFn: () => goalsApi.get(goalId!),
@@ -95,7 +96,10 @@ export function GoalDetail() {
           queryKey: queryKeys.goals.list(resolvedCompanyId)
         });
       }
-    }
+    },
+    onError: (err: Error) => {
+      alert(`Failed to update goal: ${err.message}`);
+    },
   });
 
   const uploadImage = useMutation({
@@ -106,7 +110,10 @@ export function GoalDetail() {
         file,
         `goals/${goalId ?? "draft"}`
       );
-    }
+    },
+    onError: (err: Error) => {
+      alert(`Failed to upload image: ${err.message}`);
+    },
   });
 
   const childGoals = (allGoals ?? []).filter((g) => g.parentId === goalId);
@@ -138,17 +145,20 @@ export function GoalDetail() {
 
   if (isLoading) return <PageSkeleton variant="detail" />;
   if (error) return (
-    <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+    <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
       <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
         <p className="text-sm text-destructive">{error.message}</p>
       </div>
-      <button
-        className="text-xs text-destructive/70 hover:text-destructive underline shrink-0"
+      <Button
+        size="sm"
+        variant="ghost"
+        className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+        disabled={isRefetching}
         onClick={() => refetch()}
       >
-        Retry
-      </button>
+        {isRefetching ? "Retrying…" : "Retry"}
+      </Button>
     </div>
   );
   if (!goal) return null;

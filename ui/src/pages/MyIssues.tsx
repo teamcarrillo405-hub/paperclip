@@ -10,7 +10,8 @@ import { EntityRow } from "../components/EntityRow";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { formatDate } from "../lib/utils";
-import { ListTodo } from "lucide-react";
+import { ListTodo, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function MyIssues() {
   const { selectedCompanyId } = useCompany();
@@ -20,7 +21,7 @@ export function MyIssues() {
     setBreadcrumbs([{ label: "My Issues" }]);
   }, [setBreadcrumbs]);
 
-  const { data: issues, isLoading, error } = useQuery({
+  const { data: issues, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.issues.list(selectedCompanyId!),
     queryFn: () => issuesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -41,14 +42,30 @@ export function MyIssues() {
 
   return (
     <div className="space-y-4">
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{error.message || "Failed to load issues."}</p>
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            disabled={isRefetching}
+            onClick={() => refetch()}
+          >
+            {isRefetching ? "Retrying…" : "Retry"}
+          </Button>
+        </div>
+      )}
 
-      {myIssues.length === 0 && (
+      {!error && myIssues.length === 0 && (
         <EmptyState icon={ListTodo} message="No issues assigned to you." />
       )}
 
       {myIssues.length > 0 && (
-        <div className="border border-border">
+        <div className="rounded-lg border border-border overflow-hidden">
           {myIssues.map((issue) => (
             <EntityRow
               key={issue.id}
