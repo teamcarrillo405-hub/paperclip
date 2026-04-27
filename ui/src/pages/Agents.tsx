@@ -473,6 +473,8 @@ export function Agents() {
               <div key={agent.id} className="flex items-center hover:bg-accent/30 transition-colors">
                 <button
                   type="button"
+                  role="checkbox"
+                  aria-checked={selectedIds.has(agent.id)}
                   aria-label={`Select ${agent.name}`}
                   onClick={() => toggleSelect(agent.id)}
                   className="ml-3 flex h-4 w-4 shrink-0 items-center justify-center border border-border rounded-sm transition-colors hover:border-foreground/50"
@@ -583,7 +585,11 @@ export function Agents() {
 
       {someSelected && (
         <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
-          <div className="flex items-center gap-3 rounded-none border border-border bg-popover px-4 py-2.5 shadow-xl">
+          <div
+            role="toolbar"
+            aria-label="Bulk actions"
+            className="flex items-center gap-3 rounded-none border border-border bg-popover px-4 py-2.5 shadow-xl"
+          >
             <span className="text-xs font-medium text-foreground">
               {selectedIds.size} selected
             </span>

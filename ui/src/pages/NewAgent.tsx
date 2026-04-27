@@ -210,7 +210,7 @@ export function NewAgent() {
           <label htmlFor="new-agent-name" className="sr-only">Agent name</label>
           <input
             id="new-agent-name"
-            className="w-full text-lg font-semibold bg-transparent outline-none placeholder:text-muted-foreground/50"
+            className="w-full text-lg font-semibold bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
             placeholder="Agent name"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -223,7 +223,7 @@ export function NewAgent() {
           <label htmlFor="new-agent-title" className="sr-only">Agent title</label>
           <input
             id="new-agent-title"
-            className="w-full bg-transparent outline-none text-sm text-muted-foreground placeholder:text-muted-foreground/40"
+            className="w-full bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm text-muted-foreground placeholder:text-muted-foreground/40"
             placeholder="Title (e.g. VP of Engineering)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -232,50 +232,58 @@ export function NewAgent() {
 
         {/* Property chips: Role + Reports To */}
         <div className="flex items-center gap-1.5 px-4 py-2 border-t border-border flex-wrap">
-          <Popover open={roleOpen} onOpenChange={setRoleOpen}>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                aria-label={`Agent role: ${effectiveRole}`}
-                aria-expanded={roleOpen}
-                aria-haspopup="listbox"
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors",
-                  isFirstAgent && "opacity-60 cursor-not-allowed"
-                )}
-                disabled={isFirstAgent}
-              >
-                <Shield className="h-3 w-3 text-muted-foreground" />
-                {roleLabels[effectiveRole] ?? effectiveRole}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-36 p-1" align="start">
-              <div role="listbox">
-                {AGENT_ROLES.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    role="option"
-                    aria-selected={effectiveRole === r}
-                    className={cn(
-                      "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                      r === role && "bg-accent"
-                    )}
-                    onClick={() => { setRole(r); setRoleOpen(false); }}
-                  >
-                    {roleLabels[r] ?? r}
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+          {agentsLoading && (
+            <div className="h-8 rounded bg-muted animate-pulse w-24" />
+          )}
+          {!agentsLoading && (
+            <Popover open={roleOpen} onOpenChange={setRoleOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={`Agent role: ${effectiveRole}`}
+                  aria-expanded={roleOpen}
+                  aria-haspopup="listbox"
+                  aria-controls="role-listbox"
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors",
+                    isFirstAgent && "opacity-60 cursor-not-allowed"
+                  )}
+                  disabled={isFirstAgent}
+                >
+                  <Shield className="h-3 w-3 text-muted-foreground" />
+                  {roleLabels[effectiveRole] ?? effectiveRole}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-36 p-1" align="start">
+                <div id="role-listbox" role="listbox">
+                  {AGENT_ROLES.map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      role="option"
+                      aria-selected={effectiveRole === r}
+                      className={cn(
+                        "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
+                        r === role && "bg-accent"
+                      )}
+                      onClick={() => { setRole(r); setRoleOpen(false); }}
+                    >
+                      {roleLabels[r] ?? r}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
 
-          <ReportsToPicker
-            agents={agents ?? []}
-            value={reportsTo}
-            onChange={setReportsTo}
-            disabled={isFirstAgent}
-          />
+          {!agentsLoading && (
+            <ReportsToPicker
+              agents={agents ?? []}
+              value={reportsTo}
+              onChange={setReportsTo}
+              disabled={isFirstAgent}
+            />
+          )}
         </div>
 
         {/* AI Adapter section */}
