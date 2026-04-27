@@ -501,11 +501,24 @@ export function OrgChart() {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          const PAN_STEP = 80;
+          if (e.key === "ArrowLeft") { e.preventDefault(); setPan(p => ({ ...p, x: p.x + PAN_STEP })); }
+          if (e.key === "ArrowRight") { e.preventDefault(); setPan(p => ({ ...p, x: p.x - PAN_STEP })); }
+          if (e.key === "ArrowUp") { e.preventDefault(); setPan(p => ({ ...p, y: p.y + PAN_STEP })); }
+          if (e.key === "ArrowDown") { e.preventDefault(); setPan(p => ({ ...p, y: p.y - PAN_STEP })); }
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
       >
+        {/* Status dot color legend for screen readers */}
+        <div className="sr-only" role="note">
+          Status indicator colors: cyan = running, green = active, yellow = idle, red = error, gray = offline
+        </div>
+
         {/* Zoom controls */}
         <div role="group" aria-label="Zoom controls" className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
           {/* Fix 6: focus-visible ring on zoom buttons */}
@@ -623,7 +636,7 @@ export function OrgChart() {
                   {/* Agent icon + status dot */}
                   <div className="relative shrink-0">
                     <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
-                      <AgentIcon icon={agent?.icon} className="h-4.5 w-4.5 text-foreground/70" />
+                      <AgentIcon icon={agent?.icon} className="h-[18px] w-[18px] text-foreground/70" />
                     </div>
                     {/* Fix 2: status dot with role=img and aria-label */}
                     <span
@@ -647,7 +660,8 @@ export function OrgChart() {
                     )}
                     {agent && agent.capabilities && (
                       <span
-                        title={agent.capabilities}
+                        tabIndex={0}
+                        aria-label={agent.capabilities}
                         className="text-xs text-muted-foreground/80 leading-tight mt-1 line-clamp-2 overflow-hidden w-full"
                       >
                         {agent.capabilities}

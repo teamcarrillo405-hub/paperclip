@@ -328,6 +328,7 @@ export function ExecutionWorkspaceDetail() {
   const [runtimeActionErrorMessage, setRuntimeActionErrorMessage] = useState<string | null>(null);
   const [runtimeActionMessage, setRuntimeActionMessage] = useState<string | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
   const activeTab = workspaceId ? resolveExecutionWorkspaceTab(location.pathname, workspaceId) : null;
 
   const workspaceQuery = useQuery({
@@ -422,6 +423,7 @@ export function ExecutionWorkspaceDetail() {
         queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(sourceIssue.id) });
       }
       setErrorMessage(null);
+      setHasSaved(true);
     },
     onError: (error) => {
       setErrorMessage(error instanceof Error ? error.message : "Failed to save execution workspace.");
@@ -587,7 +589,7 @@ export function ExecutionWorkspaceDetail() {
                   onAction={(request) => controlRuntimeServices.mutate(request)}
                 />
                 {runtimeActionErrorMessage ? <p role="alert" className="mt-4 text-sm text-destructive">{runtimeActionErrorMessage}</p> : null}
-                {!runtimeActionErrorMessage && runtimeActionMessage ? <p className="mt-4 text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
+                {!runtimeActionErrorMessage && runtimeActionMessage ? <p role="status" aria-live="polite" className="mt-4 text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
                 </CardContent>
               </Card>
 
@@ -730,11 +732,19 @@ export function ExecutionWorkspaceDetail() {
                                 : "No runtime config is currently defined on this execution workspace or its project workspace."}
                           </p>
                         </div>
+                        <span
+                          id="reset-to-inherit-hint"
+                          className="sr-only"
+                        >
+                          Reset to inherit is unavailable because no project workspace runtime configuration exists.
+                        </span>
                         <Button
                           variant="outline"
                           className="w-full sm:w-auto"
                           size="sm"
                           disabled={!linkedProjectWorkspace?.runtimeConfig?.workspaceRuntime}
+                          title={!linkedProjectWorkspace?.runtimeConfig?.workspaceRuntime ? "Reset to inherit is unavailable because no project workspace runtime configuration exists." : undefined}
+                          aria-describedby={!linkedProjectWorkspace?.runtimeConfig?.workspaceRuntime ? "reset-to-inherit-hint" : undefined}
                           onClick={() =>
                             setForm((current) => current ? {
                               ...current,
@@ -817,7 +827,7 @@ export function ExecutionWorkspaceDetail() {
                     Reset
                   </Button>
                   {errorMessage ? <p role="alert" className="text-sm text-destructive">{errorMessage}</p> : null}
-                  {!errorMessage && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
+                  {!errorMessage && hasSaved && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
                 </div>
                 </CardContent>
               </Card>
