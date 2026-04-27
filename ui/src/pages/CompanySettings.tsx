@@ -18,6 +18,14 @@ import {
   ToggleField,
   HintIcon
 } from "../components/agent-config-primitives";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type AgentSnippetInput = {
   onboardingTextUrl: string;
@@ -43,6 +51,9 @@ export function CompanySettings() {
   const [brandColor, setBrandColor] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+
+  // Archive confirm dialog
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
 
   // Sync local state from selected company
   useEffect(() => {
@@ -257,6 +268,18 @@ export function CompanySettings() {
     });
   }
 
+  function handleArchiveConfirm() {
+    if (!selectedCompanyId) return;
+    const nextCompanyId =
+      companies.find(
+        (company) =>
+          company.id !== selectedCompanyId &&
+          company.status !== "archived"
+      )?.id ?? null;
+    archiveMutation.mutate({ companyId: selectedCompanyId, nextCompanyId });
+    setArchiveConfirmOpen(false);
+  }
+
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-2">
@@ -355,8 +378,16 @@ export function CompanySettings() {
                 hint="Sets the hue for the company icon. Leave empty for auto-generated color."
               >
                 <div className="flex items-center gap-2">
+                  <label
+                    htmlFor="brand-color-picker"
+                    className="text-xs text-muted-foreground sr-only"
+                  >
+                    Brand color picker
+                  </label>
                   <input
+                    id="brand-color-picker"
                     type="color"
+                    aria-label="Brand color"
                     value={brandColor || "#6366f1"}
                     onChange={(e) => setBrandColor(e.target.value)}
                     className="h-8 w-8 cursor-pointer rounded border border-border bg-transparent p-0"
@@ -497,19 +528,27 @@ export function CompanySettings() {
                 <div className="text-xs text-muted-foreground">
                   OpenClaw Invite Prompt
                 </div>
-                {snippetCopied && (
-                  <span
-                    key={snippetCopyDelightId}
-                    className="flex items-center gap-1 text-xs text-green-600 animate-pulse"
-                  >
-                    <Check className="h-3 w-3" />
-                    Copied
-                  </span>
-                )}
+                {/* Always-mounted aria-live region so screen readers catch the transition */}
+                <span
+                  aria-live="polite"
+                  aria-atomic="true"
+                  className="flex items-center gap-1 text-xs text-green-600"
+                >
+                  {snippetCopied && (
+                    <span
+                      key={snippetCopyDelightId}
+                      className="flex items-center gap-1 animate-pulse"
+                    >
+                      <Check className="h-3 w-3" />
+                      Copied
+                    </span>
+                  )}
+                </span>
               </div>
               <div className="mt-1 space-y-1.5">
                 <textarea
                   data-testid="company-settings-invites-snippet-textarea"
+                  aria-label="OpenClaw invite prompt snippet"
                   className="h-[28rem] w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs outline-none"
                   value={inviteSnippet}
                   readOnly
@@ -592,20 +631,7 @@ export function CompanySettings() {
               }
               onClick={() => {
                 if (!selectedCompanyId) return;
-                const confirmed = window.confirm(
-                  `Archive company "${selectedCompany.name}"? It will be hidden from the sidebar.`
-                );
-                if (!confirmed) return;
-                const nextCompanyId =
-                  companies.find(
-                    (company) =>
-                      company.id !== selectedCompanyId &&
-                      company.status !== "archived"
-                  )?.id ?? null;
-                archiveMutation.mutate({
-                  companyId: selectedCompanyId,
-                  nextCompanyId
-                });
+                setArchiveConfirmOpen(true);
               }}
             >
               {archiveMutation.isPending
@@ -624,6 +650,35 @@ export function CompanySettings() {
           </div>
         </div>
       </div>
+
+      {/* Archive confirmation dialog */}
+      <Dialog open={archiveConfirmOpen} onOpenChange={setArchiveConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Archive company</DialogTitle>
+            <DialogDescription>
+              Archive &ldquo;{selectedCompany.name}&rdquo;? It will be hidden from the
+              sidebar. This action persists in the database and cannot be undone
+              from the UI.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setArchiveConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleArchiveConfirm}
+              disabled={archiveMutation.isPending}
+            >
+              {archiveMutation.isPending ? "Archiving..." : "Archive"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
