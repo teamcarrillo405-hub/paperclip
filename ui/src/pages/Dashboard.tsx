@@ -326,7 +326,7 @@ export function Dashboard() {
             </div>
           ) : null}
 
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-1 sm:gap-2">
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             <MetricCard
               icon={Bot}
               value={data.agents.active + data.agents.running + data.agents.paused + data.agents.error}
@@ -438,6 +438,7 @@ export function Dashboard() {
               {recentActivity.length === 0 ? (
                 <div className="rounded-lg border border-border p-4">
                   <p className="text-sm text-muted-foreground">No recent activity.</p>
+                  <Link to="/inbox" className="text-xs text-primary hover:underline mt-1 block">View inbox</Link>
                 </div>
               ) : (
                 <div className="rounded-lg border border-border divide-y divide-border overflow-hidden">
@@ -464,6 +465,7 @@ export function Dashboard() {
               {recentIssues.length === 0 ? (
                 <div className="rounded-lg border border-border p-4">
                   <p className="text-sm text-muted-foreground">No tasks yet.</p>
+                  <Link to="/projects" className="text-xs text-primary hover:underline mt-1 block">View projects</Link>
                 </div>
               ) : (
                 <div className="rounded-lg border border-border divide-y divide-border overflow-hidden">
@@ -471,6 +473,7 @@ export function Dashboard() {
                     <Link
                       key={issue.id}
                       to={`/issues/${issue.identifier ?? issue.id}`}
+                      aria-label={issue.title}
                       className="px-4 py-3 text-sm cursor-pointer hover:bg-accent/50 transition-colors no-underline text-inherit block"
                     >
                       <div className="flex items-start gap-2 sm:items-center sm:gap-3">

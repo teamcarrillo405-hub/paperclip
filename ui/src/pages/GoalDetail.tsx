@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "@/lib/router";
+import { useParams, useNavigate, Link } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { goalsApi } from "../api/goals";
 import { projectsApi } from "../api/projects";
@@ -207,7 +207,7 @@ export function GoalDetail() {
           value={goal.title}
           onSave={(title) => updateGoal.mutate({ title })}
           as="h1"
-          className="text-xl font-bold"
+          className="text-2xl font-semibold"
         />
 
         <InlineEditor
@@ -257,7 +257,8 @@ export function GoalDetail() {
         <TabsContent value="projects" className="mt-4">
           {linkedProjects.length === 0 ? (
             <p className="rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
-              No linked projects yet.
+              No linked projects yet.{" "}
+              <Link to="/projects" className="text-xs text-primary hover:underline">Browse projects</Link>
             </p>
           ) : (
             <div className="rounded-lg border border-border overflow-hidden">

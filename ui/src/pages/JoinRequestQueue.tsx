@@ -128,7 +128,7 @@ export function JoinRequestQueue() {
             <span className="font-medium">Status</span>
             <select
               id="jrq-status-filter"
-              className="rounded-md border border-border bg-background px-3 py-2"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={status}
               onChange={(event) =>
                 setStatus(event.target.value as "pending_approval" | "approved" | "rejected")
@@ -143,7 +143,7 @@ export function JoinRequestQueue() {
             <span className="font-medium">Request type</span>
             <select
               id="jrq-type-filter"
-              className="rounded-md border border-border bg-background px-3 py-2"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={requestType}
               onChange={(event) =>
                 setRequestType(event.target.value as "all" | "human" | "agent")
@@ -182,6 +182,7 @@ export function JoinRequestQueue() {
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge
                           variant={request.status === "pending_approval" ? "secondary" : request.status === "approved" ? "outline" : "destructive"}
+                          className={request.status === "approved" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : undefined}
                           aria-label={`Status: ${request.status.replace(/_/g, " ")}`}
                         >
                           {request.status.replace("_", " ")}
@@ -191,9 +192,11 @@ export function JoinRequestQueue() {
                       </div>
                       <div>
                         <div className="text-base font-medium">
-                          {request.requestType === "human"
-                            ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || "Unknown human requester"
-                            : request.agentName || "Unknown agent requester"}
+                          {requesterName === "unknown"
+                            ? request.requestType === "human"
+                              ? "Unknown human requester"
+                              : "Unknown agent requester"
+                            : requesterName}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {secondaryLine
