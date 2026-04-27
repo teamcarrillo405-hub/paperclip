@@ -6,7 +6,8 @@ import {
   type Agent,
   type PermissionKey,
 } from "@paperclipai/shared";
-import { ShieldCheck, Trash2, Users } from "lucide-react";
+import { AlertCircle, ShieldCheck, Trash2, Users } from "lucide-react";
+import { PageSkeleton } from "../components/PageSkeleton";
 import { accessApi, type CompanyMember } from "@/api/access";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";
@@ -235,7 +236,7 @@ export function CompanyAccess() {
   }
 
   if (membersQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading company access…</div>;
+    return <PageSkeleton variant="list" />;
   }
 
   if (membersQuery.error) {
@@ -245,7 +246,20 @@ export function CompanyAccess() {
         : membersQuery.error instanceof Error
           ? membersQuery.error.message
           : "Failed to load company members.";
-    return <div className="text-sm text-destructive">{message}</div>;
+    return (
+      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-destructive">{message}</p>
+        </div>
+        {!(membersQuery.error instanceof ApiError && membersQuery.error.status === 403) ? (
+          <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            onClick={() => membersQuery.refetch()}>
+            Retry
+          </Button>
+        ) : null}
+      </div>
+    );
   }
 
   const members = membersQuery.data?.members ?? [];

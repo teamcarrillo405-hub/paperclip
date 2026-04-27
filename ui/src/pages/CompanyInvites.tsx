@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, ExternalLink, MailPlus } from "lucide-react";
+import { AlertCircle, Check, ExternalLink, MailPlus } from "lucide-react";
+import { PageSkeleton } from "../components/PageSkeleton";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
@@ -155,7 +156,7 @@ export function CompanyInvites() {
   }
 
   if (invitesQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading invites…</div>;
+    return <PageSkeleton variant="list" />;
   }
 
   if (invitesQuery.error) {
@@ -165,7 +166,14 @@ export function CompanyInvites() {
         : invitesQuery.error instanceof Error
           ? invitesQuery.error.message
           : "Failed to load invites.";
-    return <div className="text-sm text-destructive">{message}</div>;
+    return (
+      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-destructive">{message}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
