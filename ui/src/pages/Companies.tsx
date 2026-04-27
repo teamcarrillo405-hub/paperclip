@@ -26,6 +26,7 @@ import {
   CircleDot,
   DollarSign,
   Calendar,
+  AlertCircle,
 } from "lucide-react";
 
 export function Companies() {
@@ -96,9 +97,16 @@ export function Companies() {
         </Button>
       </div>
 
-      <div className="h-6">
+      <div className="min-h-6">
         {loading && <p className="text-sm text-muted-foreground">Loading companies...</p>}
-        {error && <p className="text-sm text-destructive">{error.message}</p>}
+        {error && (
+          <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-destructive">{error.message || "Failed to load companies."}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4">

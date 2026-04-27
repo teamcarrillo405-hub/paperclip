@@ -8,7 +8,8 @@ import { queryKeys } from "../lib/queryKeys";
 import { StatusBadge } from "../components/StatusBadge";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
-import { ChevronRight, GitBranch } from "lucide-react";
+import { ChevronRight, GitBranch, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "../lib/utils";
 
 function OrgTree({
@@ -97,7 +98,7 @@ export function Org() {
     setBreadcrumbs([{ label: "Org Chart" }]);
   }, [setBreadcrumbs]);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.org(selectedCompanyId!),
     queryFn: () => agentsApi.org(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -113,7 +114,23 @@ export function Org() {
 
   return (
     <div className="space-y-4">
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{error.message || "Failed to load org chart."}</p>
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            disabled={isRefetching}
+            onClick={() => refetch()}
+          >
+            {isRefetching ? "Retrying…" : "Retry"}
+          </Button>
+        </div>
+      )}
 
       {data && data.length === 0 && (
         <EmptyState
