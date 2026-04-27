@@ -3,7 +3,7 @@ import path from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, getTableColumns, gt, inArray, isNull, lte, notInArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, gt, inArray, isNotNull, isNull, lte, notInArray, or, sql } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
@@ -3930,6 +3930,51 @@ export function heartbeatService(db: Db) {
     if (reaped.length > 0) {
       logger.warn({ reapedCount: reaped.length, runIds: reaped }, "reaped orphaned heartbeat runs");
     }
+
+    // Secondary sweep: find issues whose executionRunId points to a "running" heartbeat run
+    // that is not tracked in memory (e.g. left over from a server restart).  We clear the lock
+    // directly so the issue becomes available for re-dispatch without waiting for the run-level
+    // reap logic above to visit the same row via a future tick.
+    const inMemoryRunIds = [
+      ...runningProcesses.keys(),
+      ...activeRunExecutions.keys(),
+    ];
+    const staleLockedIssues = await db
+      .select({
+        issueId: issues.id,
+        executionRunId: issues.executionRunId,
+      })
+      .from(issues)
+      .innerJoin(heartbeatRuns, eq(issues.executionRunId, heartbeatRuns.id))
+      .where(
+        and(
+          isNotNull(issues.executionRunId),
+          eq(heartbeatRuns.status, "running"),
+          inMemoryRunIds.length > 0
+            ? notInArray(heartbeatRuns.id, inMemoryRunIds)
+            : sql`true`,
+        ),
+      );
+
+    if (staleLockedIssues.length > 0) {
+      const staleRunIds = staleLockedIssues
+        .map((r) => r.executionRunId)
+        .filter((id): id is string => id != null);
+      logger.warn(
+        { count: staleLockedIssues.length, executionRunIds: staleRunIds },
+        "clearing stale execution locks on issues whose heartbeat run is not in-memory",
+      );
+      await db
+        .update(issues)
+        .set({
+          executionRunId: null,
+          executionAgentNameKey: null,
+          executionLockedAt: null,
+          updatedAt: new Date(),
+        })
+        .where(inArray(issues.executionRunId, staleRunIds));
+    }
+
     return { reaped: reaped.length, runIds: reaped };
   }
 

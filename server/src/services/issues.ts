@@ -1293,11 +1293,18 @@ export function issueService(db: Db) {
         sql`select ${heartbeatRuns.id} from ${heartbeatRuns} where ${heartbeatRuns.id} = ${issue.executionRunId} for update`,
       );
       const run = await tx
-        .select({ status: heartbeatRuns.status })
+        .select({ status: heartbeatRuns.status, startedAt: heartbeatRuns.startedAt })
         .from(heartbeatRuns)
         .where(eq(heartbeatRuns.id, issue.executionRunId))
         .then((rows) => rows[0] ?? null);
-      if (run && !TERMINAL_HEARTBEAT_RUN_STATUSES.has(run.status)) return false;
+
+      const STALE_RUNNING_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
+      const isStaleRunning =
+        run?.status === "running" &&
+        run.startedAt != null &&
+        Date.now() - new Date(run.startedAt).getTime() > STALE_RUNNING_THRESHOLD_MS;
+
+      if (run && !TERMINAL_HEARTBEAT_RUN_STATUSES.has(run.status) && !isStaleRunning) return false;
 
       const updated = await tx
         .update(issues)
@@ -1305,6 +1312,7 @@ export function issueService(db: Db) {
           executionRunId: null,
           executionAgentNameKey: null,
           executionLockedAt: null,
+          ...(isStaleRunning ? { status: "failed" } : {}),
           updatedAt: new Date(),
         })
         .where(
