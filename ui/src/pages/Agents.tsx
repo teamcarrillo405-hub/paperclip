@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Link, useNavigate, useLocation } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
@@ -20,7 +20,7 @@ import { relativeTime, cn, agentRouteRef, agentUrl, formatCents } from "../lib/u
 import { PageTabBar } from "../components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Bot, Plus, List, GitBranch, SlidersHorizontal, Search, ChevronUp, Download, AlertCircle } from "lucide-react";
+import { Bot, Plus, List, GitBranch, SlidersHorizontal, Search, ChevronUp, Download, AlertCircle, LoaderCircle } from "lucide-react";
 import { AGENT_ROLE_LABELS, type Agent } from "@paperclipai/shared";
 
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
@@ -75,6 +75,7 @@ export function Agents() {
   const effectiveView: "list" | "org" = forceListView ? "list" : view;
   const [showTerminated, setShowTerminated] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<{ col: SortCol; dir: SortDir } | null>(null);
@@ -86,7 +87,7 @@ export function Agents() {
     enabled: !!selectedCompanyId,
   });
 
-  const { data: orgTree } = useQuery({
+  const { data: orgTree, isLoading: isOrgLoading } = useQuery({
     queryKey: queryKeys.org(selectedCompanyId!),
     queryFn: () => agentsApi.org(selectedCompanyId!),
     enabled: !!selectedCompanyId && effectiveView === "org",
@@ -167,6 +168,17 @@ export function Agents() {
   useEffect(() => {
     setBreadcrumbs([{ label: "Agents" }]);
   }, [setBreadcrumbs]);
+
+  useEffect(() => {
+    if (!filtersOpen) return;
+    function handleMouseDown(e: MouseEvent) {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
+        setFiltersOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [filtersOpen]);
 
   if (!selectedCompanyId) {
     return <EmptyState icon={Bot} message="Select a company to view agents." />;
@@ -302,7 +314,7 @@ export function Agents() {
               )}
             />
           </div>
-          <div className="relative">
+          <div className="relative" ref={filterDropdownRef}>
             <button
               aria-expanded={filtersOpen}
               aria-haspopup="menu"
@@ -400,7 +412,7 @@ export function Agents() {
           ].map(({ label, value }) => (
             <div
               key={label}
-              className="rounded-lg border border-border/60 bg-card px-3 py-2 shadow-sm"
+              className="rounded-md border border-border/60 bg-card px-3 py-2 shadow-sm"
             >
               <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 {label}
@@ -439,7 +451,7 @@ export function Agents() {
       )}
 
       {effectiveView === "list" && sortedAgents.length > 0 && (
-        <div className="border border-border">
+        <div role="grid" aria-label="Agents list" className="border border-border">
           <div role="rowgroup">
           <div role="row" className="flex items-center gap-3 border-b border-border/60 px-3 py-1.5 bg-muted/20">
             <button
@@ -568,6 +580,12 @@ export function Agents() {
           <p className="text-sm text-muted-foreground">
             {searchTrimmed ? "No agents match your search." : "No agents match the selected filter."}
           </p>
+        </div>
+      )}
+
+      {effectiveView === "org" && isOrgLoading && agents && agents.length > 0 && (
+        <div className="flex justify-center py-8">
+          <LoaderCircle className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
         </div>
       )}
 

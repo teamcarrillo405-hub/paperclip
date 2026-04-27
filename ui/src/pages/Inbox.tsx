@@ -1888,7 +1888,7 @@ export function Inbox() {
   const activeIssueFilterCount = countActiveIssueFilters(issueFilters, true);
   return (
     <div className="space-y-6">
-      <h1 className="sr-only">Inbox</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Inbox</h1>
       <div className="space-y-2">
         {/* Search — full-width row on mobile, inline on desktop */}
         <div className="relative sm:hidden">
@@ -2085,7 +2085,7 @@ export function Inbox() {
             value={allCategoryFilter}
             onValueChange={(value) => updateAllCategoryFilter(value as InboxCategoryFilter)}
           >
-            <SelectTrigger className="h-8 w-[170px] text-xs">
+            <SelectTrigger className="h-8 w-[170px] text-xs" aria-label="Filter by category">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
@@ -2103,7 +2103,7 @@ export function Inbox() {
               value={allApprovalFilter}
               onValueChange={(value) => updateAllApprovalFilter(value as InboxApprovalFilter)}
             >
-              <SelectTrigger className="h-8 w-[170px] text-xs">
+              <SelectTrigger className="h-8 w-[170px] text-xs" aria-label="Filter by approval status">
                 <SelectValue placeholder="Approval status" />
               </SelectTrigger>
               <SelectContent>
@@ -2306,6 +2306,8 @@ export function Inbox() {
                       <div
                         key={`group-${group.key}`}
                         data-inbox-item
+                        role="button"
+                        tabIndex={0}
                         className={cn(
                           "px-3 sm:px-4",
                           groupIndex > 0 && "pt-2",
@@ -2313,6 +2315,12 @@ export function Inbox() {
                         )}
                         onClick={() => {
                           if (groupNavIdx >= 0) setSelectedIndex(groupNavIdx);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            if (groupNavIdx >= 0) setSelectedIndex(groupNavIdx);
+                          }
                         }}
                       >
                         <IssueGroupHeader
@@ -2333,8 +2341,16 @@ export function Inbox() {
                       <div
                         key={`sel-${key}`}
                         data-inbox-item
+                        role="button"
+                        tabIndex={0}
                         className="relative"
                         onClick={() => setSelectedIndex(navIdx)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelectedIndex(navIdx);
+                          }
+                        }}
                       >
                         {child}
                       </div>
