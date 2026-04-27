@@ -12,6 +12,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { ShieldCheck } from "lucide-react";
 import { ApprovalCard } from "../components/ApprovalCard";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { useCompanyLiveEvents } from "../hooks/useCompanyLiveEvents";
 
 type StatusFilter = "pending" | "all";
 
@@ -26,6 +27,13 @@ export function Approvals() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [isBulkOperating, setIsBulkOperating] = useState(false);
+
+  const { isConnected, lastEvent } = useCompanyLiveEvents(selectedCompanyId ?? undefined);
+
+  useEffect(() => {
+    if (!lastEvent || !selectedCompanyId) return;
+    queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId) });
+  }, [lastEvent, queryClient, selectedCompanyId]);
 
   useEffect(() => {
     setBreadcrumbs([{ label: "Approvals" }]);
@@ -78,11 +86,23 @@ export function Approvals() {
     },
   });
 
+  function urgencyScore(a: { status: string; createdAt: Date | string }): number {
+    if (a.status !== "pending" && a.status !== "revision_requested") return 0;
+    const hrs = (Date.now() - new Date(a.createdAt).getTime()) / 3_600_000;
+    if (hrs >= 4) return 3;
+    if (hrs >= 1) return 2;
+    return 1;
+  }
+
   const filtered = (data ?? [])
     .filter(
       (a) => statusFilter === "all" || a.status === "pending" || a.status === "revision_requested",
     )
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) => {
+      const urgencyDiff = urgencyScore(b) - urgencyScore(a);
+      if (urgencyDiff !== 0) return urgencyDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   const pendingItems = (data ?? []).filter(
     (a) => a.status === "pending" || a.status === "revision_requested",
@@ -178,19 +198,27 @@ export function Approvals() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <Tabs value={statusFilter} onValueChange={(v) => navigate(`/approvals/${v}`)}>
-          <PageTabBar items={[
-            { value: "pending", label: <>Pending{pendingCount > 0 && (
-              <span className={cn(
-                "ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
-                "bg-yellow-500/20 text-yellow-500"
-              )}>
-                {pendingCount}
-              </span>
-            )}</> },
-            { value: "all", label: "All" },
-          ]} />
-        </Tabs>
+        <div className="flex items-center gap-2">
+          <Tabs value={statusFilter} onValueChange={(v) => navigate(`/approvals/${v}`)}>
+            <PageTabBar items={[
+              { value: "pending", label: <>Pending{pendingCount > 0 && (
+                <span className={cn(
+                  "ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+                  "bg-yellow-500/20 text-yellow-500"
+                )}>
+                  {pendingCount}
+                </span>
+              )}</> },
+              { value: "all", label: "All" },
+            ]} />
+          </Tabs>
+          {isConnected && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse" />
+              Live
+            </span>
+          )}
+        </div>
 
         {/* Bulk approve/reject — only on Pending tab */}
         {statusFilter === "pending" && pendingCount > 0 && (

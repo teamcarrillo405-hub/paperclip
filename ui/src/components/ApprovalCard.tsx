@@ -88,7 +88,14 @@ export function ApprovalCard({
   const hasFooter = showResolutionButtons || showRevisionButton || Boolean(detailLink || onOpen);
 
   return (
-    <div className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+    <div className={cn(
+      "rounded-xl border bg-card p-4 shadow-sm",
+      ageInfo?.severity === "red"
+        ? "border-red-500/40 border-t-2 border-t-red-500"
+        : ageInfo?.severity === "amber"
+        ? "border-amber-500/30 border-t-2 border-t-amber-500/70"
+        : "border-border/70",
+    )}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-3">
