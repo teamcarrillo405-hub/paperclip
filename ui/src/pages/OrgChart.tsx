@@ -175,7 +175,7 @@ export function OrgChart() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
 
-  const { data: orgTree, isLoading, isError } = useQuery({
+  const { data: orgTree, isLoading, isError, refetch: refetchOrgTree } = useQuery({
     queryKey: queryKeys.org(selectedCompanyId!),
     queryFn: () => agentsApi.org(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -437,7 +437,14 @@ export function OrgChart() {
   }
 
   if (isError) {
-    return <EmptyState icon={Network} message="Failed to load org chart. Check your connection and try again." />;
+    return (
+      <EmptyState
+        icon={Network}
+        message="Failed to load org chart. Check your connection and try again."
+        action="Retry"
+        onAction={() => void refetchOrgTree()}
+      />
+    );
   }
 
   if (orgTree && orgTree.length === 0) {
@@ -446,23 +453,28 @@ export function OrgChart() {
 
   return (
     <div className="flex h-[calc(100dvh-9rem)] min-h-[420px] flex-col md:h-full md:min-h-0">
+      {/* Fix 1: sr-only h1 for page landmark */}
+      <h1 className="sr-only">Org Chart</h1>
       <div className="mb-2 flex shrink-0 flex-wrap items-center justify-start gap-2">
         <Link to="/company/import">
           <Button variant="outline" size="sm">
-            <Upload className="mr-1.5 h-3.5 w-3.5" />
+            <Upload className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
             Import company
           </Button>
         </Link>
         <Link to="/company/export">
           <Button variant="outline" size="sm">
-            <Download className="mr-1.5 h-3.5 w-3.5" />
+            <Download className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
             Export company
           </Button>
         </Link>
       </div>
+      {/* Fix 5: viewport role=application */}
       <div
         ref={containerRef}
         data-testid="org-chart-viewport"
+        role="application"
+        aria-label="Org chart — pan and zoom to explore"
         className="w-full flex-1 min-h-0 overflow-hidden relative bg-muted/20 border border-border rounded-lg"
         style={{
           cursor: dragging ? "grabbing" : "grab",
@@ -481,8 +493,9 @@ export function OrgChart() {
       >
         {/* Zoom controls */}
         <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
+          {/* Fix 6: focus-visible ring on zoom buttons */}
           <button
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent sm:size-7"
+            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
             onClick={() => {
               const container = containerRef.current;
               if (container) {
@@ -495,10 +508,10 @@ export function OrgChart() {
             title="Zoom in"
             aria-label="Zoom in"
           >
-            <Plus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            <Plus className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
           </button>
           <button
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent sm:size-7"
+            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
             onClick={() => {
               const container = containerRef.current;
               if (container) {
@@ -511,15 +524,15 @@ export function OrgChart() {
             title="Zoom out"
             aria-label="Zoom out"
           >
-            <Minus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            <Minus className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
           </button>
           <button
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-[10px] transition-colors hover:bg-accent sm:size-7"
+            className="flex size-9 items-center justify-center rounded border border-border bg-background text-[10px] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
             onClick={fitToScreen}
             title="Fit to screen"
             aria-label="Fit chart to screen"
           >
-            <Maximize2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            <Maximize2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
           </button>
         </div>
 
@@ -572,7 +585,7 @@ export function OrgChart() {
                 data-org-card
                 role="button"
                 tabIndex={0}
-                aria-label={`${node.name}, ${agent?.title ?? roleLabel(node.role)}`}
+                aria-label={`${node.name}, ${agent?.title ?? roleLabel(node.role)}, status: ${node.status}`}
                 className="absolute bg-card border border-border rounded-lg shadow-sm hover:shadow-md hover:border-foreground/20 transition-[box-shadow,border-color] duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 style={{
                   left: node.x,
@@ -600,7 +613,10 @@ export function OrgChart() {
                     <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
                       <AgentIcon icon={agent?.icon} className="h-4.5 w-4.5 text-foreground/70" />
                     </div>
+                    {/* Fix 2: status dot with role=img and aria-label */}
                     <span
+                      role="img"
+                      aria-label={`Status: ${node.status}`}
                       className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card"
                       style={{ backgroundColor: dotColor }}
                     />
