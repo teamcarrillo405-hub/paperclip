@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity as ActivityIcon,
+  AlertCircle,
   ChevronDown,
   ChevronRight,
   Clock3,
@@ -252,9 +253,10 @@ function TriggerEditor({
             variant="ghost"
             size="sm"
             className="text-muted-foreground hover:text-destructive"
+            aria-label="Delete trigger"
             onClick={() => onDelete(trigger.id)}
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -305,7 +307,7 @@ export function RoutineDetail() {
   });
   const activeTab = useMemo(() => getRoutineTabFromSearch(location.search), [location.search]);
 
-  const { data: routine, isLoading, error } = useQuery({
+  const { data: routine, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.routines.detail(routineId!),
     queryFn: () => routinesApi.get(routineId!),
     enabled: !!routineId,
@@ -662,9 +664,19 @@ export function RoutineDetail() {
 
   if (error || !routine) {
     return (
-      <p className="pt-6 text-sm text-destructive">
-        {error instanceof Error ? error.message : "Routine not found"}
-      </p>
+      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 mt-6">
+        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0 space-y-2">
+          <p className="text-sm text-destructive">
+            {error instanceof Error ? error.message : "Routine not found"}
+          </p>
+          {error && (
+            <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isRefetching}>
+              {isRefetching ? "Retrying…" : "Retry"}
+            </Button>
+          )}
+        </div>
+      </div>
     );
   }
 
@@ -688,7 +700,9 @@ export function RoutineDetail() {
     <div className="max-w-2xl space-y-6">
       {/* Header: editable title + actions */}
       <div className="flex items-start gap-4">
+        <label htmlFor="routine-detail-title" className="sr-only">Routine title</label>
         <textarea
+          id="routine-detail-title"
           ref={titleInputRef}
           className="flex-1 min-w-0 resize-none overflow-hidden bg-transparent text-xl font-bold outline-none placeholder:text-muted-foreground/50"
           placeholder="Routine title"

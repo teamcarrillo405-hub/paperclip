@@ -26,6 +26,7 @@ import { ProjectWorkspacesContent } from "../components/ProjectWorkspacesContent
 import { buildProjectWorkspaceSummaries } from "../lib/project-workspaces-tab";
 import { projectRouteRef } from "../lib/utils";
 import { Button } from "@/components/ui/button";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { Tabs } from "@/components/ui/tabs";
 import { PluginLauncherOutlet } from "@/plugins/launchers";
 import { PluginSlotMount, PluginSlotOutlet, usePluginSlots } from "@/plugins/slots";
@@ -246,7 +247,7 @@ export function ProjectDetail() {
   }, [location.search]);
   const activeTab = activeRouteTab ?? pluginTabFromSearch;
 
-  const { data: project, isLoading, error } = useQuery({
+  const { data: project, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: [...queryKeys.projects.detail(routeProjectRef), lookupCompanyId ?? null],
     queryFn: () => projectsApi.get(routeProjectRef, lookupCompanyId),
     enabled: canFetchProject,
@@ -541,7 +542,17 @@ export function ProjectDetail() {
   }
 
   if (isLoading) return <PageSkeleton variant="detail" />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return (
+    <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 m-4">
+      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0 space-y-2">
+        <p className="text-sm text-destructive">{error.message || "Failed to load project."}</p>
+        <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isRefetching}>
+          {isRefetching ? <><Loader2 className="h-3 w-3 animate-spin mr-1" />Retrying…</> : "Retry"}
+        </Button>
+      </div>
+    </div>
+  );
   if (!project) return null;
 
   const handleTabChange = (tab: ProjectTab) => {
@@ -659,7 +670,10 @@ export function ProjectDetail() {
       {activeTab === "workspaces" ? (
         workspaceTabDecisionLoaded ? (
           workspaceTabError ? (
-            <p className="text-sm text-destructive">{workspaceTabError.message}</p>
+            <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+              <p className="text-sm text-destructive">{workspaceTabError.message || "Failed to load workspaces."}</p>
+            </div>
           ) : (
             <ProjectWorkspacesContent
               companyId={resolvedCompanyId!}
@@ -669,7 +683,7 @@ export function ProjectDetail() {
             />
           )
         ) : (
-          <p className="text-sm text-muted-foreground">Loading workspaces...</p>
+          <PageSkeleton variant="list" />
         )
       ) : null}
 
