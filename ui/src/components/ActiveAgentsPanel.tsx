@@ -264,8 +264,11 @@ const AgentRunCard = memo(function AgentRunCard({
             {isFailed && (
               <Link
                 to={`/agents/${run.agentId}/runs/${run.id}`}
-                title="View run to retry"
-                className="inline-flex h-7 w-7 items-center justify-center rounded border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-accent hover:text-foreground"
+                title="Retry run"
+                className={cn(
+                  "inline-flex h-7 w-7 items-center justify-center rounded border border-transparent text-muted-foreground transition-colors",
+                  "hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
+                )}
                 onClick={(e) => e.stopPropagation()}
               >
                 <RotateCcw className="h-3.5 w-3.5" />

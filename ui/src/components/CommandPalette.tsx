@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useMemo, useCallback } from "react";
+import { Fragment, useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
 import { useNavigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCompany } from "../context/CompanyContext";
@@ -336,6 +336,54 @@ export function CommandPalette() {
 
   const isPinned = useCallback((id: string) => pinned.some((p) => p.id === id), [pinned]);
 
+  // Action items for the Actions group — defined inside component to capture callbacks
+  const ACTION_ITEMS = useMemo(() => [
+    {
+      id: "action-new-issue",
+      label: "Create new issue",
+      actionId: "new-issue",
+      fn: () => openNewIssue(),
+      icon: <SquarePen className="mr-2 h-4 w-4" />,
+      kbd: "C",
+    },
+    {
+      id: "action-new-agent",
+      label: "Create new agent",
+      actionId: "new-agent",
+      fn: () => openNewAgent(),
+      icon: <Plus className="mr-2 h-4 w-4" />,
+    },
+    {
+      id: "action-new-project",
+      label: "Create new project",
+      path: "/projects",
+      icon: <Plus className="mr-2 h-4 w-4" />,
+    },
+    {
+      id: "action-new-goal",
+      label: "New Goal",
+      value: "new goal create goal",
+      path: "/goals?new=1",
+      icon: <EntityChip type="goal" />,
+    },
+    {
+      id: "action-new-routine",
+      label: "New Routine",
+      value: "new routine automation schedule",
+      path: "/routines?new=1",
+      icon: <EntityChip type="routine" />,
+    },
+  ] as Array<{
+    id: string;
+    label: string;
+    value?: string;
+    actionId?: string;
+    fn?: () => void;
+    path?: string;
+    icon: ReactNode;
+    kbd?: string;
+  }>, [openNewIssue, openNewAgent]);
+
   const agentName = (id: string | null) => {
     if (!id) return null;
     return agents.find((a) => a.id === id)?.name ?? null;
@@ -449,72 +497,62 @@ export function CommandPalette() {
           </>
         )}
 
-        {/* Actions */}
-        <CommandGroup heading="Actions">
-          <CommandItem
-            onSelect={() =>
-              runAction("new-issue", "Create new issue", () => openNewIssue())
-            }
-          >
-            <SquarePen className="mr-2 h-4 w-4" />
-            Create new issue
-            <KbdBadge keys="C" />
-          </CommandItem>
-          <CommandItem
-            onSelect={() =>
-              runAction("new-agent", "Create new agent", () => openNewAgent())
-            }
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create new agent
-          </CommandItem>
-          <CommandItem
-            onSelect={() => go("/projects", "Create new project")}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create new project
-          </CommandItem>
-          <CommandItem
-            value="new goal create goal"
-            onSelect={() => { go("/goals?new=1", "New Goal"); }}
-          >
-            <EntityChip type="goal" />
-            <span className="ml-2 flex-1">New Goal</span>
-          </CommandItem>
-          <CommandItem
-            value="new routine automation schedule"
-            onSelect={() => { go("/routines?new=1", "New Routine"); }}
-          >
-            <EntityChip type="routine" />
-            <span className="ml-2 flex-1">New Routine</span>
-          </CommandItem>
-        </CommandGroup>
+        {/* Actions — hidden when query is non-empty and no action matches */}
+        {(searchQuery.length === 0 || ACTION_ITEMS.some((a) => a.label.toLowerCase().includes(searchQuery.toLowerCase()))) && (
+          <CommandGroup heading="Actions">
+            {(searchQuery.length === 0 ? ACTION_ITEMS : ACTION_ITEMS.filter((a) => a.label.toLowerCase().includes(searchQuery.toLowerCase()))).map((action) => (
+              <CommandItem
+                key={action.id}
+                value={action.value ?? action.label}
+                onSelect={() => {
+                  if (action.actionId) {
+                    runAction(action.actionId, action.label, action.fn!);
+                  } else if (action.path) {
+                    go(action.path, action.label);
+                  }
+                }}
+              >
+                {action.icon}
+                <span className="flex-1">{action.label}</span>
+                {action.kbd && <KbdBadge keys={action.kbd} />}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
 
         <CommandSeparator />
 
-        {/* Navigate */}
-        <CommandGroup heading="Navigate">
-          {NAV_ITEMS.map((item) => (
-            <CommandItem
-              key={item.id}
-              onSelect={() => go(item.path, item.label)}
-              className="group/item flex items-center justify-between"
-            >
-              <span className="flex items-center gap-2 min-w-0 flex-1">
-                <item.icon className="h-4 w-4 shrink-0" />
-                {item.label}
-              </span>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); togglePin({ id: item.id, label: item.label, path: item.path }); }}
-                className="opacity-0 group-hover/item:opacity-100 transition-opacity ml-2 p-0.5 text-muted-foreground hover:text-primary shrink-0"
-                title={isPinned(item.id) ? "Unpin" : "Pin"}
-              >
-                {isPinned(item.id) ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
-              </button>
-            </CommandItem>
-          ))}
-        </CommandGroup>
+        {/* Navigate — filtered to matching items when query is non-empty */}
+        {(() => {
+          const visibleNavItems = searchQuery.length === 0
+            ? NAV_ITEMS
+            : NAV_ITEMS.filter((item) => item.label.toLowerCase().includes(searchQuery.toLowerCase()));
+          if (visibleNavItems.length === 0) return null;
+          return (
+            <CommandGroup heading="Navigate">
+              {visibleNavItems.map((item) => (
+                <CommandItem
+                  key={item.id}
+                  onSelect={() => go(item.path, item.label)}
+                  className="group/item flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2 min-w-0 flex-1">
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    {item.label}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); togglePin({ id: item.id, label: item.label, path: item.path }); }}
+                    className="opacity-0 group-hover/item:opacity-100 transition-opacity ml-2 p-0.5 text-muted-foreground hover:text-primary shrink-0"
+                    title={isPinned(item.id) ? "Unpin" : "Pin"}
+                  >
+                    {isPinned(item.id) ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
+                  </button>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          );
+        })()}
 
         {activeRunsByAgent.length > 0 && (
           <>
