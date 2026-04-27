@@ -255,7 +255,7 @@ export function Dashboard() {
           {liveRunCount > 0
             ? `${liveRunCount} agent${liveRunCount !== 1 ? "s" : ""} running · `
             : ""}
-          Last synced {syncedSecondsAgo}s ago
+          Last synced {syncedSecondsAgo < 5 ? "just now" : syncedSecondsAgo < 60 ? `${syncedSecondsAgo}s ago` : `${Math.floor(syncedSecondsAgo / 60)}m ago`}
         </p>
       </div>
 
