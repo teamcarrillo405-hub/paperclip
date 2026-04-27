@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Inbox,
   CircleDot,
@@ -76,6 +77,24 @@ export function Sidebar() {
   const { selectedCompanyId, selectedCompany } = useCompany();
   const inboxBadge = useInboxBadge(selectedCompanyId);
   const { collapsed, toggle } = useSidebarPreferences();
+
+  useEffect(() => {
+    function handleGlobalKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      )
+        return;
+      if (e.key === "[" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        toggle();
+      }
+    }
+    document.addEventListener("keydown", handleGlobalKey);
+    return () => document.removeEventListener("keydown", handleGlobalKey);
+  }, [toggle]);
+
   const { sectionCollapsed, toggleSectionCollapsed, favoritePaths, toggleFavorite } = useSidebar();
 
   const { data: experimentalSettings } = useQuery({
