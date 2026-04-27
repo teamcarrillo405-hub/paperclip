@@ -451,6 +451,7 @@ export function OrgChart() {
         message={errMsg ? `Failed to load org chart: ${errMsg}` : "Failed to load org chart. Check your connection and try again."}
         action="Retry"
         onAction={() => void refetchOrgTree()}
+        role="alert"
       />
     );
   }
@@ -535,7 +536,7 @@ export function OrgChart() {
         </div>
 
         {/* Zoom controls */}
-        <div role="group" aria-label="Zoom controls" className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
+        <div id="zoom-controls" role="group" aria-label="Zoom controls" className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
           {/* Fix 6: focus-visible ring on zoom buttons */}
           <button
             className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"

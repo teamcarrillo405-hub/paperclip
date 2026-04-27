@@ -8,11 +8,12 @@ interface EmptyStateProps {
   action?: string;
   onAction?: () => void;
   actionIcon?: React.ReactNode;
+  role?: "status" | "alert" | "region";
 }
 
-export function EmptyState({ icon: Icon, message, action, onAction, actionIcon }: EmptyStateProps) {
+export function EmptyState({ icon: Icon, message, action, onAction, actionIcon, role }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center" role="status">
+    <div className="flex flex-col items-center justify-center py-16 text-center" role={role ?? "status"}>
       <div className="bg-muted/50 p-4 mb-4 rounded-xl">
         <Icon className="h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
       </div>

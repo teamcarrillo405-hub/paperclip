@@ -491,7 +491,7 @@ function SkillList({
                 expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
               )}
             >
-              <div className="min-h-0 overflow-hidden" {...(!expanded ? { inert: "" } : {})}>
+              <div className="min-h-0 overflow-hidden" inert={!expanded ? true : undefined}>
                 <SkillTree
                   nodes={tree}
                   skillId={skill.id}

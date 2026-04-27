@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, LoaderCircle, UserPlus2 } from "lucide-react";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/EmptyState";
@@ -153,7 +154,7 @@ export function JoinRequestQueue() {
 
       <div className="space-y-4">
         {(requestsQuery.data ?? []).length === 0 ? (
-          <div role="status" className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+          <div role="status" aria-live="polite" className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
             No join requests match the current filters.
           </div>
         ) : (
@@ -172,7 +173,7 @@ export function JoinRequestQueue() {
               const isPending = pendingIds.has(request.id);
 
               return (
-                <li key={request.id} className={`rounded-xl border border-border bg-card p-4${request.status === "rejected" ? " opacity-60" : ""}`}>
+                <li key={request.id} className={cn("rounded-xl border border-border bg-card p-4", request.status === "rejected" && "opacity-60")}>
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
@@ -254,7 +255,7 @@ export function JoinRequestQueue() {
 
                   <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
                     <div className="rounded-lg border border-border bg-background px-3 py-2">
-                      <div className="text-xs font-medium uppercase tracking-wide">Invite context</div>
+                      <h3 className="text-xs font-medium uppercase tracking-wide">Invite context</h3>
                       <div className="mt-2">
                         {request.invite
                           ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
@@ -265,7 +266,7 @@ export function JoinRequestQueue() {
                       ) : null}
                     </div>
                     <div className="rounded-lg border border-border bg-background px-3 py-2">
-                      <div className="text-xs font-medium uppercase tracking-wide">Request details</div>
+                      <h3 className="text-xs font-medium uppercase tracking-wide">Request details</h3>
                       <div className="mt-2">Submitted {new Date(request.createdAt).toLocaleString()}</div>
                       <div className="font-mono text-xs break-all">Source IP {request.requestIp}</div>
                       {request.requestType === "agent" && request.capabilities ? <div>{request.capabilities}</div> : null}
