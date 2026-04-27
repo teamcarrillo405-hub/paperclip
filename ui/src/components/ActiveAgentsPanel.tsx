@@ -108,9 +108,12 @@ export function ActiveAgentsPanel({ companyId, isLive = false }: ActiveAgentsPan
           Agents
         </h3>
         {isLive && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400" />
-            Live
+          <span className="inline-flex items-center gap-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-500" />
+            </span>
+            <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium uppercase tracking-wide">Live</span>
           </span>
         )}
       </div>

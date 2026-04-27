@@ -48,7 +48,18 @@ export function Dashboard() {
   const seenActivityIdsRef = useRef<Set<string>>(new Set());
   const hydratedActivityRef = useRef(false);
   const activityAnimationTimersRef = useRef<number[]>([]);
-  const [chartDays, setChartDays] = useState<7 | 14 | 30>(14);
+  const CHART_DAYS_KEY = "avero:dashboard:chartDays";
+  const [chartDays, setChartDaysState] = useState<7 | 14 | 30>(() => {
+    try {
+      const v = localStorage.getItem(CHART_DAYS_KEY);
+      if (v === "7" || v === "14" || v === "30") return Number(v) as 7 | 14 | 30;
+    } catch {}
+    return 14;
+  });
+  function setChartDays(days: 7 | 14 | 30) {
+    try { localStorage.setItem(CHART_DAYS_KEY, String(days)); } catch {}
+    setChartDaysState(days);
+  }
   const [syncedSecondsAgo, setSyncedSecondsAgo] = useState(0);
   const lastSyncRef = useRef(Date.now());
 
