@@ -317,7 +317,7 @@ function SkillTree({
   depth?: number;
 }) {
   return (
-    <div role={depth === 0 ? "tree" : undefined}>
+    <div role={depth === 0 ? "tree" : "group"}>
       {nodes.map((node) => {
         const expanded = node.kind === "dir" && node.path ? expandedDirs.has(node.path) : false;
         if (node.kind === "dir") {
@@ -463,7 +463,7 @@ function SkillList({
                     </TooltipTrigger>
                     <TooltipContent side="top">{source.managedLabel}</TooltipContent>
                   </Tooltip>
-                  <span className="min-w-0 overflow-hidden text-[13px] font-medium leading-5 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]">
+                  <span className="min-w-0 overflow-hidden text-[13px] font-medium leading-5 line-clamp-3">
                     {skill.name}
                   </span>
                 </span>

@@ -215,8 +215,12 @@ export function NewAgent() {
       <div className="border border-border rounded-lg overflow-hidden">
         <fieldset className="space-y-4 border-0 p-0 m-0">
           <legend className="sr-only">Agent identity</legend>
+          {/* Visible section heading for sighted users */}
+          <div className="px-4 pt-4 pb-0">
+            <h2 className="text-sm font-semibold text-foreground">Agent identity</h2>
+          </div>
           {/* Name */}
-          <div className="px-4 pt-4 pb-2">
+          <div className="px-4 pt-2 pb-2">
             <label htmlFor="new-agent-name" className="text-sm font-medium">Agent name</label>
             <input
               id="new-agent-name"
@@ -244,7 +248,10 @@ export function NewAgent() {
         </fieldset>
 
         {/* Property chips: Role + Reports To */}
-        <div className="flex items-center gap-1.5 px-4 py-2 border-t border-border flex-wrap">
+        <div className="px-4 pt-2 pb-1 border-t border-border">
+          <span id="role-label" className="text-sm font-medium">Role</span>
+        </div>
+        <div className="flex items-center gap-1.5 px-4 py-2 flex-wrap">
           {agentsLoading && (
             <div className="h-8 rounded bg-muted animate-pulse w-24" />
           )}
@@ -254,6 +261,7 @@ export function NewAgent() {
                 <button
                   ref={roleTriggerRef}
                   type="button"
+                  aria-labelledby="role-label"
                   aria-label={`Agent role: ${effectiveRole}`}
                   aria-expanded={roleOpen}
                   aria-haspopup="menu"
