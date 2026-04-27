@@ -153,7 +153,7 @@ export function JoinRequestQueue() {
         </div>
       </fieldset>
 
-      <div className="space-y-4">
+      <div className={cn("space-y-4", requestsQuery.isFetching && "opacity-60 transition-opacity")}>
         {(requestsQuery.data ?? []).length === 0 ? (
           <div role="status" aria-live="polite" className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
             No join requests match the current filters.

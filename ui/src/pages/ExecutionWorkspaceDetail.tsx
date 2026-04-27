@@ -531,8 +531,12 @@ export function ExecutionWorkspaceDetail() {
               Back to all workspaces
             </Link>
           </Button>
-          <StatusPill>{workspace.mode}</StatusPill>
-          <StatusPill>{workspace.providerType}</StatusPill>
+          <span aria-label={`Mode: ${workspace.mode}`}>
+            <StatusPill aria-hidden="true">{workspace.mode}</StatusPill>
+          </span>
+          <span aria-label={`Provider: ${workspace.providerType}`}>
+            <StatusPill aria-hidden="true">{workspace.providerType}</StatusPill>
+          </span>
           <span aria-label={`Workspace status: ${workspace.status}`}>
             <StatusPill className={workspace.status === "active" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : undefined} aria-hidden="true">
               {workspace.status === "active" ? <span aria-hidden="true">{"● "}</span> : <span aria-hidden="true">{"○ "}</span>}{workspace.status}
@@ -619,6 +623,33 @@ export function ExecutionWorkspaceDetail() {
                 </CardHeader>
 
                 <CardContent>
+
+                <div className="mb-6">
+                  <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                    <Button type="button" className="w-full sm:w-auto" disabled={!isDirty || updateWorkspace.isPending} onClick={saveChanges}>
+                      {updateWorkspace.isPending ? (
+                        <><Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                      ) : (
+                        "Save changes"
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full sm:w-auto"
+                      disabled={!isDirty || updateWorkspace.isPending}
+                      onClick={() => {
+                        setForm(initialState);
+                        setErrorMessage(null);
+                        setRuntimeActionErrorMessage(null);
+                        setRuntimeActionMessage(null);
+                      }}
+                    >
+                      Reset
+                    </Button>
+                    {!errorMessage && hasSaved && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
+                  </div>
+                </div>
 
                 <div className="space-y-6">
                   <div className="space-y-4">

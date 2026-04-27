@@ -9,6 +9,7 @@ import { usePanel } from "../context/PanelContext";
 import { useCompany } from "../context/CompanyContext";
 import { useDialog } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
+import { useToast } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 import { GoalProperties } from "../components/GoalProperties";
 import { GoalTree } from "../components/GoalTree";
@@ -58,6 +59,7 @@ export function GoalDetail() {
   const { openNewGoal } = useDialog();
   const { openPanel, closePanel, panelVisible, setPanelVisible } = usePanel();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { pushToast } = useToast();
   const queryClient = useQueryClient();
 
   const [updateError, setUpdateError] = useState<string | null>(null);
@@ -104,6 +106,7 @@ export function GoalDetail() {
           queryKey: queryKeys.goals.list(resolvedCompanyId)
         });
       }
+      pushToast({ title: "Goal saved.", tone: "success" });
     },
     onError: (err: unknown) => {
       setUpdateError(err instanceof Error ? err.message : "Failed to update goal.");

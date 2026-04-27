@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { AgentIcon } from "../components/AgentIconPicker";
-import { Download, Maximize2, Minus, Network, Plus, Upload } from "lucide-react";
+import { AlertCircle, Download, Maximize2, Minus, Network, Plus, Upload } from "lucide-react";
 import { AGENT_ROLE_LABELS, type Agent } from "@paperclipai/shared";
 
 // Layout constants
@@ -443,20 +443,7 @@ export function OrgChart() {
     return <PageSkeleton variant="org-chart" />;
   }
 
-  if (isError) {
-    const errMsg = (orgError as Error)?.message;
-    return (
-      <EmptyState
-        icon={Network}
-        message={errMsg ? `Failed to load org chart: ${errMsg}` : "Failed to load org chart. Check your connection and try again."}
-        action="Retry"
-        onAction={() => void refetchOrgTree()}
-        role="alert"
-      />
-    );
-  }
-
-  if (orgTree && orgTree.length === 0) {
+  if (orgTree && orgTree.length === 0 && !isError) {
     return (
       <EmptyState
         icon={Network}
@@ -485,6 +472,15 @@ export function OrgChart() {
           </Button>
         </Link>
       </div>
+      {isError && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 mb-4">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{orgError instanceof Error ? orgError.message : "Failed to load org chart."}</p>
+          </div>
+          <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0" onClick={() => void refetchOrgTree()}>Retry</Button>
+        </div>
+      )}
       {/* Fix 5: viewport role=application */}
       <div
         ref={containerRef}

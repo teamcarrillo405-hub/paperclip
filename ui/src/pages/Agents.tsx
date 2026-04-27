@@ -288,7 +288,9 @@ export function Agents() {
 
   return (
     <div className="space-y-4">
-      <h1 className="sr-only">Agents</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Agents</h1>
+      </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={tab} onValueChange={(v) => navigate(`/agents/${v}`)}>
           <PageTabBar
@@ -312,7 +314,7 @@ export function Agents() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
-                "h-7 w-44 rounded-none border border-border bg-background pl-7 pr-2 text-xs text-foreground placeholder:text-muted-foreground",
+                "h-7 w-44 rounded-md border border-border bg-background pl-7 pr-2 text-xs text-foreground placeholder:text-muted-foreground",
                 "focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-colors",
               )}
             />

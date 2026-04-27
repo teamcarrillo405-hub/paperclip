@@ -398,7 +398,7 @@ export function CompanySettings() {
                     type="color"
                     value={brandColor || "#6366f1"}
                     onChange={(e) => setBrandColor(e.target.value)}
-                    className="h-8 w-8 cursor-pointer rounded border border-border bg-transparent p-0"
+                    className="h-8 w-8 cursor-pointer rounded-md border border-border bg-transparent p-0 shadow-sm"
                   />
                   <input
                     id="brand-color-hex"
@@ -436,8 +436,9 @@ export function CompanySettings() {
           size="sm"
           onClick={handleSaveGeneral}
           disabled={generalMutation.isPending || !companyName.trim()}
-          className={generalDirty ? "" : "invisible"}
+          className={generalDirty ? "" : "invisible pointer-events-none"}
           tabIndex={generalDirty ? undefined : -1}
+          aria-hidden={!generalDirty}
         >
           {generalMutation.isPending ? "Saving..." : "Save changes"}
         </Button>

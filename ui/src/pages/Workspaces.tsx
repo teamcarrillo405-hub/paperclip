@@ -8,7 +8,7 @@ import { issuesApi } from "../api/issues";
 import { projectsApi } from "../api/projects";
 import { ProjectWorkspacesContent } from "../components/ProjectWorkspacesContent";
 import { PageSkeleton } from "../components/PageSkeleton";
-import { AlertCircle, Building2, GitBranch, Settings } from "lucide-react";
+import { AlertCircle, Building2, GitBranch, LoaderCircle, RefreshCw, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "../components/EmptyState";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -166,9 +166,21 @@ export function Workspaces() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
-        <p className="text-sm text-muted-foreground mt-1">Active execution environments across all projects.</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
+          <p className="text-sm text-muted-foreground mt-1">Active execution environments across all projects.</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => { void refetchProjects(); void refetchIssues(); void refetchExecutionWorkspaces(); }}
+          disabled={dataLoading}
+          aria-label="Refresh workspaces"
+        >
+          {dataLoading ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="size-4" aria-hidden="true" />}
+          Refresh
+        </Button>
       </div>
 
       {groups.length === 0 ? (
