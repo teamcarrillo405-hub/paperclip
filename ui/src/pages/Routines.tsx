@@ -31,7 +31,7 @@ import {
 import { RoutineVariablesEditor } from "../components/RoutineVariablesEditor";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -596,7 +596,10 @@ export function Routines() {
       </div>
 
       {error ? (
-        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3"
+        >
           <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="text-sm text-destructive">
@@ -690,6 +693,8 @@ export function Routines() {
           showCloseButton={false}
           className="flex max-h-[calc(100dvh-2rem)] max-w-3xl flex-col gap-0 overflow-hidden p-0"
         >
+          <DialogTitle className="sr-only">Create Routine</DialogTitle>
+
           <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">New routine</p>
@@ -936,7 +941,7 @@ export function Routines() {
                 {createRoutine.isPending ? "Creating..." : "Create routine"}
               </Button>
               {createRoutine.isError ? (
-                <p className="text-sm text-destructive">
+                <p role="alert" className="text-sm text-destructive">
                   {createRoutine.error instanceof Error ? createRoutine.error.message : "Failed to create routine"}
                 </p>
               ) : null}
