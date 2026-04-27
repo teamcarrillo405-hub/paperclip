@@ -73,6 +73,7 @@ import {
   ArrowLeft,
   HelpCircle,
   FolderOpen,
+  AlertCircle,
 } from "lucide-react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -650,7 +651,7 @@ export function AgentDetail() {
   const setSaveConfigAction = useCallback((fn: (() => void) | null) => { saveConfigActionRef.current = fn; }, []);
   const setCancelConfigAction = useCallback((fn: (() => void) | null) => { cancelConfigActionRef.current = fn; }, []);
 
-  const { data: agent, isLoading, error } = useQuery<AgentDetailRecord>({
+  const { data: agent, isLoading, error, refetch, isRefetching } = useQuery<AgentDetailRecord>({
     queryKey: [...queryKeys.agents.detail(routeAgentRef), lookupCompanyId ?? null],
     queryFn: () => agentsApi.get(routeAgentRef, lookupCompanyId),
     enabled: canFetchAgent,
@@ -896,7 +897,17 @@ export function AgentDetail() {
   );
 
   if (isLoading) return <PageSkeleton variant="detail" />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return (
+    <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 flex items-start gap-3 m-4">
+      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0 space-y-2">
+        <p className="text-sm text-destructive">{error.message || "Failed to load agent."}</p>
+        <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isRefetching}>
+          {isRefetching ? "Retrying…" : "Retry"}
+        </Button>
+      </div>
+    </div>
+  );
   if (!agent) return null;
   if (!urlRunId && !urlTab) {
     return <Navigate to={`/agents/${canonicalAgentRef}/dashboard`} replace />;
@@ -913,7 +924,7 @@ export function AgentDetail() {
             value={agent.icon}
             onChange={(icon) => updateIcon.mutate(icon)}
           >
-            <button className="shrink-0 flex items-center justify-center h-12 w-12 rounded-lg bg-accent hover:bg-accent/80 transition-colors">
+            <button type="button" aria-label="Change agent icon" className="shrink-0 flex items-center justify-center h-12 w-12 rounded-lg bg-accent hover:bg-accent/80 transition-colors">
               <AgentIcon icon={agent.icon} className="h-6 w-6" />
             </button>
           </AgentIconPicker>
@@ -929,6 +940,7 @@ export function AgentDetail() {
           <Button
             variant="outline"
             size="sm"
+            aria-label="Assign Task"
             onClick={() => openNewIssue({ assigneeAgentId: agent.id })}
           >
             <Plus className="h-3.5 w-3.5 sm:mr-1" />
@@ -962,8 +974,8 @@ export function AgentDetail() {
           {/* Overflow menu */}
           <Popover open={moreOpen} onOpenChange={setMoreOpen}>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon-xs">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant="ghost" size="icon-xs" aria-label="More options">
+                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-44 p-1" align="end">
@@ -1022,7 +1034,7 @@ export function AgentDetail() {
         </Tabs>
       )}
 
-      {actionError && <p className="text-sm text-destructive">{actionError}</p>}
+      {actionError && <p role="alert" className="text-sm text-destructive">{actionError}</p>}
       {isPendingApproval && (
         <div className="flex flex-wrap items-center gap-3 rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-400/40 dark:bg-amber-950/30 dark:text-amber-200">
           <span>This agent is pending board approval and cannot be invoked yet.</span>
@@ -2401,6 +2413,7 @@ function PromptsTab({
               onChange={(event) => setDraft(event.target.value)}
               className="min-h-[420px] w-full min-w-0 rounded-md border border-border bg-transparent px-3 py-2 font-mono text-sm outline-none"
               placeholder="File contents"
+              aria-label="File contents"
             />
           )}
         </div>
@@ -2862,7 +2875,7 @@ function AgentSkillsTab({
             </div>
 
             {syncSkills.isError && (
-              <p className="mt-3 text-xs text-destructive">
+              <p role="alert" className="mt-3 text-xs text-destructive">
                 {syncSkills.error instanceof Error ? syncSkills.error.message : "Failed to update skills"}
               </p>
             )}
@@ -3225,12 +3238,12 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               );
             })()}
             {resumeRun.isError && (
-              <div className="text-xs text-destructive">
+              <div role="alert" className="text-xs text-destructive">
                 {resumeRun.error instanceof Error ? resumeRun.error.message : "Failed to resume run"}
               </div>
             )}
             {retryRun.isError && (
-              <div className="text-xs text-destructive">
+              <div role="alert" className="text-xs text-destructive">
                 {retryRun.error instanceof Error ? retryRun.error.message : "Failed to retry run"}
               </div>
             )}

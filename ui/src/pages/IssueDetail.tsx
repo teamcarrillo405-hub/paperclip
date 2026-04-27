@@ -91,6 +91,7 @@ import { shouldRenderRichSubIssuesSection } from "../lib/issue-detail-subissues"
 import { buildSubIssueDefaultsForViewer } from "../lib/subIssueDefaults";
 import {
   Activity as ActivityIcon,
+  AlertCircle,
   Archive,
   ArrowLeft,
   Check,
@@ -990,7 +991,7 @@ export function IssueDetail() {
     [location.state, resolvedIssueDetailState],
   );
 
-  const { data: issue, isLoading, error } = useQuery({
+  const { data: issue, isLoading, error, refetch, isRefetching } = useQuery({
     ...getIssueDetailQueryOptions(queryClient, issueId!, {
       placeholderIssue: issueHeaderSeed ? {
         id: issueHeaderSeed.id,
@@ -2373,7 +2374,17 @@ export function IssueDetail() {
   }, [answerInteraction]);
 
   if (isLoading) return <IssueDetailLoadingState headerSeed={issueHeaderSeed} />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return (
+    <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 flex items-start gap-3 m-4">
+      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0 space-y-2">
+        <p className="text-sm text-destructive">{error.message || "Failed to load issue."}</p>
+        <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isRefetching}>
+          {isRefetching ? "Retrying…" : "Retry"}
+        </Button>
+      </div>
+    </div>
+  );
   if (!issue) return null;
 
   // Ancestors are returned oldest-first from the server (root at end, immediate parent at start)
@@ -2468,8 +2479,8 @@ export function IssueDetail() {
       )}
 
       {issue.hiddenAt && (
-        <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          <EyeOff className="h-4 w-4 shrink-0" />
+        <div role="alert" className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <EyeOff className="h-4 w-4 shrink-0" aria-hidden="true" />
           This issue is hidden
         </div>
       )}
@@ -2549,8 +2560,9 @@ export function IssueDetail() {
                 size="icon-xs"
                 onClick={copyIssueToClipboard}
                 title="Copy issue as markdown"
+                aria-label="Copy issue as markdown"
               >
-                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-green-500" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
               </Button>
               <Button
                 variant="ghost"
@@ -2583,8 +2595,9 @@ export function IssueDetail() {
               size="icon-xs"
               onClick={copyIssueToClipboard}
               title="Copy issue as markdown"
+              aria-label="Copy issue as markdown"
             >
-              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              {copied ? <Check className="h-4 w-4 text-green-500" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
             </Button>
             <Button
               variant="ghost"
@@ -2595,14 +2608,15 @@ export function IssueDetail() {
               )}
               onClick={() => setPanelVisible(true)}
               title="Show properties"
+              aria-label="Show properties"
             >
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
 
             <Popover open={moreOpen} onOpenChange={setMoreOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon-xs" className="shrink-0">
-                  <MoreHorizontal className="h-4 w-4" />
+                <Button variant="ghost" size="icon-xs" className="shrink-0" aria-label="More options">
+                  <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
             <PopoverContent className="w-44 p-1" align="end">
@@ -2778,11 +2792,21 @@ export function IssueDetail() {
             {imageAttachments.map((attachment) => (
               <div
                 key={attachment.id}
+                role="button"
+                tabIndex={0}
                 className="group relative aspect-square rounded-lg overflow-hidden border border-border bg-accent/10 cursor-pointer"
                 onClick={() => {
                   const idx = imageAttachments.findIndex((a) => a.id === attachment.id);
                   setGalleryIndex(idx >= 0 ? idx : 0);
                   setGalleryOpen(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    const idx = imageAttachments.findIndex((a) => a.id === attachment.id);
+                    setGalleryIndex(idx >= 0 ? idx : 0);
+                    setGalleryOpen(true);
+                  }
                 }}
               >
                 <img
