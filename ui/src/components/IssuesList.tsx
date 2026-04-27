@@ -52,7 +52,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { CircleDot, Plus, ArrowUpDown, Layers, Check, ChevronRight, List, ListTree, Columns3, User, Search } from "lucide-react";
+import { CircleDot, Plus, ArrowUpDown, Layers, Check, ChevronRight, List, ListTree, Columns3, User, Search, AlertCircle } from "lucide-react";
 import { KanbanBoard } from "./KanbanBoard";
 import { buildIssueTree, countDescendants } from "../lib/issue-tree";
 import { buildSubIssueDefaultsForViewer } from "../lib/subIssueDefaults";
@@ -195,6 +195,8 @@ interface IssuesListProps {
   issues: Issue[];
   isLoading?: boolean;
   error?: Error | null;
+  refetch?: () => void;
+  isRefetching?: boolean;
   agents?: Agent[];
   projects?: ProjectOption[];
   liveIssueIds?: Set<string>;
@@ -278,6 +280,8 @@ export function IssuesList({
   issues,
   isLoading,
   error,
+  refetch,
+  isRefetching,
   agents,
   projects,
   liveIssueIds,
@@ -735,18 +739,22 @@ export function IssuesList({
           {/* View mode toggle */}
           <div className="flex items-center border border-border rounded-md overflow-hidden mr-1">
             <button
-              className={`p-1.5 transition-colors ${viewState.viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              type="button"
+              aria-pressed={viewState.viewMode === "list"}
+              aria-label="List view"
+              className={`p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${viewState.viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "list" })}
-              title="List view"
             >
-              <List className="h-3.5 w-3.5" />
+              <List className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
             <button
-              className={`p-1.5 transition-colors ${viewState.viewMode === "board" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              type="button"
+              aria-pressed={viewState.viewMode === "board"}
+              aria-label="Board view"
+              className={`p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${viewState.viewMode === "board" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "board" })}
-              title="Board view"
             >
-              <Columns3 className="h-3.5 w-3.5" />
+              <Columns3 className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           </div>
 
@@ -866,7 +874,25 @@ export function IssuesList({
       </div>
 
       {isLoading && <PageSkeleton variant="issues-list" />}
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{error.message || "Failed to load issues."}</p>
+          </div>
+          {refetch && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+              disabled={isRefetching}
+              onClick={() => refetch()}
+            >
+              {isRefetching ? "Retrying…" : "Retry"}
+            </Button>
+          )}
+        </div>
+      )}
       {normalizedIssueSearch.length > 0 && searchedIssues.length === ISSUE_SEARCH_RESULT_LIMIT && (
         <p className="text-xs text-muted-foreground">
           Showing up to {ISSUE_SEARCH_RESULT_LIMIT} matches. Refine the search to narrow further.

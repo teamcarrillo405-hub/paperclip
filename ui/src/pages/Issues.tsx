@@ -82,7 +82,7 @@ export function Issues() {
     setBreadcrumbs([{ label: "Issues" }]);
   }, [setBreadcrumbs]);
 
-  const { data: issues, isLoading, error } = useQuery({
+  const { data: issues, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: [
       ...queryKeys.issues.list(selectedCompanyId!),
       "participant-agent",
@@ -117,6 +117,8 @@ export function Issues() {
       issues={issues ?? []}
       isLoading={isLoading}
       error={error as Error | null}
+      refetch={refetch}
+      isRefetching={isRefetching}
       agents={agents}
       projects={projects}
       liveIssueIds={liveIssueIds}

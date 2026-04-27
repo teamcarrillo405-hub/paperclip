@@ -51,6 +51,9 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
         queryClient.invalidateQueries({ queryKey: queryKeys.goals.list(companyId) });
       }
     },
+    onError: () => {
+      alert(`Failed to delete goal "${goal.title}". Please try again.`);
+    },
   });
 
   function handleDelete(e: React.MouseEvent) {
@@ -68,7 +71,10 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
     <>
       {hasChildren ? (
         <button
-          className="p-0.5 shrink-0"
+          type="button"
+          className="p-0.5 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          aria-label={expanded ? "Collapse sub-goals" : "Expand sub-goals"}
+          aria-expanded={expanded}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -77,6 +83,7 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
         >
           <ChevronRight
             className={cn("h-3 w-3 transition-transform", expanded && "rotate-90")}
+            aria-hidden="true"
           />
         </button>
       ) : (
@@ -95,16 +102,17 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <span className="text-[10px] font-mono text-muted-foreground/70 w-7 text-right">
+          <span className="text-xs font-mono text-muted-foreground/70 w-7 text-right">
             {progressPct}%
           </span>
         </div>
       )}
       <StatusBadge status={goal.status} />
       <button
-        className="shrink-0 ml-1 p-0.5 rounded text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover/row:opacity-100"
+        type="button"
+        className="shrink-0 ml-1 p-0.5 rounded text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover/row:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30"
         onClick={handleDelete}
-        title="Delete goal"
+        disabled={deleteMutation.isPending}
         aria-label="Delete goal"
       >
         <Trash2 className="h-3 w-3" />
@@ -130,7 +138,10 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
         <div
           className={classes}
           style={{ paddingLeft: `${depth * 16 + 12}px` }}
+          role="button"
+          tabIndex={0}
           onClick={() => onSelect?.(goal)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect?.(goal); } }}
         >
           {inner}
         </div>
@@ -166,7 +177,7 @@ export function GoalTree({ goals, goalLink, onSelect, companyId }: GoalTreeProps
   }
 
   return (
-    <div className="border border-border py-1">
+    <div className="rounded-lg border border-border overflow-hidden py-1">
       {roots.map((goal) => (
         <GoalNode
           key={goal.id}
