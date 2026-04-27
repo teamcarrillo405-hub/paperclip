@@ -6,8 +6,10 @@ import { costsApi } from "../api/costs";
 import { heartbeatsApi } from "../api/heartbeats";
 import { useCompany } from "../context/CompanyContext";
 import { useDialog } from "../context/DialogContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useSidebar } from "../context/SidebarContext";
+import { useToast } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 import { StatusBadge } from "../components/StatusBadge";
 import { agentStatusDot, agentStatusDotDefault } from "../lib/status-colors";
@@ -62,6 +64,7 @@ export function Agents() {
   const queryClient = useQueryClient();
   const { openNewAgent } = useDialog();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { pushToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobile } = useSidebar();
@@ -75,6 +78,7 @@ export function Agents() {
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<{ col: SortCol; dir: SortDir } | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const { data: agents, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
@@ -118,7 +122,7 @@ export function Agents() {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
     },
     onError: (err: Error) => {
-      alert(`Failed to pause agent: ${err.message}`);
+      pushToast({ title: "Failed to pause agent", body: err.message, tone: "error" });
     },
   });
 
@@ -128,7 +132,7 @@ export function Agents() {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
     },
     onError: (err: Error) => {
-      alert(`Failed to delete agent: ${err.message}`);
+      pushToast({ title: "Failed to delete agent", body: err.message, tone: "error" });
     },
   });
 
@@ -235,14 +239,11 @@ export function Agents() {
   }
 
   async function handleBulkDelete() {
-    const confirmed = window.confirm(
-      `Delete ${selectedIds.size} agent${selectedIds.size !== 1 ? "s" : ""}? This action cannot be undone.`,
-    );
-    if (!confirmed) return;
     try {
       await Promise.all([...selectedIds].map((id) => deleteMutation.mutateAsync(id)));
     } finally {
       setSelectedIds(new Set());
+      setConfirmDeleteOpen(false);
     }
   }
 
@@ -303,13 +304,15 @@ export function Agents() {
           </div>
           <div className="relative">
             <button
+              aria-expanded={filtersOpen}
+              aria-haspopup="menu"
               className={cn(
                 "flex items-center gap-1.5 px-2 py-1.5 text-xs transition-colors border border-border",
                 filtersOpen || showTerminated ? "text-foreground bg-accent" : "text-muted-foreground hover:bg-accent/50"
               )}
               onClick={() => setFiltersOpen(!filtersOpen)}
             >
-              <SlidersHorizontal className="h-3 w-3" />
+              <SlidersHorizontal className="h-3 w-3" aria-hidden="true" />
               Filters
               {showTerminated && <span className="ml-0.5 px-1 bg-foreground/10 rounded text-[10px]">1</span>}
             </button>
@@ -333,22 +336,26 @@ export function Agents() {
           {!forceListView && (
             <div className="flex items-center border border-border">
               <button
+                aria-label="List view"
+                aria-pressed={effectiveView === "list"}
                 className={cn(
                   "p-1.5 transition-colors",
                   effectiveView === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
                 )}
                 onClick={() => setView("list")}
               >
-                <List className="h-3.5 w-3.5" />
+                <List className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
               <button
+                aria-label="Org chart view"
+                aria-pressed={effectiveView === "org"}
                 className={cn(
                   "p-1.5 transition-colors",
                   effectiveView === "org" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
                 )}
                 onClick={() => setView("org")}
               >
-                <GitBranch className="h-3.5 w-3.5" />
+                <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
           )}
@@ -593,7 +600,7 @@ export function Agents() {
             </button>
             <button
               type="button"
-              onClick={handleBulkDelete}
+              onClick={() => setConfirmDeleteOpen(true)}
               disabled={deleteMutation.isPending}
               className="text-xs text-destructive transition-colors hover:text-destructive/70 disabled:opacity-50"
             >
@@ -610,6 +617,23 @@ export function Agents() {
           </div>
         </div>
       )}
+
+      <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {selectedIds.size} agent{selectedIds.size !== 1 ? "s" : ""}?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. The selected agent{selectedIds.size !== 1 ? "s" : ""} will be permanently deleted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDeleteOpen(false)}>Cancel</Button>
+            <Button variant="destructive" disabled={deleteMutation.isPending} onClick={handleBulkDelete}>
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

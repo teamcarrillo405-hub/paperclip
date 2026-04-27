@@ -292,7 +292,7 @@ export function CompanyAccess() {
       </div>
 
       {access && !access.currentUserRole && (
-        <div className="rounded-xl border border-amber-500/40 px-4 py-3 text-sm text-amber-200">
+        <div className="rounded-xl border border-amber-500/40 px-4 py-3 text-sm text-amber-700 dark:text-amber-200">
           This account can manage access here through instance-admin privileges, but it does not currently hold an active company membership.
         </div>
       )}
@@ -352,53 +352,61 @@ export function CompanyAccess() {
           </div>
         ) : null}
 
-        <div className="overflow-hidden rounded-xl border border-border">
-          <div className="grid grid-cols-[minmax(0,1.5fr)_120px_120px_minmax(0,1.2fr)_180px] gap-3 border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            <div>User account</div>
-            <div>Role</div>
-            <div>Status</div>
-            <div>Grants</div>
-            <div className="text-right">Action</div>
+        <div role="table" aria-label="Company members" className="overflow-hidden rounded-xl border border-border">
+          <div role="rowgroup">
+            <div role="row" className="grid grid-cols-[minmax(0,1.5fr)_120px_120px_minmax(0,1.2fr)_180px] gap-3 border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <div role="columnheader">User account</div>
+              <div role="columnheader">Role</div>
+              <div role="columnheader">Status</div>
+              <div role="columnheader">Grants</div>
+              <div role="columnheader" className="text-right">Action</div>
+            </div>
           </div>
+          <div role="rowgroup">
           {members.length === 0 ? (
-            <div className="px-4 py-8 text-sm text-muted-foreground">No user memberships found for this company yet.</div>
+            <div role="row" className="px-4 py-8 text-sm text-muted-foreground">
+              <div role="cell">No user memberships found for this company yet.</div>
+            </div>
           ) : (
             members.map((member) => {
               const removalReason = member.removal?.reason ?? null;
               const canArchive = member.removal?.canArchive ?? true;
+              const memberDisplayName = member.user?.name?.trim() || member.user?.email || member.principalId;
               return (
                 <div
                   key={member.id}
+                  role="row"
                   className="grid grid-cols-[minmax(0,1.5fr)_120px_120px_minmax(0,1.2fr)_180px] gap-3 border-b border-border px-4 py-3 last:border-b-0"
                 >
-                  <div className="min-w-0">
-                    <div className="truncate font-medium">{member.user?.name?.trim() || member.user?.email || member.principalId}</div>
+                  <div role="cell" className="min-w-0">
+                    <div className="truncate font-medium">{memberDisplayName}</div>
                     <div className="truncate text-xs text-muted-foreground">{member.user?.email || member.principalId}</div>
                   </div>
-                  <div className="text-sm">
+                  <div role="cell" className="text-sm">
                     {member.membershipRole
                       ? HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[member.membershipRole]
                       : "Unset"}
                   </div>
-                  <div>
+                  <div role="cell">
                     <Badge variant={member.status === "active" ? "secondary" : member.status === "suspended" ? "destructive" : "outline"}>
                       {member.status.replace("_", " ")}
                     </Badge>
                   </div>
-                  <div className="min-w-0 text-sm text-muted-foreground">{formatGrantSummary(member)}</div>
-                  <div className="space-y-1 text-right">
+                  <div role="cell" className="min-w-0 text-sm text-muted-foreground">{formatGrantSummary(member)}</div>
+                  <div role="cell" className="space-y-1 text-right">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setEditingMemberId(member.id)}>
+                      <Button size="sm" variant="outline" aria-label={`Edit ${memberDisplayName}`} onClick={() => setEditingMemberId(member.id)}>
                         Edit
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
+                        aria-label={`Remove ${memberDisplayName}`}
                         onClick={() => setRemovingMemberId(member.id)}
                         disabled={!canArchive}
                         title={removalReason ?? undefined}
                       >
-                        <Trash2 className="mr-1 h-3.5 w-3.5" />
+                        <Trash2 className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                         Remove
                       </Button>
                     </div>
@@ -410,6 +418,7 @@ export function CompanyAccess() {
               );
             })
           )}
+          </div>
         </div>
       </section>
 
