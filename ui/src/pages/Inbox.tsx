@@ -276,6 +276,7 @@ export function FailedRunInboxRow({
                 className={cn(
                   "inline-flex h-6 w-6 min-h-6 min-w-6 items-center justify-center rounded-full transition-colors",
                   "hover:bg-blue-500/20",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 )}
                 aria-label="Mark as read"
               >
@@ -341,6 +342,7 @@ export function FailedRunInboxRow({
             className="h-8 shrink-0 px-2.5"
             onClick={onRetry}
             disabled={isRetrying}
+            aria-label={linkedAgentName ? `Retry run — ${linkedAgentName}` : "Retry failed run"}
           >
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
             {isRetrying ? "Retrying…" : "Retry"}
@@ -365,6 +367,7 @@ export function FailedRunInboxRow({
           className="h-8 shrink-0 px-2.5"
           onClick={onRetry}
           disabled={isRetrying}
+          aria-label={linkedAgentName ? `Retry run — ${linkedAgentName}` : "Retry failed run"}
         >
           <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
           {isRetrying ? "Retrying…" : "Retry"}
@@ -1897,6 +1900,9 @@ export function Inbox() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold tracking-tight">Inbox</h1>
+      <h2 className="sr-only">
+        {({ mine: "Mine", recent: "Recent", unread: "Unread", all: "All" } as Record<string, string>)[tab] ?? "Mine"} items
+      </h2>
       <div className="space-y-2">
         {/* Search — full-width row on mobile, inline on desktop */}
         <div className="relative sm:hidden">

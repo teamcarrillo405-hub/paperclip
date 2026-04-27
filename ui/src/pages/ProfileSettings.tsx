@@ -103,6 +103,7 @@ export function ProfileSettings() {
       setActionError(null);
       setName(profile.name ?? "");
       setImage(profile.image ?? "");
+      pushToast({ title: "Profile photo updated.", tone: "success" });
     },
     onError: (error) => {
       setActionError(error instanceof Error ? error.message : "Failed to upload avatar.");
@@ -115,6 +116,7 @@ export function ProfileSettings() {
       setActionError(null);
       setName(profile.name ?? "");
       setImage(profile.image ?? "");
+      pushToast({ title: "Profile photo removed.", tone: "success" });
     },
     onError: (error) => {
       setActionError(error instanceof Error ? error.message : "Failed to remove avatar.");
@@ -216,6 +218,7 @@ export function ProfileSettings() {
                   <Button
                     type="button"
                     variant="secondary"
+                    aria-label={currentImage ? "Change profile photo" : "Upload profile photo"}
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={!selectedCompanyId || isSavingProfile}
                   >

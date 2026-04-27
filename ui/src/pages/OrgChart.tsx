@@ -215,6 +215,7 @@ export function OrgChart() {
 
   // Pan & zoom state
   const containerRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [announcedZoom, setAnnouncedZoom] = useState(zoom);
@@ -469,7 +470,7 @@ export function OrgChart() {
     <div className="flex h-[calc(100dvh-9rem)] min-h-[420px] flex-col md:h-full md:min-h-0">
       {/* Fix 1: sr-only h1 for page landmark */}
       <h1 className="sr-only">Org Chart</h1>
-      <div className="mb-2 flex shrink-0 flex-wrap items-center justify-start gap-2">
+      <div ref={toolbarRef} className="mb-2 flex shrink-0 flex-wrap items-center justify-start gap-2">
         <Link to="/company/import">
           <Button variant="outline" size="sm">
             <Upload className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
@@ -504,6 +505,12 @@ export function OrgChart() {
         tabIndex={0}
         onKeyDown={(e) => {
           const PAN_STEP = 80;
+          if (e.key === "Escape") {
+            e.preventDefault();
+            const focusTarget = toolbarRef.current?.querySelector<HTMLElement>("a,button,[tabindex]");
+            focusTarget?.focus();
+            return;
+          }
           if (e.key === "ArrowLeft") { e.preventDefault(); setPan(p => ({ ...p, x: p.x + PAN_STEP })); }
           if (e.key === "ArrowRight") { e.preventDefault(); setPan(p => ({ ...p, x: p.x - PAN_STEP })); }
           if (e.key === "ArrowUp") { e.preventDefault(); setPan(p => ({ ...p, y: p.y + PAN_STEP })); }
@@ -514,6 +521,14 @@ export function OrgChart() {
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
       >
+        {/* Skip link for keyboard users to bypass org nodes */}
+        <a
+          href="#zoom-controls"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded focus:bg-background focus:px-2 focus:py-1 focus:text-sm focus:ring-2 focus:ring-ring"
+        >
+          Skip to zoom controls
+        </a>
+
         {/* Status dot color legend for screen readers */}
         <div className="sr-only" role="note">
           Status indicator colors: cyan = running, green = active, yellow = idle, red = error, gray = offline

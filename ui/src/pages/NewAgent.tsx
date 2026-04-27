@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Shield, LoaderCircle, Building2 } from "lucide-react";
+import { Shield, LoaderCircle, Building2, AlertCircle } from "lucide-react";
 import { EmptyState } from "../components/EmptyState";
 import { cn, agentUrl } from "../lib/utils";
 import { roleLabels } from "../components/agent-config-primitives";
@@ -81,6 +81,7 @@ export function NewAgent() {
     error: adapterModelsError,
     isLoading: adapterModelsLoading,
     isFetching: adapterModelsFetching,
+    refetch: refetchAdapterModels,
   } = useQuery({
     queryKey: selectedCompanyId
       ? queryKeys.agents.adapterModels(selectedCompanyId, configValues.adapterType)
@@ -330,6 +331,17 @@ export function NewAgent() {
               <LoaderCircle className="size-4 animate-spin text-muted-foreground" aria-hidden="true" />
             )}
           </h2>
+          {adapterModelsError && (
+            <div role="alert" className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive mt-2">
+              <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span className="flex-1">
+                {adapterModelsError instanceof Error ? adapterModelsError.message : "Failed to load adapter models."}
+              </span>
+              <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" onClick={() => refetchAdapterModels()}>
+                Retry
+              </Button>
+            </div>
+          )}
         </div>
         <AgentConfigForm
           mode="create"
@@ -387,11 +399,11 @@ export function NewAgent() {
 
         {/* Footer */}
         <div className="border-t border-border px-4 py-3">
-          {isFirstAgent && (
-            <p className="text-xs text-muted-foreground mb-2">This will be the CEO</p>
-          )}
           {formError && (
-            <p role="alert" className="text-xs text-destructive mb-2">{formError}</p>
+            <div role="alert" className="flex items-center gap-2 text-sm text-destructive mb-2">
+              <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{formError}</span>
+            </div>
           )}
           {!name.trim() && <p id="submit-hint" className="text-xs text-muted-foreground text-right">Enter an agent name to continue.</p>}
           <div className="flex items-center justify-end gap-2">

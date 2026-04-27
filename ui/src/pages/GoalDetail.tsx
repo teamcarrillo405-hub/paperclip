@@ -42,7 +42,6 @@ export function GoalPropertiesToggleButton({
       )}
       onClick={onShowProperties}
       aria-label="Show properties"
-      aria-hidden={panelVisible}
       tabIndex={panelVisible ? -1 : 0}
     >
       <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
@@ -197,7 +196,7 @@ export function GoalDetail() {
             type="button"
             aria-label="Dismiss error"
             onClick={() => setUpdateError(null)}
-            className="text-destructive/70 hover:text-destructive ml-1"
+            className="text-destructive/70 hover:text-destructive ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -249,10 +248,10 @@ export function GoalDetail() {
       <Tabs defaultValue="children">
         <TabsList>
           <TabsTrigger value="children">
-            Sub-Goals <span aria-label={`${childGoals.length} sub-goal${childGoals.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums">{childGoals.length}</span>
+            Sub-Goals <span aria-label={`${childGoals.length} sub-goal${childGoals.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums"><span aria-hidden="true">{childGoals.length}</span></span>
           </TabsTrigger>
           <TabsTrigger value="projects">
-            Projects <span aria-label={`${linkedProjects.length} project${linkedProjects.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums">{linkedProjects.length}</span>
+            Projects <span aria-label={`${linkedProjects.length} project${linkedProjects.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums"><span aria-hidden="true">{linkedProjects.length}</span></span>
           </TabsTrigger>
         </TabsList>
 

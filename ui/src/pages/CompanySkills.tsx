@@ -322,7 +322,7 @@ function SkillTree({
         const expanded = node.kind === "dir" && node.path ? expandedDirs.has(node.path) : false;
         if (node.kind === "dir") {
           return (
-            <div key={node.path ?? node.name} role="treeitem" aria-selected={false}>
+            <div key={node.path ?? node.name} role="treeitem">
               {/* FIX: Collapsed the two buttons (main-row + chevron) into one full-row button.
                   The redundant unnamed main-row button was removed; the single button now
                   covers the full row and carries the descriptive aria-label from the former
@@ -491,7 +491,7 @@ function SkillList({
                 expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
               )}
             >
-              <div className="min-h-0 overflow-hidden" inert={!expanded || undefined}>
+              <div className="min-h-0 overflow-hidden" {...(!expanded ? { inert: "" } : {})}>
                 <SkillTree
                   nodes={tree}
                   skillId={skill.id}
@@ -587,11 +587,11 @@ function SkillPane({
       <div className="border-b border-border px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            {/* FIX: This is the primary h1 — skill detail name */}
-            <h1 className="flex items-center gap-2 truncate text-2xl font-semibold">
+            {/* The page-level h1 is the sr-only "Company Skills" above. Skill name is h2. */}
+            <h2 className="flex items-center gap-2 truncate text-2xl font-semibold">
               <SourceIcon className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
               {detail.name}
-            </h1>
+            </h2>
             {detail.description && (
               <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{detail.description}</p>
             )}

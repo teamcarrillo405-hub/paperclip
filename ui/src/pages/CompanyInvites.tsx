@@ -246,9 +246,9 @@ export function CompanyInvites() {
           </div>
         </fieldset>
 
-        <div className="rounded-lg border border-border px-4 py-3 text-sm text-muted-foreground">
+        <p className="rounded-lg border border-border px-4 py-3 text-sm text-muted-foreground">
           Each invite link is single-use. The first successful use consumes the link and creates or reuses the matching join request before approval.
-        </div>
+        </p>
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" onClick={() => createInviteMutation.mutate()} disabled={createInviteMutation.isPending}>
@@ -389,6 +389,7 @@ export function CompanyInvites() {
                   onClick={() => invitesQuery.fetchNextPage()}
                   disabled={invitesQuery.isFetchingNextPage}
                 >
+                  {invitesQuery.isFetchingNextPage && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
                   {invitesQuery.isFetchingNextPage ? "Loading more…" : "View more"}
                 </Button>
               </div>

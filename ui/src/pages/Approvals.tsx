@@ -350,8 +350,8 @@ export function Approvals() {
         )}
       </div>
 
-      {/* Keyboard shortcut legend — only shown on Pending tab where shortcuts apply */}
-      {statusFilter === "pending" && (
+      {/* Keyboard shortcut legend — only shown on Pending tab where shortcuts apply and items exist */}
+      {statusFilter === "pending" && filtered.length > 0 && (
         <div className="flex items-center gap-3 flex-wrap">
           {[
             { keys: ["J", "K"], label: "navigate" },
@@ -410,7 +410,7 @@ export function Approvals() {
       )}
 
       {filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div role="status" className="flex flex-col items-center justify-center py-16 text-center">
           <ShieldCheck className="h-8 w-8 text-muted-foreground/50 mb-3" />
           <p className="text-sm text-muted-foreground">
             {statusFilter === "pending" ? "No pending approvals." : "No approvals yet."}
@@ -463,7 +463,7 @@ export function Approvals() {
                   onReject={() => rejectMutation.mutate(approval.id)}
                   onRequestRevision={(decisionNote) => requestRevisionMutation.mutate({ id: approval.id, decisionNote })}
                   detailLink={`/approvals/${approval.id}`}
-                  isPending={approveMutation.isPending || rejectMutation.isPending || requestRevisionMutation.isPending || isBulkOperating}
+                  isPending={approveMutation.isPending || rejectMutation.isPending || requestRevisionMutation.isPending}
                   pendingAction={
                     approveMutation.isPending ? "approve" : rejectMutation.isPending ? "reject" : null
                   }

@@ -272,11 +272,11 @@ export function Dashboard() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {selectedCompany?.name ?? "Dashboard"}
         </h1>
-        <p aria-live="polite" className="text-xs text-muted-foreground mt-0.5">
-          {liveRunCount > 0
-            ? `${liveRunCount} agent${liveRunCount !== 1 ? "s" : ""} running · `
-            : ""}
-          Last synced {syncedSecondsAgo < 5 ? "just now" : syncedSecondsAgo < 60 ? `${syncedSecondsAgo}s ago` : `${Math.floor(syncedSecondsAgo / 60)}m ago`}
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {liveRunCount > 0 && (
+            <span>{liveRunCount} agent{liveRunCount !== 1 ? "s" : ""} running{" · "}</span>
+          )}
+          <span aria-live="polite" aria-atomic="true">Last synced {syncedSecondsAgo < 5 ? "just now" : syncedSecondsAgo < 60 ? `${syncedSecondsAgo}s ago` : `${Math.floor(syncedSecondsAgo / 60)}m ago`}</span>
         </p>
       </div>
 
@@ -326,8 +326,9 @@ export function Dashboard() {
             </div>
           ) : null}
 
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+          <div className="space-y-4">
             <h2 className="sr-only">Key metrics</h2>
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             <MetricCard
               icon={Bot}
               value={data.agents.active + data.agents.running + data.agents.paused + data.agents.error}
@@ -380,6 +381,7 @@ export function Dashboard() {
               }
             />
           </div>
+          </div>
 
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -409,22 +411,22 @@ export function Dashboard() {
               </div>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <section>
+              <section aria-label="Run activity chart">
                 <ChartCard title="Run Activity" subtitle={`Last ${chartDays} days`}>
                   <RunActivityChart activity={data.runActivity} days={chartDays} />
                 </ChartCard>
               </section>
-              <section>
+              <section aria-label="Issues by priority chart">
                 <ChartCard title="Issues by Priority" subtitle={`Last ${chartDays} days`}>
                   <PriorityChart issues={issues ?? []} days={chartDays} />
                 </ChartCard>
               </section>
-              <section>
+              <section aria-label="Issues by status chart">
                 <ChartCard title="Issues by Status" subtitle={`Last ${chartDays} days`}>
                   <IssueStatusChart issues={issues ?? []} days={chartDays} />
                 </ChartCard>
               </section>
-              <section>
+              <section aria-label="Success rate chart">
                 <ChartCard title="Success Rate" subtitle={`Last ${chartDays} days`}>
                   <SuccessRateChart activity={data.runActivity} days={chartDays} />
                 </ChartCard>
