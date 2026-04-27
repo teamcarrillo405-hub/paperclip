@@ -528,7 +528,11 @@ export function CommandPalette() {
         {(() => {
           const visibleNavItems = searchQuery.length === 0
             ? NAV_ITEMS
-            : NAV_ITEMS.filter((item) => item.label.toLowerCase().includes(searchQuery.toLowerCase()));
+            : NAV_ITEMS
+                .map((item) => ({ item, score: fuzzyScore(searchQuery, item.label) }))
+                .filter((x) => x.score > 0)
+                .sort((a, b) => b.score - a.score)
+                .map((x) => x.item);
           if (visibleNavItems.length === 0) return null;
           return (
             <CommandGroup heading="Navigate">
@@ -578,7 +582,9 @@ export function CommandPalette() {
                       )
                     }
                   >
-                    <StopCircle className="mr-2 h-4 w-4 text-destructive/70" />
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-destructive/10 mr-2">
+                      <StopCircle className="h-3 w-3 text-destructive" />
+                    </span>
                     <span className="flex-1 truncate">Cancel run &mdash; {run.agentName}</span>
                   </CommandItem>
                   <CommandItem
@@ -588,7 +594,9 @@ export function CommandPalette() {
                       )
                     }
                   >
-                    <PauseCircle className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-amber-500/10 mr-2">
+                      <PauseCircle className="h-3 w-3 text-amber-500" />
+                    </span>
                     <span className="flex-1 truncate">Pause agent &mdash; {run.agentName}</span>
                   </CommandItem>
                 </Fragment>
@@ -622,7 +630,9 @@ export function CommandPalette() {
                         )
                       }
                     >
-                      <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-green-500/10 mr-2">
+                        <CheckCircle2 className="h-3 w-3 text-green-600" />
+                      </span>
                       <span className="flex-1 truncate">Approve &mdash; {subject}</span>
                     </CommandItem>
                     <CommandItem
@@ -632,7 +642,9 @@ export function CommandPalette() {
                         )
                       }
                     >
-                      <XCircle className="mr-2 h-4 w-4 text-destructive/70" />
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-destructive/10 mr-2">
+                        <XCircle className="h-3 w-3 text-destructive" />
+                      </span>
                       <span className="flex-1 truncate">Reject &mdash; {subject}</span>
                     </CommandItem>
                   </Fragment>
@@ -646,7 +658,7 @@ export function CommandPalette() {
         {rankedIssues.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Issues">
+            <CommandGroup heading={`Issues (${rankedIssues.length})`}>
               {rankedIssues.map((issue) => (
                 <CommandItem
                   key={issue.id}
@@ -682,7 +694,7 @@ export function CommandPalette() {
         {fuzzyAgents.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Agents">
+            <CommandGroup heading={`Agents (${fuzzyAgents.length})`}>
               {fuzzyAgents.map((agent) => (
                 <CommandItem
                   key={agent.id}
@@ -714,7 +726,7 @@ export function CommandPalette() {
         {fuzzyProjects.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Projects">
+            <CommandGroup heading={`Projects (${fuzzyProjects.length})`}>
               {fuzzyProjects.map((project) => (
                 <CommandItem
                   key={project.id}

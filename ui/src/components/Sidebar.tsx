@@ -488,7 +488,7 @@ export function Sidebar() {
         <div
           className={cn(
             "flex items-center justify-between px-3 py-1 transition-all duration-150",
-            collapsed ? "opacity-0 max-h-0 overflow-hidden py-0" : "opacity-100 max-h-[40px]",
+            collapsed ? "opacity-0 max-h-0 overflow-hidden py-0 pointer-events-none" : "opacity-100 max-h-10",
           )}
         >
           <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60">

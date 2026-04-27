@@ -380,7 +380,7 @@ export function Agents() {
           ].map(({ label, value }) => (
             <div
               key={label}
-              className="rounded-lg border border-border/60 bg-card/50 px-3 py-2"
+              className="rounded-lg border border-border/60 bg-card px-3 py-2 shadow-sm"
             >
               <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 {label}
@@ -517,9 +517,12 @@ export function Agents() {
       )}
 
       {effectiveView === "list" && agents && agents.length > 0 && sortedAgents.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          {searchTrimmed ? "No agents match your search." : "No agents match the selected filter."}
-        </p>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <Bot className="h-8 w-8 text-muted-foreground/30 mb-3" />
+          <p className="text-sm text-muted-foreground">
+            {searchTrimmed ? "No agents match your search." : "No agents match the selected filter."}
+          </p>
+        </div>
       )}
 
       {effectiveView === "org" && filteredOrg.length > 0 && (
@@ -642,7 +645,7 @@ function OrgTreeNode({
       >
         <span className="relative flex h-2.5 w-2.5 shrink-0">
           {(node.status === "active" || node.status === "running") && (
-            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-50 ${agentStatusDot[node.status] ?? agentStatusDotDefault}`} />
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-50 ${agentStatusDot[node.status] ?? agentStatusDotDefault}`} aria-hidden="true" />
           )}
           <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${agentStatusDot[node.status] ?? agentStatusDotDefault}`} />
         </span>
