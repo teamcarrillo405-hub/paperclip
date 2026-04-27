@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace } from "@paperclipai/shared";
-import { ArrowLeft, Copy, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronRight, Copy, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -224,8 +226,8 @@ function MonoValue({ value, copy }: { value: string; copy?: boolean }) {
     <div className="inline-flex max-w-full items-start gap-2">
       <span className="break-all font-mono text-xs">{value}</span>
       {copy ? (
-        <CopyText text={value} className="shrink-0 text-muted-foreground hover:text-foreground" copiedLabel="Copied">
-          <Copy className="h-3.5 w-3.5" />
+        <CopyText text={value} className="shrink-0 text-muted-foreground hover:text-foreground" copiedLabel="Copied" ariaLabel="Copy to clipboard">
+          <Copy aria-hidden="true" className="h-3.5 w-3.5" />
         </CopyText>
       ) : null}
     </div>
@@ -323,6 +325,7 @@ export function ExecutionWorkspaceDetail() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [runtimeActionErrorMessage, setRuntimeActionErrorMessage] = useState<string | null>(null);
   const [runtimeActionMessage, setRuntimeActionMessage] = useState<string | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const activeTab = workspaceId ? resolveExecutionWorkspaceTab(location.pathname, workspaceId) : null;
 
   const workspaceQuery = useQuery({
@@ -741,42 +744,49 @@ export function ExecutionWorkspaceDetail() {
                       </div>
                     </div>
 
-                    <details className="rounded-md border border-dashed border-border/70 bg-background px-4 py-3">
-                      <summary className="cursor-pointer text-sm font-medium">Advanced runtime JSON</summary>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Override the inherited workspace command model only when this execution workspace truly needs different service or job behavior.
-                      </p>
-                      <div className="mt-3">
-                        <Field label="Workspace commands JSON" hint="Legacy `services` arrays still work, but `commands` supports both services and jobs.">
-                          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-                            <input
-                              id="inherit-runtime-config"
-                              type="checkbox"
-                              className="rounded border-border"
-                              checked={form.inheritRuntime}
-                              onChange={(event) => {
-                                const checked = event.target.checked;
-                                setForm((current) => {
-                                  if (!current) return current;
-                                  if (!checked && !current.workspaceRuntime.trim() && inheritedRuntimeConfig) {
-                                    return { ...current, inheritRuntime: checked, workspaceRuntime: formatJson(inheritedRuntimeConfig) };
-                                  }
-                                  return { ...current, inheritRuntime: checked };
-                                });
-                              }}
+                    <Collapsible
+                      open={advancedOpen}
+                      onOpenChange={setAdvancedOpen}
+                      className="rounded-md border border-dashed border-border/70 bg-background px-4 py-3"
+                    >
+                      <CollapsibleTrigger className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        {advancedOpen ? <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" /> : <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />}
+                        Advanced runtime JSON
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Override the inherited workspace command model only when this execution workspace truly needs different service or job behavior.
+                        </p>
+                        <div className="mt-3">
+                          <Field label="Workspace commands JSON" hint="Legacy `services` arrays still work, but `commands` supports both services and jobs.">
+                            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+                              <Checkbox
+                                id="inherit-runtime-config"
+                                checked={form.inheritRuntime}
+                                onCheckedChange={(checked) => {
+                                  const isChecked = checked === true;
+                                  setForm((current) => {
+                                    if (!current) return current;
+                                    if (!isChecked && !current.workspaceRuntime.trim() && inheritedRuntimeConfig) {
+                                      return { ...current, inheritRuntime: isChecked, workspaceRuntime: formatJson(inheritedRuntimeConfig) };
+                                    }
+                                    return { ...current, inheritRuntime: isChecked };
+                                  });
+                                }}
+                              />
+                              <label htmlFor="inherit-runtime-config">Inherit project workspace runtime config</label>
+                            </div>
+                            <Textarea
+                              className="min-h-64 font-mono sm:min-h-96"
+                              value={form.workspaceRuntime}
+                              onChange={(event) => setForm((current) => current ? { ...current, workspaceRuntime: event.target.value } : current)}
+                              disabled={form.inheritRuntime}
+                              placeholder={'{\n  "commands": [\n    {\n      "id": "web",\n      "name": "web",\n      "kind": "service",\n      "command": "pnpm dev",\n      "cwd": ".",\n      "port": { "type": "auto" }\n    },\n    {\n      "id": "db-migrate",\n      "name": "db:migrate",\n      "kind": "job",\n      "command": "pnpm db:migrate",\n      "cwd": "."\n    }\n  ]\n}'}
                             />
-                            <label htmlFor="inherit-runtime-config">Inherit project workspace runtime config</label>
-                          </div>
-                          <Textarea
-                            className="min-h-64 font-mono sm:min-h-96"
-                            value={form.workspaceRuntime}
-                            onChange={(event) => setForm((current) => current ? { ...current, workspaceRuntime: event.target.value } : current)}
-                            disabled={form.inheritRuntime}
-                            placeholder={'{\n  "commands": [\n    {\n      "id": "web",\n      "name": "web",\n      "kind": "service",\n      "command": "pnpm dev",\n      "cwd": ".",\n      "port": { "type": "auto" }\n    },\n    {\n      "id": "db-migrate",\n      "name": "db:migrate",\n      "kind": "job",\n      "command": "pnpm db:migrate",\n      "cwd": "."\n    }\n  ]\n}'}
-                          />
-                        </Field>
-                      </div>
-                    </details>
+                          </Field>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                 </div>
 
@@ -869,8 +879,8 @@ export function ExecutionWorkspaceDetail() {
                         {workspace.repoUrl}
                         <ExternalLink aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                       </a>
-                      <CopyText text={workspace.repoUrl} className="shrink-0 text-muted-foreground hover:text-foreground" copiedLabel="Copied">
-                        <Copy className="h-3.5 w-3.5" />
+                      <CopyText text={workspace.repoUrl} className="shrink-0 text-muted-foreground hover:text-foreground" copiedLabel="Copied" ariaLabel="Copy to clipboard">
+                        <Copy aria-hidden="true" className="h-3.5 w-3.5" />
                       </CopyText>
                     </div>
                   ) : workspace.repoUrl ? (
