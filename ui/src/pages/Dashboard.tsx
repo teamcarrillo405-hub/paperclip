@@ -273,10 +273,12 @@ export function Dashboard() {
           {selectedCompany?.name ?? "Dashboard"}
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          {liveRunCount > 0
-            ? `${liveRunCount} agent${liveRunCount !== 1 ? "s" : ""} running · `
-            : ""}
-          Last synced {syncedSecondsAgo < 5 ? "just now" : syncedSecondsAgo < 60 ? `${syncedSecondsAgo}s ago` : `${Math.floor(syncedSecondsAgo / 60)}m ago`}
+          <span aria-live="polite" aria-atomic="true">
+            {liveRunCount > 0
+              ? `${liveRunCount} agent${liveRunCount !== 1 ? "s" : ""} running · `
+              : ""}
+            Last synced {syncedSecondsAgo < 5 ? "just now" : syncedSecondsAgo < 60 ? `${syncedSecondsAgo}s ago` : `${Math.floor(syncedSecondsAgo / 60)}m ago`}
+          </span>
         </p>
       </div>
 

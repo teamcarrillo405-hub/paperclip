@@ -19,7 +19,7 @@ import { EmptyState } from "../components/EmptyState";
 import { cn, projectUrl } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, SlidersHorizontal, AlertCircle, Target } from "lucide-react";
+import { Plus, SlidersHorizontal, AlertCircle, Target, X } from "lucide-react";
 import type { Goal, Project } from "@paperclipai/shared";
 
 interface GoalPropertiesToggleButtonProps {
@@ -181,7 +181,7 @@ export function GoalDetail() {
             onClick={() => setUpdateError(null)}
             className="text-destructive/70 hover:text-destructive ml-1"
           >
-            ×
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -235,22 +235,32 @@ export function GoalDetail() {
         </TabsList>
 
         <TabsContent value="children" className="mt-4 space-y-3">
-          <div className="flex items-center justify-start">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => openNewGoal({ parentId: goalId })}
-            >
-              <Plus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
-              Sub Goal
-            </Button>
-          </div>
           {childGoals.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
-              No sub-goals yet.
-            </p>
+            <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-center">
+              <p className="text-sm text-muted-foreground">No sub-goals yet.</p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openNewGoal({ parentId: goalId })}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
+                Sub Goal
+              </Button>
+            </div>
           ) : (
-            <GoalTree goals={childGoals} goalLink={(g) => `/goals/${g.id}`} />
+            <>
+              <div className="flex items-center justify-start">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openNewGoal({ parentId: goalId })}
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
+                  Sub Goal
+                </Button>
+              </div>
+              <GoalTree goals={childGoals} goalLink={(g) => `/goals/${g.id}`} />
+            </>
           )}
         </TabsContent>
 

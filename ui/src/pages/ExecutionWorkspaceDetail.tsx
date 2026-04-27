@@ -758,7 +758,11 @@ export function ExecutionWorkspaceDetail() {
                           Override the inherited workspace command model only when this execution workspace truly needs different service or job behavior.
                         </p>
                         <div className="mt-3">
-                          <Field label="Workspace commands JSON" hint="Legacy `services` arrays still work, but `commands` supports both services and jobs.">
+                          <div className="space-y-2">
+                            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
+                              <p className="text-xs text-muted-foreground">Advanced runtime JSON</p>
+                              <span className="text-xs text-muted-foreground sm:text-right">Legacy `services` arrays still work, but `commands` supports both services and jobs.</span>
+                            </div>
                             <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                               <Checkbox
                                 id="inherit-runtime-config"
@@ -783,7 +787,7 @@ export function ExecutionWorkspaceDetail() {
                               disabled={form.inheritRuntime}
                               placeholder={'{\n  "commands": [\n    {\n      "id": "web",\n      "name": "web",\n      "kind": "service",\n      "command": "pnpm dev",\n      "cwd": ".",\n      "port": { "type": "auto" }\n    },\n    {\n      "id": "db-migrate",\n      "name": "db:migrate",\n      "kind": "job",\n      "command": "pnpm db:migrate",\n      "cwd": "."\n    }\n  ]\n}'}
                             />
-                          </Field>
+                          </div>
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
@@ -821,7 +825,13 @@ export function ExecutionWorkspaceDetail() {
                 </CardHeader>
                 <CardContent>
                 <DetailRow label="Project">
-                  {project ? <Link to={`/projects/${projectRef}`} className="hover:underline">{project.name}</Link> : <MonoValue value={workspace.projectId} />}
+                  {projectQuery.error ? (
+                    <span className="text-xs text-destructive">Failed to load</span>
+                  ) : project ? (
+                    <Link to={`/projects/${projectRef}`} className="hover:underline">{project.name}</Link>
+                  ) : (
+                    <MonoValue value={workspace.projectId} />
+                  )}
                 </DetailRow>
                 <DetailRow label="Project workspace">
                   {project && linkedProjectWorkspace ? (
@@ -833,7 +843,9 @@ export function ExecutionWorkspaceDetail() {
                   )}
                 </DetailRow>
                 <DetailRow label="Source issue">
-                  {sourceIssue ? (
+                  {sourceIssueQuery.error ? (
+                    <span className="text-xs text-destructive">Failed to load</span>
+                  ) : sourceIssue ? (
                     <Link to={issueUrl(sourceIssue)} className="hover:underline">
                       {sourceIssue.identifier ?? sourceIssue.id} · {sourceIssue.title}
                     </Link>
@@ -844,7 +856,9 @@ export function ExecutionWorkspaceDetail() {
                   )}
                 </DetailRow>
                 <DetailRow label="Derived from">
-                  {derivedWorkspace ? (
+                  {derivedWorkspaceQuery.error ? (
+                    <span className="text-xs text-destructive">Failed to load</span>
+                  ) : derivedWorkspace ? (
                     <Link to={executionWorkspaceTabPath(derivedWorkspace.id, "configuration")} className="hover:underline">
                       {derivedWorkspace.name}
                     </Link>
