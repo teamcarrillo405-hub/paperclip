@@ -198,6 +198,7 @@ export function CompanySettings() {
     onSuccess: (company) => {
       syncLogoState(company.logoUrl);
       setLogoUploadError(null);
+      pushToast({ title: "Logo updated", tone: "success" });
     }
   });
 
@@ -295,7 +296,7 @@ export function CompanySettings() {
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
           <Field label="Company name" hint="The display name for your company.">
             <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
@@ -306,7 +307,7 @@ export function CompanySettings() {
             hint="Optional description shown in the company profile."
           >
             <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               type="text"
               value={description}
               placeholder="Optional company description"
@@ -341,7 +342,7 @@ export function CompanySettings() {
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
                     onChange={handleLogoFileChange}
-                    className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none file:mr-4 file:rounded-md file:border-0 file:bg-muted file:px-2.5 file:py-1 file:text-xs"
+                    className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 file:mr-4 file:rounded-md file:border-0 file:bg-muted file:px-2.5 file:py-1 file:text-xs"
                   />
                   {logoUrl && (
                     <div className="flex items-center gap-2">
@@ -376,6 +377,7 @@ export function CompanySettings() {
               <Field
                 label="Brand color"
                 hint="Sets the hue for the company icon. Leave empty for auto-generated color."
+                htmlFor="brand-color-hex"
               >
                 <div className="flex items-center gap-2">
                   <label
@@ -393,6 +395,7 @@ export function CompanySettings() {
                     className="h-8 w-8 cursor-pointer rounded border border-border bg-transparent p-0"
                   />
                   <input
+                    id="brand-color-hex"
                     type="text"
                     value={brandColor}
                     onChange={(e) => {
@@ -402,7 +405,7 @@ export function CompanySettings() {
                       }
                     }}
                     placeholder="Auto"
-                    className="w-28 rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-mono outline-none"
+                    className="w-28 rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-mono outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                   />
                   {brandColor && (
                     <Button
@@ -549,7 +552,7 @@ export function CompanySettings() {
                 <textarea
                   data-testid="company-settings-invites-snippet-textarea"
                   aria-label="OpenClaw invite prompt snippet"
-                  className="h-[28rem] w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs outline-none"
+                  className="h-[28rem] w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                   value={inviteSnippet}
                   readOnly
                 />
