@@ -9,7 +9,7 @@ import type {
   FinanceEvent,
   QuotaWindow,
 } from "@paperclipai/shared";
-import { ArrowDownLeft, ArrowUpRight, ChevronDown, ChevronRight, Coins, DollarSign, ReceiptText } from "lucide-react";
+import { AlertCircle, ArrowDownLeft, ArrowUpRight, ChevronDown, ChevronRight, Coins, DollarSign, ReceiptText } from "lucide-react";
 import { budgetsApi } from "../api/budgets";
 import { costsApi } from "../api/costs";
 import { BillerSpendCard } from "../components/BillerSpendCard";
@@ -565,13 +565,15 @@ export function Costs() {
             <div className="flex flex-wrap items-center gap-2 border border-border p-3">
               <input
                 type="date"
+                aria-label="Start date"
                 value={customFrom}
                 onChange={(event) => setCustomFrom(event.target.value)}
                 className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
               />
-              <span className="text-sm text-muted-foreground">to</span>
+              <span className="text-sm text-muted-foreground" aria-hidden="true">to</span>
               <input
                 type="date"
+                aria-label="End date"
                 value={customTo}
                 onChange={(event) => setCustomTo(event.target.value)}
                 className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
@@ -632,7 +634,10 @@ export function Costs() {
           ) : showOverviewLoading ? (
             <PageSkeleton variant="costs" />
           ) : overviewError ? (
-            <p className="text-sm text-destructive">{(overviewError as Error).message}</p>
+            <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+              <p className="text-sm text-destructive">{(overviewError as Error).message || "Failed to load overview."}</p>
+            </div>
           ) : (
             <>
               {activeBudgetIncidents.length > 0 ? (
@@ -683,7 +688,14 @@ export function Costs() {
                     </div>
                     {spendData?.summary.budgetCents && spendData.summary.budgetCents > 0 ? (
                       <div className="space-y-2">
-                        <div className="h-2 overflow-hidden bg-muted">
+                        <div
+                          className="h-2 overflow-hidden bg-muted"
+                          role="progressbar"
+                          aria-valuenow={spendData.summary.utilizationPercent}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label="Monthly budget utilization"
+                        >
                           <div
                             className={cn(
                               "h-full transition-[width,background-color] duration-150",
@@ -732,6 +744,10 @@ export function Costs() {
                             <div
                               className={cn("flex items-start justify-between gap-3", hasBreakdown ? "cursor-pointer select-none" : "")}
                               onClick={() => hasBreakdown && toggleAgent(row.agentId)}
+                              role={hasBreakdown ? "button" : undefined}
+                              tabIndex={hasBreakdown ? 0 : undefined}
+                              aria-expanded={hasBreakdown ? isExpanded : undefined}
+                              onKeyDown={hasBreakdown ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleAgent(row.agentId); } } : undefined}
                             >
                               <div className="flex min-w-0 items-center gap-2">
                                 {hasBreakdown ? (
@@ -835,7 +851,10 @@ export function Costs() {
           {budgetLoading ? (
             <PageSkeleton variant="costs" />
           ) : budgetError ? (
-            <p className="text-sm text-destructive">{(budgetError as Error).message}</p>
+            <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+              <p className="text-sm text-destructive">{(budgetError as Error).message || "Failed to load budgets."}</p>
+            </div>
           ) : (
             <>
               <Card className="border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]">
@@ -1062,7 +1081,10 @@ export function Costs() {
           ) : financeLoading ? (
             <PageSkeleton variant="costs" />
           ) : financeError ? (
-            <p className="text-sm text-destructive">{(financeError as Error).message}</p>
+            <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+              <p className="text-sm text-destructive">{(financeError as Error).message || "Failed to load finance data."}</p>
+            </div>
           ) : (
             <>
               <FinanceSummaryCard
