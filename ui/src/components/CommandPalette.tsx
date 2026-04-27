@@ -30,8 +30,7 @@ import {
   Inbox,
   DollarSign,
   History,
-  SquarePen,
-  Plus,
+
   StopCircle,
   PauseCircle,
   CheckCircle2,
@@ -343,7 +342,7 @@ export function CommandPalette() {
       label: "Create new issue",
       actionId: "new-issue",
       fn: () => openNewIssue(),
-      icon: <SquarePen className="mr-2 h-4 w-4" />,
+      icon: <EntityChip type="issue" />,
       kbd: "C",
     },
     {
@@ -351,14 +350,14 @@ export function CommandPalette() {
       label: "Create new agent",
       actionId: "new-agent",
       fn: () => openNewAgent(),
-      icon: <Plus className="mr-2 h-4 w-4" />,
+      icon: <EntityChip type="agent" />,
       kbd: "A",
     },
     {
       id: "action-new-project",
       label: "Create new project",
       path: "/projects",
-      icon: <Plus className="mr-2 h-4 w-4" />,
+      icon: <EntityChip type="project" />,
       kbd: "P",
     },
     {
@@ -599,11 +598,19 @@ export function CommandPalette() {
           ) : null;
         })()}
 
-        {pendingApprovalsFiltered.length > 0 && (
+        {(() => {
+          const visibleApprovals = searchQuery.length === 0
+            ? pendingApprovalsFiltered.slice(0, 8)
+            : pendingApprovalsFiltered.filter((a) => {
+                const payload = a.payload as Record<string, unknown> | null;
+                const subj = approvalSubject(payload) ?? typeLabel[a.type] ?? a.type;
+                return subj.toLowerCase().includes(searchQuery.toLowerCase());
+              }).slice(0, 8);
+          return visibleApprovals.length > 0 ? (
           <>
             <CommandSeparator />
             <CommandGroup heading={`Pending Approvals (${pendingApprovalsFiltered.length})`}>
-              {pendingApprovalsFiltered.slice(0, 8).map((approval) => {
+              {visibleApprovals.map((approval) => {
                 const payload = approval.payload as Record<string, unknown> | null;
                 const subject = approvalSubject(payload) ?? typeLabel[approval.type] ?? approval.type;
                 return (
@@ -633,7 +640,8 @@ export function CommandPalette() {
               })}
             </CommandGroup>
           </>
-        )}
+          ) : null;
+        })()}
 
         {rankedIssues.length > 0 && (
           <>

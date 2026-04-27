@@ -34,11 +34,11 @@ export function SidebarSection({
         )}
         onClick={!collapsed && collapsible ? onToggleCollapse : undefined}
       >
-        {/* Divider shown only when collapsed — fades out as sidebar expands */}
+        {/* Divider: full-opacity when collapsed (replaces label), subtle when expanded */}
         <div
           className={cn(
-            "h-px w-full bg-border/50 transition-all duration-150",
-            collapsed ? "opacity-100" : "opacity-0 max-w-0 overflow-hidden",
+            "h-px bg-border/50 transition-all duration-150",
+            collapsed ? "opacity-100 w-full" : "opacity-20 w-full",
           )}
         />
         {/* Label row — fades in when expanded */}

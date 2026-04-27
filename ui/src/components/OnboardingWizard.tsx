@@ -58,10 +58,10 @@ import {
 
 
 const STARTER_TEMPLATES = [
-  { id: "competitor", label: "Research competitor pricing", description: "Analyze top 5 competitors and summarize their pricing tiers, positioning, and feature gaps.", time: "~2 hrs", difficulty: "Moderate" },
-  { id: "hiring",     label: "Write a hiring plan",         description: "Draft a detailed hiring plan with roles, interview process, timelines, and compensation bands.", time: "~1 hr", difficulty: "Easy" },
-  { id: "api-spec",   label: "Build an API spec",           description: "Generate a complete OpenAPI 3.0 spec for a REST API given a product description.", time: "~3 hrs", difficulty: "Advanced" },
-  { id: "content",    label: "Plan content calendar",       description: "Create a 4-week content calendar covering blog posts, social media, and newsletter topics.", time: "~45 min", difficulty: "Easy" },
+  { id: "competitor", label: "Research competitor pricing", description: "Analyze top 5 competitors and summarize their pricing tiers, positioning, and feature gaps.", time: "~2 hrs", difficulty: "Moderate", category: "Research" },
+  { id: "hiring",     label: "Write a hiring plan",         description: "Draft a detailed hiring plan with roles, interview process, timelines, and compensation bands.", time: "~1 hr", difficulty: "Easy", category: "Planning" },
+  { id: "api-spec",   label: "Build an API spec",           description: "Generate a complete OpenAPI 3.0 spec for a REST API given a product description.", time: "~3 hrs", difficulty: "Advanced", category: "Engineering" },
+  { id: "content",    label: "Plan content calendar",       description: "Create a 4-week content calendar covering blog posts, social media, and newsletter topics.", time: "~45 min", difficulty: "Easy", category: "Marketing" },
 ] as const;
 
 type Step = 1 | 2 | 3 | 4;
@@ -1258,7 +1258,8 @@ export function OnboardingWizard() {
                           >
                             <span className="font-semibold block text-foreground mb-0.5">{t.label}</span>
                             <span className="text-muted-foreground/80 leading-relaxed line-clamp-2">{t.description}</span>
-                            <span className="flex items-center gap-2 mt-1.5">
+                            <span className="flex items-center gap-1.5 mt-1.5">
+                              <span className="inline-flex items-center rounded-full bg-[#2F80FF]/10 text-[#2F80FF] px-1.5 py-0.5 text-[9px] font-medium">{t.category}</span>
                               <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">{t.time}</span>
                               <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">{t.difficulty}</span>
                             </span>
