@@ -53,7 +53,7 @@ export function Activity() {
     setBreadcrumbs([{ label: "Activity" }]);
   }, [setBreadcrumbs]);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, isRefetching, error, refetch } = useQuery({
     queryKey: [...queryKeys.activity(selectedCompanyId!), { limit: ACTIVITY_PAGE_LIMIT }],
     queryFn: () => activityApi.list(selectedCompanyId!, { limit: ACTIVITY_PAGE_LIMIT }),
     enabled: !!selectedCompanyId,
@@ -130,7 +130,7 @@ export function Activity() {
               <SelectItem value="all">All types</SelectItem>
               {entityTypes.map((type) => (
                 <SelectItem key={type} value={type}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                  {type.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (c) => c.toUpperCase())}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -149,8 +149,9 @@ export function Activity() {
             variant="ghost"
             className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
             onClick={() => refetch()}
+            disabled={isRefetching}
           >
-            Retry
+            {isRefetching ? "Retrying…" : "Retry"}
           </Button>
         </div>
       )}
@@ -163,18 +164,25 @@ export function Activity() {
       )}
 
       {filtered && filtered.length > 0 && (
-        <div className="rounded-lg border border-border divide-y divide-border overflow-hidden">
-          {filtered.map((event) => (
-            <ActivityRow
-              key={event.id}
-              event={event}
-              agentMap={agentMap}
-              userProfileMap={userProfileMap}
-              entityNameMap={entityNameMap}
-              entityTitleMap={entityTitleMap}
-            />
-          ))}
-        </div>
+        <>
+          <div className="rounded-lg border border-border divide-y divide-border overflow-hidden">
+            {filtered.map((event) => (
+              <ActivityRow
+                key={event.id}
+                event={event}
+                agentMap={agentMap}
+                userProfileMap={userProfileMap}
+                entityNameMap={entityNameMap}
+                entityTitleMap={entityTitleMap}
+              />
+            ))}
+          </div>
+          {(data?.length ?? 0) >= ACTIVITY_PAGE_LIMIT && (
+            <p className="text-xs text-muted-foreground text-center py-1">
+              Showing the {ACTIVITY_PAGE_LIMIT} most recent events. Older activity may not appear.
+            </p>
+          )}
+        </>
       )}
     </div>
   );

@@ -27,7 +27,7 @@ import {
   RoutineRunVariablesDialog,
   type RoutineRunDialogSubmitData,
 } from "../components/RoutineRunVariablesDialog";
-import { RoutineVariablesEditor, RoutineVariablesHint } from "../components/RoutineVariablesEditor";
+import { RoutineVariablesEditor } from "../components/RoutineVariablesEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -598,7 +598,7 @@ export function Routines() {
             </p>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-xs">
+                <Button variant="ghost" size="sm" className="text-xs" aria-label="Group routines">
                   <Layers className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
                   <span className="hidden sm:inline">Group</span>
                 </Button>

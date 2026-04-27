@@ -11,7 +11,7 @@ import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { formatDate, projectUrl } from "../lib/utils";
 import { Button } from "@/components/ui/button";
-import { Hexagon, Plus, AlertCircle } from "lucide-react";
+import { Hexagon, Plus, AlertCircle, Calendar } from "lucide-react";
 
 export function Projects() {
   const { selectedCompanyId } = useCompany();
@@ -45,9 +45,7 @@ export function Projects() {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium text-foreground">
           Projects
-          {projects.length > 0 && (
-            <span className="ml-1.5 text-muted-foreground font-normal">({projects.length})</span>
-          )}
+          <span className="ml-1.5 text-muted-foreground font-normal">({projects.length})</span>
         </h2>
         <Button size="sm" variant="outline" onClick={openNewProject}>
           <Plus className="h-4 w-4 mr-1" />
@@ -72,7 +70,7 @@ export function Projects() {
         </div>
       )}
 
-      {!isLoading && projects.length === 0 && (
+      {!isLoading && !error && projects.length === 0 && (
         <EmptyState
           icon={Hexagon}
           message="No projects yet."
@@ -98,7 +96,8 @@ export function Projects() {
               trailing={
                 <div className="flex items-center gap-3">
                   {project.targetDate && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
                       {formatDate(project.targetDate)}
                     </span>
                   )}
