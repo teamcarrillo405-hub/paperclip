@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useId, isValidElement, cloneElement } from "react";
 import {
   Tooltip,
   TooltipTrigger,
@@ -71,8 +71,8 @@ export function HintIcon({ text }: { text: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button type="button" className="inline-flex text-muted-foreground/50 hover:text-muted-foreground transition-colors">
-          <HelpCircle className="h-3 w-3" />
+        <button type="button" aria-label={`Help: ${text}`} className="inline-flex text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+          <HelpCircle className="h-3 w-3" aria-hidden="true" />
         </button>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-xs">
@@ -82,14 +82,22 @@ export function HintIcon({ text }: { text: string }) {
   );
 }
 
-export function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+export function Field({ label, hint, htmlFor, children }: { label: string; hint?: string; htmlFor?: string; children: React.ReactNode }) {
+  const autoId = useId();
+  const fieldId = htmlFor ?? autoId;
+  const child = isValidElement(children) ? children : null;
+  const childWithId = child
+    ? cloneElement(child as React.ReactElement<{ id?: string }>, {
+        id: (child as React.ReactElement<{ id?: string }>).props.id ?? fieldId,
+      })
+    : children;
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-1">
-        <label className="text-xs text-muted-foreground">{label}</label>
+        <label htmlFor={fieldId} className="text-xs text-muted-foreground">{label}</label>
         {hint && <HintIcon text={hint} />}
       </div>
-      {children}
+      {childWithId}
     </div>
   );
 }
@@ -117,13 +125,16 @@ export function ToggleField({
         data-slot="toggle"
         data-testid={toggleTestId}
         type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
         className={cn(
-          "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
+          "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
           checked ? "bg-green-600" : "bg-muted"
         )}
         onClick={() => onChange(!checked)}
       >
-        <span
+        <span aria-hidden="true"
           className={cn(
             "inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform",
             checked ? "translate-x-4.5" : "translate-x-0.5"
@@ -174,6 +185,7 @@ export function ToggleWithNumber({
           {numberPrefix && <span>{numberPrefix}</span>}
           <input
             type="number"
+            aria-label={numberLabel}
             className="w-16 rounded-md border border-border px-2 py-0.5 bg-transparent outline-none text-xs font-mono text-center"
             value={number}
             onChange={(e) => onNumberChange(Number(e.target.value))}
@@ -204,10 +216,12 @@ export function CollapsibleSection({
   return (
     <div className={cn(bordered && "border-t border-border")}>
       <button
-        className="flex items-center gap-2 w-full px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-accent/30 transition-colors"
+        type="button"
+        aria-expanded={open}
+        className="flex items-center gap-2 w-full px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-accent/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         onClick={onToggle}
       >
-        {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+        {open ? <ChevronDown className="h-3 w-3" aria-hidden="true" /> : <ChevronRight className="h-3 w-3" aria-hidden="true" />}
         {icon}
         {title}
       </button>
@@ -450,14 +464,22 @@ export function ChoosePathButton() {
 /**
  * Label + input rendered on the same line (inline layout for compact fields).
  */
-export function InlineField({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+export function InlineField({ label, hint, htmlFor, children }: { label: string; hint?: string; htmlFor?: string; children: React.ReactNode }) {
+  const autoId = useId();
+  const fieldId = htmlFor ?? autoId;
+  const child = isValidElement(children) ? children : null;
+  const childWithId = child
+    ? cloneElement(child as React.ReactElement<{ id?: string }>, {
+        id: (child as React.ReactElement<{ id?: string }>).props.id ?? fieldId,
+      })
+    : children;
   return (
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-1.5 shrink-0">
-        <label className="text-xs text-muted-foreground">{label}</label>
+        <label htmlFor={fieldId} className="text-xs text-muted-foreground">{label}</label>
         {hint && <HintIcon text={hint} />}
       </div>
-      <div className="w-24 ml-auto">{children}</div>
+      <div className="w-24 ml-auto">{childWithId}</div>
     </div>
   );
 }

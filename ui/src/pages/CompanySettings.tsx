@@ -260,8 +260,8 @@ export function CompanySettings() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-2">
-        <Settings className="h-5 w-5 text-muted-foreground" />
-        <h1 className="text-lg font-semibold">Company Settings</h1>
+        <Settings className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+        <h1 className="text-2xl font-semibold tracking-tight">Company Settings</h1>
       </div>
 
       {/* General */}
@@ -333,7 +333,7 @@ export function CompanySettings() {
                     </div>
                   )}
                   {(logoUploadMutation.isError || logoUploadError) && (
-                    <span className="text-xs text-destructive">
+                    <span role="alert" className="text-xs text-destructive">
                       {logoUploadError ??
                         (logoUploadMutation.error instanceof Error
                           ? logoUploadMutation.error.message
@@ -341,7 +341,7 @@ export function CompanySettings() {
                     </span>
                   )}
                   {clearLogoMutation.isError && (
-                    <span className="text-xs text-destructive">
+                    <span role="alert" className="text-xs text-destructive">
                       {clearLogoMutation.error.message}
                     </span>
                   )}
@@ -486,7 +486,7 @@ export function CompanySettings() {
             </Button>
           </div>
           {inviteError && (
-            <p className="text-sm text-destructive">{inviteError}</p>
+            <p role="alert" className="text-sm text-destructive">{inviteError}</p>
           )}
           {inviteSnippet && (
             <div
@@ -615,7 +615,7 @@ export function CompanySettings() {
                 : "Archive company"}
             </Button>
             {archiveMutation.isError && (
-              <span className="text-xs text-destructive">
+              <span role="alert" className="text-xs text-destructive">
                 {archiveMutation.error instanceof Error
                   ? archiveMutation.error.message
                   : "Failed to archive company"}

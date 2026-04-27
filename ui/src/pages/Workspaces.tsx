@@ -83,12 +83,12 @@ export function Workspaces() {
   });
   const isolatedWorkspacesEnabled = experimentalSettingsQuery.data?.enableIsolatedWorkspaces === true;
 
-  const { data: projects = [], isLoading: projectsLoading, error: projectsError } = useQuery({
+  const { data: projects = [], isLoading: projectsLoading, error: projectsError, refetch: refetchProjects } = useQuery({
     queryKey: selectedCompanyId ? queryKeys.projects.list(selectedCompanyId) : ["projects", "__workspaces__", "disabled"],
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: Boolean(selectedCompanyId && isolatedWorkspacesEnabled),
   });
-  const { data: issues = [], isLoading: issuesLoading, error: issuesError } = useQuery({
+  const { data: issues = [], isLoading: issuesLoading, error: issuesError, refetch: refetchIssues } = useQuery({
     queryKey: selectedCompanyId ? queryKeys.issues.list(selectedCompanyId) : ["issues", "__workspaces__", "disabled"],
     queryFn: () => issuesApi.list(selectedCompanyId!),
     enabled: Boolean(selectedCompanyId && isolatedWorkspacesEnabled),
@@ -97,6 +97,7 @@ export function Workspaces() {
     data: executionWorkspaces = [],
     isLoading: executionWorkspacesLoading,
     error: executionWorkspacesError,
+    refetch: refetchExecutionWorkspaces,
   } = useQuery({
     queryKey: selectedCompanyId
       ? queryKeys.executionWorkspaces.list(selectedCompanyId)
@@ -135,9 +136,9 @@ export function Workspaces() {
   if (dataLoading) return <PageSkeleton variant="list" />;
   if (error) {
     const refetchAll = () => {
-      void (projectsError && (projectsError as unknown as { refetch?: () => void }));
-      void (issuesError && (issuesError as unknown as { refetch?: () => void }));
-      void (executionWorkspacesError && (executionWorkspacesError as unknown as { refetch?: () => void }));
+      void refetchProjects();
+      void refetchIssues();
+      void refetchExecutionWorkspaces();
     };
     return (
       <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">

@@ -317,15 +317,21 @@ export function Agents() {
               {showTerminated && <span className="ml-0.5 px-1 bg-foreground/10 rounded text-[10px]">1</span>}
             </button>
             {filtersOpen && (
-              <div className="absolute right-0 top-full mt-1 z-50 w-48 border border-border bg-popover shadow-md p-1">
+              <div
+                role="menu"
+                onKeyDown={(e) => { if (e.key === "Escape") setFiltersOpen(false); }}
+                className="absolute right-0 top-full mt-1 z-50 w-48 border border-border bg-popover shadow-md p-1"
+              >
                 <button
+                  role="menuitemcheckbox"
+                  aria-checked={showTerminated}
                   className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-left hover:bg-accent/50 transition-colors"
                   onClick={() => setShowTerminated(!showTerminated)}
                 >
                   <span className={cn(
                     "flex items-center justify-center h-3.5 w-3.5 border border-border rounded-sm",
                     showTerminated && "bg-foreground"
-                  )}>
+                  )} aria-hidden="true">
                     {showTerminated && <span className="text-background text-[10px] leading-none">&#10003;</span>}
                   </span>
                   Show terminated
@@ -649,6 +655,7 @@ function SortHeader({ col, label, sort, onSort, className }: {
   return (
     <button
       type="button"
+      aria-sort={active ? (sort?.dir === "asc" ? "ascending" : "descending") : "none"}
       onClick={() => onSort(col)}
       className={cn(
         "flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer",
@@ -658,6 +665,7 @@ function SortHeader({ col, label, sort, onSort, className }: {
     >
       {label}
       <ChevronUp
+        aria-hidden="true"
         className={cn(
           "h-3 w-3 transition-transform",
           active && sort?.dir === "desc" && "rotate-180",

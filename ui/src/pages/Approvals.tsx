@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { approvalsApi } from "../api/approvals";
@@ -28,6 +28,7 @@ export function Approvals() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [isBulkOperating, setIsBulkOperating] = useState(false);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [optimisticStatus, setOptimisticStatus] = useState<Record<string, "approved" | "rejected">>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -54,6 +55,12 @@ export function Approvals() {
   useEffect(() => {
     setBreadcrumbs([{ label: "Approvals" }]);
   }, [setBreadcrumbs]);
+
+  useEffect(() => {
+    if (focusedIndex !== null) {
+      cardRefs.current[focusedIndex]?.focus();
+    }
+  }, [focusedIndex]);
 
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.approvals.list(selectedCompanyId!),
@@ -392,8 +399,11 @@ export function Approvals() {
             return (
               <div
                 key={approval.id}
+                ref={(el) => { cardRefs.current[idx] = el; }}
+                tabIndex={-1}
+                role="article"
                 className={cn(
-                  "relative rounded-xl transition-all duration-300",
+                  "relative rounded-xl transition-all duration-300 focus:outline-none",
                   isFocused && "ring-2 ring-ring ring-offset-1 ring-offset-background",
                   optimisticStatus[approval.id] && "opacity-40 scale-[0.99] pointer-events-none",
                 )}

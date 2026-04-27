@@ -163,8 +163,10 @@ export function ProfileSettings() {
       </div>
 
       {actionError ? (
-        <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-          {actionError}
+        <div role="alert" className="flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+          <span className="flex-1">{actionError}</span>
+          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="text-destructive/70 hover:text-destructive ml-1">×</button>
         </div>
       ) : null}
 
@@ -196,7 +198,7 @@ export function ProfileSettings() {
                   />
                   <span className="absolute inset-0 z-10 rounded-full bg-black/0 transition-colors group-hover:bg-black/14 group-focus-within:bg-black/14" />
                   <span className="absolute bottom-1 right-1 z-20 flex size-9 items-center justify-center rounded-full border border-background bg-primary text-primary-foreground shadow-sm">
-                    {uploadAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
+                    {uploadAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Camera className="size-4" aria-hidden="true" />}
                   </span>
                   <Avatar size="lg" className="data-[size=lg]:size-24 ring-4 ring-background shadow-xl">
                     {currentImage ? <AvatarImage src={currentImage} alt={currentName} /> : null}
@@ -210,7 +212,7 @@ export function ProfileSettings() {
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={!selectedCompanyId || isSavingProfile}
                   >
-                    {uploadAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
+                    {uploadAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Camera className="size-4" aria-hidden="true" />}
                     {currentImage ? "Change photo" : "Upload photo"}
                   </Button>
                   {currentImage ? (
@@ -220,7 +222,7 @@ export function ProfileSettings() {
                       onClick={() => removeAvatarMutation.mutate()}
                       disabled={isSavingProfile}
                     >
-                      {removeAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+                      {removeAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Trash2 className="size-4" aria-hidden="true" />}
                       Remove
                     </Button>
                   ) : null}
@@ -229,11 +231,11 @@ export function ProfileSettings() {
 
               <div className="min-w-0 flex-1 space-y-2 pb-1">
                 <div>
-                  <h2 className="truncate text-2xl font-semibold text-foreground">{currentName}</h2>
+                  <p className="truncate text-2xl font-semibold text-foreground" aria-hidden="true">{currentName}</p>
                   <p className="truncate text-sm text-muted-foreground">{sessionQuery.data.user.email ?? "No email"}</p>
                 </div>
                 <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Click the avatar to upload a new image. {uploadHint}
+                  Select the avatar to upload a new image. {uploadHint}
                 </p>
               </div>
             </div>
@@ -276,7 +278,7 @@ export function ProfileSettings() {
 
           <div className="md:col-span-2 flex justify-end">
             <Button type="submit" disabled={isSavingProfile || !name.trim()}>
-              {updateMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
+              {updateMutation.isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Save className="size-4" aria-hidden="true" />}
               {updateMutation.isPending ? "Saving..." : "Save profile"}
             </Button>
           </div>
