@@ -69,6 +69,7 @@ export function CompanyAccess() {
   const [draftRole, setDraftRole] = useState<CompanyMember["membershipRole"]>(null);
   const [draftStatus, setDraftStatus] = useState<EditableMemberStatus>("active");
   const [draftGrants, setDraftGrants] = useState<Set<PermissionKey>>(new Set());
+  const [processingJoinId, setProcessingJoinId] = useState<string | null>(null);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -129,8 +130,12 @@ export function CompanyAccess() {
   });
 
   const approveJoinRequestMutation = useMutation({
-    mutationFn: (requestId: string) => accessApi.approveJoinRequest(selectedCompanyId!, requestId),
+    mutationFn: (requestId: string) => {
+      setProcessingJoinId(requestId);
+      return accessApi.approveJoinRequest(selectedCompanyId!, requestId);
+    },
     onSuccess: async () => {
+      setProcessingJoinId(null);
       await refreshAccessData();
       pushToast({
         title: "Join request approved",
@@ -138,6 +143,7 @@ export function CompanyAccess() {
       });
     },
     onError: (error) => {
+      setProcessingJoinId(null);
       pushToast({
         title: "Failed to approve join request",
         body: error instanceof Error ? error.message : "Unknown error",
@@ -147,8 +153,12 @@ export function CompanyAccess() {
   });
 
   const rejectJoinRequestMutation = useMutation({
-    mutationFn: (requestId: string) => accessApi.rejectJoinRequest(selectedCompanyId!, requestId),
+    mutationFn: (requestId: string) => {
+      setProcessingJoinId(requestId);
+      return accessApi.rejectJoinRequest(selectedCompanyId!, requestId);
+    },
     onSuccess: async () => {
+      setProcessingJoinId(null);
       await refreshAccessData();
       pushToast({
         title: "Join request rejected",
@@ -156,6 +166,7 @@ export function CompanyAccess() {
       });
     },
     onError: (error) => {
+      setProcessingJoinId(null);
       pushToast({
         title: "Failed to reject join request",
         body: error instanceof Error ? error.message : "Unknown error",
@@ -363,6 +374,8 @@ export function CompanyAccess() {
                   approveLabel="Approve human"
                   rejectLabel="Reject human"
                   disabled={joinRequestActionPending}
+                  processingId={processingJoinId}
+                  requestId={request.id}
                   onApprove={() => approveJoinRequestMutation.mutate(request.id)}
                   onReject={() => rejectJoinRequestMutation.mutate(request.id)}
                 />
@@ -513,11 +526,12 @@ export function CompanyAccess() {
                   <legend className="sr-only">Explicit permission grants</legend>
                   <div className="grid gap-3 md:grid-cols-2">
                     {PERMISSION_KEYS.map((permissionKey) => (
-                      <label
+                      <div
                         key={permissionKey}
                         className="flex items-start gap-3 rounded-lg border border-border px-3 py-2"
                       >
                         <Checkbox
+                          id={`perm-${permissionKey}`}
                           checked={draftGrants.has(permissionKey)}
                           onCheckedChange={(checked) => {
                             setDraftGrants((current) => {
@@ -528,8 +542,8 @@ export function CompanyAccess() {
                             });
                           }}
                         />
-                        <span className="space-y-1">
-                          <span className="block text-sm font-medium">{permissionLabels[permissionKey]}</span>
+                        <div className="space-y-1">
+                          <label htmlFor={`perm-${permissionKey}`} className="block text-sm font-medium cursor-pointer">{permissionLabels[permissionKey]}</label>
                           <span className="block text-xs text-muted-foreground" aria-hidden="true">{permissionKey}</span>
                           {implicitGrantSet.has(permissionKey) ? (
                             <span className="block text-xs text-muted-foreground">
@@ -541,8 +555,8 @@ export function CompanyAccess() {
                               Stored explicitly for this member.
                             </span>
                           ) : null}
-                        </span>
-                      </label>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </fieldset>
@@ -651,6 +665,7 @@ export function CompanyAccess() {
             </Button>
             <Button
               variant="destructive"
+              aria-busy={archiveMemberMutation.isPending}
               onClick={() => {
                 if (!removingMember) return;
                 archiveMemberMutation.mutate({
@@ -692,6 +707,8 @@ function PendingJoinRequestCard({
   approveLabel,
   rejectLabel,
   disabled,
+  processingId,
+  requestId,
   onApprove,
   onReject,
 }: {
@@ -703,9 +720,12 @@ function PendingJoinRequestCard({
   approveLabel: string;
   rejectLabel: string;
   disabled: boolean;
+  processingId?: string | null;
+  requestId?: string;
   onApprove: () => void;
   onReject: () => void;
 }) {
+  const isThisCardProcessing = !!requestId && processingId === requestId;
   return (
     <div className="rounded-xl border border-border px-4 py-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -719,10 +739,12 @@ function PendingJoinRequestCard({
           {detailSecondary ? <div className="text-sm text-muted-foreground">{detailSecondary}</div> : null}
         </div>
         <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={onReject} disabled={disabled}>
+          <Button type="button" variant="outline" onClick={onReject} disabled={disabled} aria-busy={isThisCardProcessing}>
+            {isThisCardProcessing && <LoaderCircle className="size-4 animate-spin mr-1" aria-hidden="true" />}
             {rejectLabel}
           </Button>
-          <Button type="button" onClick={onApprove} disabled={disabled}>
+          <Button type="button" onClick={onApprove} disabled={disabled} aria-busy={isThisCardProcessing}>
+            {isThisCardProcessing && <LoaderCircle className="size-4 animate-spin mr-1" aria-hidden="true" />}
             {approveLabel}
           </Button>
         </div>

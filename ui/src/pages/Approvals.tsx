@@ -194,7 +194,7 @@ export function Approvals() {
         }
       }
     },
-    [filtered, focusedIndex, approveMutation, rejectMutation],
+    [filtered, focusedIndex, approveMutation, rejectMutation, isBulkOperating],
   );
 
   useEffect(() => {
@@ -419,7 +419,7 @@ export function Approvals() {
       )}
 
       {filtered.length > 0 && (
-        <div role="feed" aria-label="Pending approvals" className="grid gap-3">
+        <div role="feed" aria-label={statusFilter === "all" ? "All approvals" : "Pending approvals"} className="grid gap-3">
           {filtered.map((approval, idx) => {
             const isFocused = focusedIndex === idx;
             const isSelected = selectedIds.has(approval.id);
@@ -445,7 +445,7 @@ export function Approvals() {
                     aria-label={isSelected ? "Deselect approval" : "Select approval"}
                     onClick={(e) => { e.stopPropagation(); toggleSelect(approval.id); }}
                     className={cn(
-                      "absolute top-3 left-3 z-10 flex h-4 w-4 items-center justify-center border rounded-sm transition-colors",
+                      "absolute top-3 left-3 z-10 flex h-4 w-4 items-center justify-center border rounded-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1",
                       isSelected ? "bg-foreground border-foreground" : "border-border bg-background hover:border-foreground/50",
                     )}
                   >

@@ -226,7 +226,7 @@ export function CompanyInvites() {
                     value={option.value}
                     checked={checked}
                     onChange={() => setHumanRole(option.value)}
-                    className="mt-1 h-4 w-4 border-border text-foreground accent-[color:hsl(var(--primary))]"
+                    className="mt-1 h-4 w-4 border-border text-foreground accent-[color:hsl(var(--primary))] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                   />
                   <span className="min-w-0 space-y-1">
                     <span className="flex flex-wrap items-center gap-2">
@@ -300,10 +300,10 @@ export function CompanyInvites() {
         ) : null}
       </section>
 
-      <section className="rounded-xl border border-border">
+      <section className="rounded-xl border border-border" aria-labelledby="invite-history-heading">
         <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
           <div className="space-y-1">
-            <h2 className="text-sm font-semibold">Invite history</h2>
+            <h2 id="invite-history-heading" className="text-sm font-semibold">Invite history</h2>
             <p className="text-sm text-muted-foreground">
               Review invite status, role, inviter, and any linked join request.
             </p>

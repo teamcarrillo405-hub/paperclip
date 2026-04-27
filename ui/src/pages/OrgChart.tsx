@@ -612,9 +612,9 @@ export function OrgChart() {
             const dotClass = STATUS_DOT_CLASS[node.status] ?? DEFAULT_DOT_CLASS;
 
             return (
-              <button
-                type="button"
+              <Link
                 key={node.id}
+                to={agent ? agentUrl(agent) : `/agents/${node.id}`}
                 data-org-card
                 aria-label={`${node.name}, ${agent?.title ?? roleLabel(node.role)}, status: ${node.status}`}
                 className="absolute bg-card border border-border rounded-lg shadow-sm hover:shadow-md hover:border-foreground/20 transition-[box-shadow,border-color] duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset text-left"
@@ -624,8 +624,7 @@ export function OrgChart() {
                   width: CARD_W,
                   minHeight: CARD_H,
                 }}
-                onClick={() => navigate(agent ? agentUrl(agent) : `/agents/${node.id}`)}
-                onClickCapture={(e) => {
+                onClick={(e) => {
                   if (!suppressNextCardClick.current) return;
                   suppressNextCardClick.current = false;
                   e.preventDefault();
@@ -667,7 +666,7 @@ export function OrgChart() {
                     )}
                   </div>
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>

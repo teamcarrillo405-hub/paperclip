@@ -92,6 +92,7 @@ import {
   Search,
   ListTree,
   AlertCircle,
+  LoaderCircle,
 } from "lucide-react";
 
 const INBOX_HEARTBEAT_RUN_LIMIT = 200;
@@ -619,6 +620,7 @@ function JoinRequestInboxRow({
             disabled={isPending}
             aria-label={`Approve: ${label}`}
           >
+            {isPending && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
             Approve
           </Button>
           <Button
@@ -629,6 +631,7 @@ function JoinRequestInboxRow({
             disabled={isPending}
             aria-label={`Reject: ${label}`}
           >
+            {isPending && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
             Reject
           </Button>
         </div>
@@ -641,6 +644,7 @@ function JoinRequestInboxRow({
           disabled={isPending}
           aria-label={`Approve: ${label}`}
         >
+          {isPending && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
           Approve
         </Button>
         <Button
@@ -651,6 +655,7 @@ function JoinRequestInboxRow({
           disabled={isPending}
           aria-label={`Reject: ${label}`}
         >
+          {isPending && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
           Reject
         </Button>
       </div>

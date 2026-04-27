@@ -322,7 +322,7 @@ function SkillTree({
         const expanded = node.kind === "dir" && node.path ? expandedDirs.has(node.path) : false;
         if (node.kind === "dir") {
           return (
-            <div key={node.path ?? node.name} role="treeitem">
+            <div key={node.path ?? node.name} role="treeitem" aria-selected={false}>
               {/* FIX: Collapsed the two buttons (main-row + chevron) into one full-row button.
                   The redundant unnamed main-row button was removed; the single button now
                   covers the full row and carries the descriptive aria-label from the former
@@ -374,6 +374,7 @@ function SkillTree({
           <Link
             key={node.path ?? node.name}
             role="treeitem"
+            aria-selected={node.path === selectedPath}
             className={cn(
               "flex w-full items-center gap-2 pr-3 text-left text-sm text-muted-foreground hover:bg-accent/30 hover:text-foreground",
               SKILL_TREE_ROW_HEIGHT_CLASS,
@@ -553,6 +554,7 @@ function SkillPane({
   deletePending: boolean;
   onSave: () => void;
   savePending: boolean;
+  onFileRetry: () => void;
 }) {
   const { pushToast } = useToastActions();
 
@@ -771,10 +773,18 @@ function SkillPane({
         {fileLoading ? (
           <PageSkeleton variant="detail" />
         ) : fileError ? (
-          <p role="alert" className="flex items-center gap-2 text-sm text-destructive p-4">
-            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-            {fileError.message ?? "Failed to load file."}
-          </p>
+          <div role="alert" className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0" aria-hidden="true" />
+            <p className="flex-1 text-sm text-destructive">{fileError.message ?? "Failed to load file."}</p>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+              onClick={onFileRetry}
+            >
+              Retry
+            </Button>
+          </div>
         ) : !file ? (
           <div className="text-sm text-muted-foreground">Select a file to inspect.</div>
         ) : editMode && file.editable ? (
@@ -1361,6 +1371,7 @@ export function CompanySkills() {
             deletePending={deleteSkill.isPending}
             onSave={() => saveFile.mutate()}
             savePending={saveFile.isPending}
+            onFileRetry={() => fileQuery.refetch()}
           />
         </div>
       </div>

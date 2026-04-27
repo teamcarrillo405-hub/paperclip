@@ -327,6 +327,7 @@ export function Dashboard() {
           ) : null}
 
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+            <h2 className="sr-only">Key metrics</h2>
             <MetricCard
               icon={Bot}
               value={data.agents.active + data.agents.running + data.agents.paused + data.agents.error}
