@@ -551,7 +551,7 @@ export function CommandPalette() {
         {pendingApprovalsFiltered.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading={pendingApprovalsFiltered.length > 0 ? `Pending Approvals (${pendingApprovalsFiltered.length})` : "Pending Approvals"}>
+            <CommandGroup heading={`Pending Approvals (${pendingApprovalsFiltered.length})`}>
               {pendingApprovalsFiltered.slice(0, 8).map((approval) => {
                 const payload = approval.payload as Record<string, unknown> | null;
                 const subject = approvalSubject(payload) ?? typeLabel[approval.type] ?? approval.type;
