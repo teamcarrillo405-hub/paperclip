@@ -1877,10 +1877,11 @@ export function Inbox() {
   const activeIssueFilterCount = countActiveIssueFilters(issueFilters, true);
   return (
     <div className="space-y-6">
+      <h1 className="sr-only">Inbox</h1>
       <div className="space-y-2">
         {/* Search — full-width row on mobile, inline on desktop */}
         <div className="relative sm:hidden">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search inbox…"
@@ -1927,7 +1928,7 @@ export function Inbox() {
 
         <div className="flex items-center gap-2">
           <div className="relative hidden sm:block">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search inbox…"
@@ -1960,9 +1961,9 @@ export function Inbox() {
             size="icon"
             className={cn("hidden h-8 w-8 shrink-0 sm:inline-flex", nestingEnabled && "bg-accent")}
             onClick={toggleNesting}
-            title={nestingEnabled ? "Disable parent-child nesting" : "Enable parent-child nesting"}
+            aria-label={nestingEnabled ? "Disable parent-child nesting" : "Enable parent-child nesting"}
           >
-            <ListTree className="h-3.5 w-3.5" />
+            <ListTree aria-hidden="true" className="h-3.5 w-3.5" />
           </Button>
           <IssueFiltersPopover
             state={issueFilters}
@@ -1985,13 +1986,13 @@ export function Inbox() {
                 variant="outline"
                 size="icon"
                 className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
-                title="Group"
+                aria-label="Group"
               >
-                <Layers className="h-3.5 w-3.5" />
+                <Layers aria-hidden="true" className="h-3.5 w-3.5" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-40 p-2">
-              <div className="space-y-0.5">
+              <div className="space-y-0.5" role="radiogroup" aria-label="Group by">
                 {([
                   ["none", "None"],
                   ["type", "Type"],
@@ -2000,6 +2001,8 @@ export function Inbox() {
                   <button
                     key={value}
                     type="button"
+                    role="radio"
+                    aria-checked={groupBy === value}
                     className={cn(
                       "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
                       groupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
@@ -2182,6 +2185,8 @@ export function Inbox() {
                             depth === 0 && hasChildren && collapseParentId ? (
                               <button
                                 type="button"
+                                aria-label={isExpanded ? "Collapse group" : "Expand group"}
+                                aria-expanded={isExpanded}
                                 className="hidden w-4 shrink-0 items-center justify-center sm:inline-flex"
                                 onClick={(event) => {
                                   event.preventDefault();
@@ -2189,7 +2194,7 @@ export function Inbox() {
                                   toggleInboxParentCollapse(collapseParentId);
                                 }}
                               >
-                                <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
+                                <ChevronRight aria-hidden="true" className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
                               </button>
                             ) : (
                               <span className="hidden w-4 shrink-0 sm:block" />
@@ -2214,13 +2219,15 @@ export function Inbox() {
                         depth === 0 && hasChildren && collapseParentId ? (
                           <button
                             type="button"
+                            aria-label={isExpanded ? "Collapse group" : "Expand group"}
+                            aria-expanded={isExpanded}
                             onClick={(event) => {
                               event.preventDefault();
                               event.stopPropagation();
                               toggleInboxParentCollapse(collapseParentId);
                             }}
                           >
-                            <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
+                            <ChevronRight aria-hidden="true" className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
                           </button>
                         ) : undefined
                       }
@@ -2524,12 +2531,12 @@ export function Inbox() {
             </h3>
             <div className="divide-y divide-border border border-border">
               {showAggregateAgentError && (
-                <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
+                <div role="alert" className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
                   <Link
                     to="/agents"
                     className="flex flex-1 cursor-pointer items-center gap-3 no-underline text-inherit"
                   >
-                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+                    <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
                     <span className="text-sm">
                       <span className="font-medium">{dashboard!.agents.error}</span>{" "}
                       {dashboard!.agents.error === 1 ? "agent has" : "agents have"} errors
@@ -2541,17 +2548,17 @@ export function Inbox() {
                     className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
                     aria-label="Dismiss"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X aria-hidden="true" className="h-3.5 w-3.5" />
                   </button>
                 </div>
               )}
               {showBudgetAlert && (
-                <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
+                <div role="alert" className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
                   <Link
                     to="/costs"
                     className="flex flex-1 cursor-pointer items-center gap-3 no-underline text-inherit"
                   >
-                    <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-400" />
+                    <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0 text-yellow-400" />
                     <span className="text-sm">
                       Budget at{" "}
                       <span className="font-medium">{dashboard!.costs.monthUtilizationPercent}%</span>{" "}
@@ -2564,7 +2571,7 @@ export function Inbox() {
                     className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
                     aria-label="Dismiss"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X aria-hidden="true" className="h-3.5 w-3.5" />
                   </button>
                 </div>
               )}
