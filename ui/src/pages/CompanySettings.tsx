@@ -250,6 +250,7 @@ export function CompanySettings() {
       nextCompanyId: string | null;
     }) => companiesApi.archive(companyId).then(() => ({ nextCompanyId })),
     onSuccess: async ({ nextCompanyId }) => {
+      setArchiveConfirmOpen(false);
       if (nextCompanyId) {
         setSelectedCompanyId(nextCompanyId);
       }
@@ -290,7 +291,6 @@ export function CompanySettings() {
           company.status !== "archived"
       )?.id ?? null;
     archiveMutation.mutate({ companyId: selectedCompanyId, nextCompanyId });
-    setArchiveConfirmOpen(false);
   }
 
   return (
@@ -387,16 +387,15 @@ export function CompanySettings() {
                   )}
                 </div>
               </Field>
-              <Field
-                label="Brand color"
-                hint="Sets the hue for the company icon. Leave empty for auto-generated color."
-                htmlFor="brand-color-hex"
-              >
+              <fieldset className="border-0 p-0 m-0">
+                <legend className="text-sm font-medium mb-1.5">Brand color</legend>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Sets the hue for the company icon. Leave empty for auto-generated color.
+                </p>
                 <div className="flex items-center gap-2">
                   <input
                     id="brand-color-picker"
                     type="color"
-                    aria-label="Brand color"
                     value={brandColor || "#6366f1"}
                     onChange={(e) => setBrandColor(e.target.value)}
                     className="h-8 w-8 cursor-pointer rounded border border-border bg-transparent p-0"
@@ -425,7 +424,7 @@ export function CompanySettings() {
                     </Button>
                   )}
                 </div>
-              </Field>
+              </fieldset>
             </div>
           </div>
         </div>

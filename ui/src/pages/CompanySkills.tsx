@@ -423,17 +423,22 @@ function SkillList({
     return haystack.includes(skillFilter.toLowerCase());
   });
 
-  if (filteredSkills.length === 0) {
-    return (
-      <div className="px-4 py-6 text-sm text-muted-foreground">
-        No skills match this filter.
-      </div>
-    );
-  }
-
   return (
-    <div role="list">
-      {filteredSkills.map((skill, index) => {
+    <nav aria-label="Skills navigation">
+      <p
+        className="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {filteredSkills.length === 0
+          ? "No skills match this filter"
+          : `${filteredSkills.length} skill${filteredSkills.length === 1 ? "" : "s"} shown`}
+      </p>
+      {filteredSkills.length === 0 ? (
+        <div className="px-4 py-6 text-sm text-muted-foreground">
+          No skills match this filter.
+        </div>
+      ) : filteredSkills.map((skill, index) => {
         const expanded = expandedSkillId === skill.id;
         const tree = buildTree(skill.fileInventory);
         const source = sourceMeta(skill.sourceBadge, skill.sourceLabel);
@@ -441,7 +446,7 @@ function SkillList({
         const accordionId = `skill-detail-${skill.id ?? index}`;
 
         return (
-          <div key={skill.id} role="listitem" className="border-b border-border">
+          <div key={skill.id} className="border-b border-border">
             <div
               className={cn(
                 "group grid grid-cols-[minmax(0,1fr)_2.25rem] items-center gap-x-1 px-3 py-1.5 hover:bg-accent/30",
@@ -506,7 +511,7 @@ function SkillList({
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }
 

@@ -347,6 +347,9 @@ export function Agents() {
                   if (e.key === "Escape") {
                     setFiltersOpen(false);
                     filterTriggerRef.current?.focus();
+                  } else if (e.key === "Tab") {
+                    setFiltersOpen(false);
+                    filterTriggerRef.current?.focus();
                   } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
                     e.preventDefault();
                     firstMenuItemRef.current?.focus();
@@ -596,7 +599,7 @@ export function Agents() {
       )}
 
       {effectiveView === "list" && agents && agents.length > 0 && sortedAgents.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-12 text-center">
           <Bot className="h-8 w-8 text-muted-foreground/30 mb-3" />
           <p className="text-sm text-muted-foreground">
             {searchTrimmed ? "No agents match your search." : "No agents match the selected filter."}
@@ -630,7 +633,7 @@ export function Agents() {
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p role="status" aria-live="polite" className="text-sm text-muted-foreground text-center py-8">
           No agents match the selected filter.
         </p>
       )}

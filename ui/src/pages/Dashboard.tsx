@@ -312,14 +312,13 @@ export function Dashboard() {
               You have no agents.
             </p>
           </div>
-          {/* focus-visible ring added so this bare <button> is keyboard-accessible */}
-          <button
-            type="button"
+          <Button
+            variant="link"
+            className="h-auto p-0 text-sm font-medium underline"
             onClick={() => openOnboarding({ initialStep: 2, companyId: selectedCompanyId! })}
-            className="text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-2 shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           >
             Create one here
-          </button>
+          </Button>
         </div>
       )}
 
@@ -349,7 +348,7 @@ export function Dashboard() {
           ) : null}
 
           <div className="space-y-4">
-            <h2 className="sr-only">Key metrics</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Overview</h2>
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             <MetricCard
               icon={Bot}

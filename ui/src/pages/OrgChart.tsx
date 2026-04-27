@@ -540,7 +540,7 @@ export function OrgChart() {
           {/* Fix 6: focus-visible ring on zoom buttons */}
           <button
             type="button"
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
+            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-8"
             onClick={() => {
               const container = containerRef.current;
               if (container) {
@@ -557,7 +557,7 @@ export function OrgChart() {
           </button>
           <button
             type="button"
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
+            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-8"
             onClick={() => {
               const container = containerRef.current;
               if (container) {
@@ -574,7 +574,7 @@ export function OrgChart() {
           </button>
           <button
             type="button"
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-[10px] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
+            className="flex size-9 items-center justify-center rounded border border-border bg-background text-[10px] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-8"
             onClick={fitToScreen}
             title="Fit to screen"
             aria-label="Fit chart to screen"
