@@ -257,11 +257,24 @@ const AgentRunCard = memo(function AgentRunCard({
                     ? `Finished ${relativeTime(run.finishedAt)}`
                     : `Started ${relativeTime(run.createdAt)}`}
               </span>
-              {mtdCostCents != null && mtdCostCents > 0 && (
-                <span className="ml-auto font-mono text-[10px] text-muted-foreground/70" title="Agent cost this month">
-                  {formatCents(mtdCostCents)} MTD
-                </span>
-              )}
+              {(() => {
+                const runCost = typeof run.usageJson?.costCents === "number" ? run.usageJson.costCents : null;
+                if (runCost != null && runCost > 0) {
+                  return (
+                    <span className="ml-auto font-mono text-[10px] text-muted-foreground/70" title="Cost for this run">
+                      {formatCents(runCost)} this run
+                    </span>
+                  );
+                }
+                if (mtdCostCents != null && mtdCostCents > 0) {
+                  return (
+                    <span className="ml-auto font-mono text-[10px] text-muted-foreground/70" title="Agent cost this month">
+                      {formatCents(mtdCostCents)} MTD
+                    </span>
+                  );
+                }
+                return null;
+              })()}
             </div>
           </div>
 

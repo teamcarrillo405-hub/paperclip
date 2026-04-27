@@ -45,6 +45,7 @@ export interface LiveRunForIssue {
   continuationAttempt?: number;
   lastUsefulActionAt?: string | null;
   nextAction?: string | null;
+  usageJson?: Record<string, unknown> | null;
 }
 
 export const heartbeatsApi = {

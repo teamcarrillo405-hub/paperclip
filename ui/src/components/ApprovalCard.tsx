@@ -63,7 +63,7 @@ export function ApprovalCard({
 
   useEffect(() => {
     if (approval.status !== "pending" && approval.status !== "revision_requested") return;
-    const id = setInterval(() => setTick((t) => t + 1), 60_000);
+    const id = setInterval(() => setTick((t) => t + 1), 15_000);
     return () => clearInterval(id);
   }, [approval.status]);
 

@@ -2469,6 +2469,7 @@ export function agentRoutes(db: Db) {
       lastUsefulActionAt: heartbeatRuns.lastUsefulActionAt,
       nextAction: heartbeatRuns.nextAction,
       issueId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'issueId'`.as("issueId"),
+      usageJson: heartbeatRuns.usageJson,
     };
 
     const liveRuns = await db

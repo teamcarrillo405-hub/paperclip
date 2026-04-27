@@ -28,6 +28,20 @@ export function Approvals() {
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [isBulkOperating, setIsBulkOperating] = useState(false);
   const [optimisticStatus, setOptimisticStatus] = useState<Record<string, "approved" | "rejected">>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  }
+
+  function toggleSelectAll(ids: string[]) {
+    const allSelected = ids.length > 0 && ids.every((id) => selectedIds.has(id));
+    setSelectedIds(allSelected ? new Set() : new Set(ids));
+  }
 
   const { isConnected, lastEvent } = useCompanyLiveEvents(selectedCompanyId ?? undefined);
 
@@ -179,12 +193,16 @@ export function Approvals() {
   }, [statusFilter]);
 
   async function handleBulkApprove() {
+    const targets = selectedIds.size > 0
+      ? pendingItems.filter((item) => selectedIds.has(item.id))
+      : pendingItems;
     setIsBulkOperating(true);
     setActionError(null);
     try {
-      for (const item of pendingItems) {
+      for (const item of targets) {
         await approvalsApi.approve(item.id);
       }
+      setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Bulk approve failed");
@@ -194,12 +212,16 @@ export function Approvals() {
   }
 
   async function handleBulkReject() {
+    const targets = selectedIds.size > 0
+      ? pendingItems.filter((item) => selectedIds.has(item.id))
+      : pendingItems;
     setIsBulkOperating(true);
     setActionError(null);
     try {
-      for (const item of pendingItems) {
+      for (const item of targets) {
         await approvalsApi.reject(item.id);
       }
+      setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Bulk reject failed");
@@ -249,6 +271,25 @@ export function Approvals() {
         {/* Bulk approve/reject — only on Pending tab */}
         {statusFilter === "pending" && pendingCount > 0 && (
           <div className="flex items-center gap-2">
+            {pendingCount > 1 && (
+              <button
+                type="button"
+                onClick={() => toggleSelectAll(pendingItems.map((a) => a.id))}
+                className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground border border-border hover:bg-accent/50 transition-colors"
+              >
+                <span className={cn(
+                  "flex h-3.5 w-3.5 items-center justify-center border border-border rounded-sm",
+                  pendingItems.every((a) => selectedIds.has(a.id)) && "bg-foreground border-foreground",
+                )}>
+                  {pendingItems.every((a) => selectedIds.has(a.id)) && (
+                    <svg className="h-2 w-2 text-background" viewBox="0 0 10 10" fill="none">
+                      <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </span>
+                All
+              </button>
+            )}
             <button
               type="button"
               disabled={isBulkOperating}
@@ -258,7 +299,7 @@ export function Approvals() {
                 "bg-green-700/5 hover:bg-green-700/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
-              {isBulkOperating ? "Working..." : "Approve All"}
+              {isBulkOperating ? "Working..." : selectedIds.size > 0 ? `Approve (${selectedIds.size})` : "Approve All"}
             </button>
             <button
               type="button"
@@ -269,7 +310,7 @@ export function Approvals() {
                 "bg-destructive/5 hover:bg-destructive/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
-              {isBulkOperating ? "Working..." : "Reject All"}
+              {isBulkOperating ? "Working..." : selectedIds.size > 0 ? `Reject (${selectedIds.size})` : "Reject All"}
             </button>
           </div>
         )}
@@ -303,7 +344,7 @@ export function Approvals() {
 
       {filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <ShieldCheck className="h-8 w-8 text-muted-foreground/30 mb-3" />
+          <ShieldCheck className="h-8 w-8 text-muted-foreground/50 mb-3" />
           <p className="text-sm text-muted-foreground">
             {statusFilter === "pending" ? "No pending approvals." : "No approvals yet."}
           </p>
@@ -314,16 +355,35 @@ export function Approvals() {
         <div className="grid gap-3">
           {filtered.map((approval, idx) => {
             const isFocused = focusedIndex === idx;
+            const isSelected = selectedIds.has(approval.id);
+            const isPending = approval.status === "pending" || approval.status === "revision_requested";
             return (
               <div
                 key={approval.id}
                 className={cn(
-                  "rounded-xl transition-all duration-300",
+                  "relative rounded-xl transition-all duration-300",
                   isFocused && "ring-2 ring-ring ring-offset-1 ring-offset-background",
                   optimisticStatus[approval.id] && "opacity-40 scale-[0.99] pointer-events-none",
                 )}
                 onClick={() => setFocusedIndex(idx)}
               >
+                {isPending && (
+                  <button
+                    type="button"
+                    aria-label={isSelected ? "Deselect approval" : "Select approval"}
+                    onClick={(e) => { e.stopPropagation(); toggleSelect(approval.id); }}
+                    className={cn(
+                      "absolute top-3 left-3 z-10 flex h-4 w-4 items-center justify-center border rounded-sm transition-colors",
+                      isSelected ? "bg-foreground border-foreground" : "border-border bg-background hover:border-foreground/50",
+                    )}
+                  >
+                    {isSelected && (
+                      <svg className="h-2.5 w-2.5 text-background" viewBox="0 0 10 10" fill="none">
+                        <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </button>
+                )}
                 <ApprovalCard
                   approval={approval}
                   requesterAgent={approval.requestedByAgentId ? (agents ?? []).find((a) => a.id === approval.requestedByAgentId) ?? null : null}
