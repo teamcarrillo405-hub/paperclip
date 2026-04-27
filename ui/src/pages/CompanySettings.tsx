@@ -12,6 +12,7 @@ import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
 import { Settings, Check, Download, Upload, LayoutTemplate } from "lucide-react";
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
+import { EmptyState } from "../components/EmptyState";
 import {
   Field,
   ToggleField,
@@ -71,7 +72,15 @@ export function CompanySettings() {
     }) => companiesApi.update(selectedCompanyId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-    }
+      pushToast({ title: "Settings saved", tone: "success" });
+    },
+    onError: (err) => {
+      pushToast({
+        title: "Failed to save settings",
+        body: err instanceof Error ? err.message : "Unknown error",
+        tone: "error",
+      });
+    },
   });
 
   const settingsMutation = useMutation({
@@ -81,6 +90,13 @@ export function CompanySettings() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+    },
+    onError: (err) => {
+      pushToast({
+        title: "Failed to update approval setting",
+        body: err instanceof Error ? err.message : "Unknown error",
+        tone: "error",
+      });
     }
   });
 
@@ -230,11 +246,7 @@ export function CompanySettings() {
   }, [setBreadcrumbs, selectedCompany?.name]);
 
   if (!selectedCompany) {
-    return (
-      <div className="text-sm text-muted-foreground">
-        No company selected. Select a company from the switcher above.
-      </div>
-    );
+    return <EmptyState icon={Settings} message="Select a company from the switcher to manage its settings." />;
   }
 
   function handleSaveGeneral() {
@@ -388,16 +400,6 @@ export function CompanySettings() {
           >
             {generalMutation.isPending ? "Saving..." : "Save changes"}
           </Button>
-          {generalMutation.isSuccess && (
-            <span className="text-xs text-muted-foreground">Saved</span>
-          )}
-          {generalMutation.isError && (
-            <span className="text-xs text-destructive">
-              {generalMutation.error instanceof Error
-                  ? generalMutation.error.message
-                  : "Failed to save"}
-            </span>
-          )}
         </div>
       )}
 
