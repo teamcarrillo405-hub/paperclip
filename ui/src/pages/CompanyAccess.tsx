@@ -292,7 +292,7 @@ export function CompanyAccess() {
       </div>
 
       {access && !access.currentUserRole && (
-        <div className="rounded-xl border border-amber-500/40 px-4 py-3 text-sm text-amber-700 dark:text-amber-200">
+        <div role="status" className="rounded-xl border border-amber-500/40 px-4 py-3 text-sm text-amber-700 dark:text-amber-200">
           This account can manage access here through instance-admin privileges, but it does not currently hold an active company membership.
         </div>
       )}
@@ -543,7 +543,7 @@ export function CompanyAccess() {
               }}
               disabled={updateMemberMutation.isPending}
             >
-              {updateMemberMutation.isPending ? "Saving…" : "Save access"}
+              {updateMemberMutation.isPending ? "Saving..." : "Save access"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -563,9 +563,11 @@ export function CompanyAccess() {
                 <div className="text-sm font-medium">{memberDisplayName(removingMember)}</div>
                 <div className="text-sm text-muted-foreground">{removingMember.user?.email || removingMember.principalId}</div>
                 <div className="mt-2 text-sm text-muted-foreground">
-                  {assignedIssuesQuery.isLoading
-                    ? "Checking assigned issues..."
-                    : `${assignedIssues.length} open assigned issue${assignedIssues.length === 1 ? "" : "s"}`}
+                  <span aria-live="polite" aria-atomic="true">
+                    {assignedIssuesQuery.isLoading
+                      ? "Checking assigned issues..."
+                      : `${assignedIssues.length} open assigned issue${assignedIssues.length === 1 ? "" : "s"}`}
+                  </span>
                 </div>
               </div>
 

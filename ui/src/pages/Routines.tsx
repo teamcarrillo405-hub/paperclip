@@ -612,7 +612,7 @@ export function Routines() {
           role="alert"
           className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3"
         >
-          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <AlertCircle aria-hidden="true" className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="text-sm text-destructive">
               {error instanceof Error ? error.message : "Failed to load routines"}
@@ -678,6 +678,67 @@ export function Routines() {
               </PopoverContent>
             </Popover>
           </div>
+
+          {(routines ?? []).length === 0 ? (
+            <div className="py-12">
+              <EmptyState
+                icon={Repeat}
+                message="No routines yet. Use Create routine to define the first recurring workflow."
+              />
+            </div>
+          ) : (
+            <div className="rounded-lg border border-border overflow-hidden">
+              {routineGroups.map((group) => (
+                <Collapsible
+                  key={group.key}
+                  open={!routineViewState.collapsedGroups.includes(group.key)}
+                  onOpenChange={(open) => {
+                    updateRoutineView({
+                      collapsedGroups: open
+                        ? routineViewState.collapsedGroups.filter((item) => item !== group.key)
+                        : [...routineViewState.collapsedGroups, group.key],
+                    });
+                  }}
+                >
+                  {group.label ? (
+                    <div className={cn(
+                      "flex items-center gap-2 px-3 py-2",
+                      !routineViewState.collapsedGroups.includes(group.key) && "border-b border-border",
+                    )}>
+                      <CollapsibleTrigger
+                        className="flex items-center gap-1.5"
+                        aria-label={`${group.label}, ${group.items.length} item${group.items.length === 1 ? "" : "s"}`}
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
+                        <span className="text-sm font-semibold uppercase tracking-widest">
+                          {group.label}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {group.items.length}
+                        </span>
+                      </CollapsibleTrigger>
+                    </div>
+                  ) : null}
+                  <CollapsibleContent>
+                    {group.items.map((routine) => (
+                      <RoutineListRow
+                        key={routine.id}
+                        routine={routine}
+                        projectById={projectById}
+                        agentById={agentById}
+                        runningRoutineId={runningRoutineId}
+                        statusMutationRoutineId={statusMutationRoutineId}
+                        href={`/routines/${routine.id}`}
+                        onRunNow={handleRunNow}
+                        onToggleEnabled={handleToggleEnabled}
+                        onToggleArchived={handleToggleArchived}
+                      />
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            </div>
+          )}
         </TabsContent>
         <TabsContent value="runs">
           <IssuesList
@@ -763,6 +824,7 @@ export function Routines() {
                 }}
                 autoFocus
               />
+              <p className="text-xs text-muted-foreground">Tip: type &#123;&#123; in the title to add template variables.</p>
             </div>
 
             <div className="px-5 pb-3">
@@ -966,71 +1028,6 @@ export function Routines() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {activeTab === "routines" ? (
-        <div>
-          {(routines ?? []).length === 0 ? (
-            <div className="py-12">
-              <EmptyState
-                icon={Repeat}
-                message="No routines yet. Use Create routine to define the first recurring workflow."
-              />
-            </div>
-          ) : (
-            <div className="rounded-lg border border-border overflow-hidden">
-              {routineGroups.map((group) => (
-                <Collapsible
-                  key={group.key}
-                  open={!routineViewState.collapsedGroups.includes(group.key)}
-                  onOpenChange={(open) => {
-                    updateRoutineView({
-                      collapsedGroups: open
-                        ? routineViewState.collapsedGroups.filter((item) => item !== group.key)
-                        : [...routineViewState.collapsedGroups, group.key],
-                    });
-                  }}
-                >
-                  {group.label ? (
-                    <div className={cn(
-                      "flex items-center gap-2 px-3 py-2",
-                      !routineViewState.collapsedGroups.includes(group.key) && "border-b border-border",
-                    )}>
-                      <CollapsibleTrigger
-                        className="flex items-center gap-1.5"
-                        aria-label={`${group.label}, ${group.items.length} item${group.items.length === 1 ? "" : "s"}`}
-                      >
-                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
-                        <span className="text-sm font-semibold uppercase tracking-widest">
-                          {group.label}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {group.items.length}
-                        </span>
-                      </CollapsibleTrigger>
-                    </div>
-                  ) : null}
-                  <CollapsibleContent>
-                    {group.items.map((routine) => (
-                      <RoutineListRow
-                        key={routine.id}
-                        routine={routine}
-                        projectById={projectById}
-                        agentById={agentById}
-                        runningRoutineId={runningRoutineId}
-                        statusMutationRoutineId={statusMutationRoutineId}
-                        href={`/routines/${routine.id}`}
-                        onRunNow={handleRunNow}
-                        onToggleEnabled={handleToggleEnabled}
-                        onToggleArchived={handleToggleArchived}
-                      />
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : null}
 
       <RoutineRunVariablesDialog
         open={runDialogRoutine !== null}
