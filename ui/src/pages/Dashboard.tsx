@@ -63,6 +63,9 @@ export function Dashboard() {
   }
   const [syncedSecondsAgo, setSyncedSecondsAgo] = useState(0);
   const lastSyncRef = useRef(Date.now());
+  // Tracks the previous isSyncing value to detect the transition from true → false.
+  const wasSyncingRef = useRef(false);
+  const [syncAnnouncement, setSyncAnnouncement] = useState("");
 
   // isConnected reflects the state of the per-Dashboard WebSocket connection.
   // The global LiveUpdatesProvider already handles query invalidation and
@@ -117,10 +120,17 @@ export function Dashboard() {
   });
 
   // Reset the last-synced timer whenever the dashboard data refreshes.
+  // Announce "Synced" once per sync cycle via the dedicated sr-only live region.
   useEffect(() => {
     if (data) {
       lastSyncRef.current = Date.now();
       setSyncedSecondsAgo(0);
+      // Fire the announcement only when transitioning from a loading/refetching
+      // state back to settled (i.e. when a sync actually completed).
+      if (wasSyncingRef.current) {
+        setSyncAnnouncement("Synced");
+        wasSyncingRef.current = false;
+      }
     }
   }, [data]);
 
@@ -186,6 +196,13 @@ export function Dashboard() {
       }
     };
   }, []);
+
+  // Track when a refetch begins so we can announce once on completion.
+  useEffect(() => {
+    if (isRefetching) {
+      wasSyncingRef.current = true;
+    }
+  }, [isRefetching]);
 
   // Interval changed from 10_000 to 1_000 so the "just now" / "Xs ago"
   // counter updates smoothly. The previous 10 s tick meant the display lagged
@@ -276,8 +293,13 @@ export function Dashboard() {
           {liveRunCount > 0 && (
             <span>{liveRunCount} agent{liveRunCount !== 1 ? "s" : ""} running{" · "}</span>
           )}
-          <span aria-live="polite" aria-atomic="true">Last synced {syncedSecondsAgo < 5 ? "just now" : syncedSecondsAgo < 60 ? `${syncedSecondsAgo}s ago` : `${Math.floor(syncedSecondsAgo / 60)}m ago`}</span>
+          {/* No aria-live here — the counter updates every second which would
+              cause constant screen reader interruptions. Announcements are
+              instead emitted once per sync cycle via the sr-only region below. */}
+          <span>Last synced {syncedSecondsAgo < 5 ? "just now" : syncedSecondsAgo < 60 ? `${syncedSecondsAgo}s ago` : `${Math.floor(syncedSecondsAgo / 60)}m ago`}</span>
         </p>
+        {/* Dedicated live region: only updates once when a sync completes. */}
+        <span className="sr-only" aria-live="polite" aria-atomic="true">{syncAnnouncement}</span>
       </div>
 
       {hasNoAgents && (
@@ -401,8 +423,8 @@ export function Dashboard() {
                     className={cn(
                       "px-2.5 py-1 text-xs font-medium rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                       chartDays === d
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground",
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
                     )}
                   >
                     {d}d

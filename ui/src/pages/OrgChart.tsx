@@ -539,6 +539,7 @@ export function OrgChart() {
         <div id="zoom-controls" role="group" aria-label="Zoom controls" className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
           {/* Fix 6: focus-visible ring on zoom buttons */}
           <button
+            type="button"
             className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
             onClick={() => {
               const container = containerRef.current;
@@ -555,6 +556,7 @@ export function OrgChart() {
             <Plus className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
           </button>
           <button
+            type="button"
             className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
             onClick={() => {
               const container = containerRef.current;
@@ -571,6 +573,7 @@ export function OrgChart() {
             <Minus className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
           </button>
           <button
+            type="button"
             className="flex size-9 items-center justify-center rounded border border-border bg-background text-[10px] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-7"
             onClick={fitToScreen}
             title="Fit to screen"
@@ -645,6 +648,14 @@ export function OrgChart() {
                   suppressNextCardClick.current = false;
                   e.preventDefault();
                   e.stopPropagation();
+                }}
+                onKeyDown={(e) => {
+                  // Prevent arrow keys on a focused card link from bubbling up
+                  // to the viewport's pan handler, which would scroll the chart
+                  // instead of letting the browser follow normal link focus.
+                  if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
+                    e.stopPropagation();
+                  }
                 }}
               >
                 <div className="flex items-center px-4 py-3 gap-3">

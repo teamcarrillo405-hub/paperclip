@@ -656,7 +656,25 @@ export function Routines() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-44 p-0">
-                <div className="p-2 space-y-0.5" role="radiogroup" aria-label="Group routines by">
+                <div
+                  className="p-2 space-y-0.5"
+                  role="radiogroup"
+                  aria-label="Group routines by"
+                  onKeyDown={(e) => {
+                    const radios = Array.from(
+                      e.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]'),
+                    );
+                    const idx = radios.indexOf(document.activeElement as HTMLElement);
+                    if (e.key === "ArrowDown" && idx < radios.length - 1) {
+                      e.preventDefault();
+                      radios[idx + 1]?.focus();
+                    }
+                    if (e.key === "ArrowUp" && idx > 0) {
+                      e.preventDefault();
+                      radios[idx - 1]?.focus();
+                    }
+                  }}
+                >
                   {([
                     ["project", "Project"],
                     ["assignee", "Agent"],
