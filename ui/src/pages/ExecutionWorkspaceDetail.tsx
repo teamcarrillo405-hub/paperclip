@@ -208,10 +208,10 @@ function Field({
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1.5 py-1.5 sm:flex-row sm:items-start sm:gap-3">
-      <div className="shrink-0 text-xs text-muted-foreground sm:w-32">{label}</div>
-      <div className="min-w-0 flex-1 text-sm">{children}</div>
-    </div>
+    <dl className="flex flex-col gap-1.5 py-1.5 sm:flex-row sm:items-start sm:gap-3">
+      <dt className="shrink-0 text-xs text-muted-foreground sm:w-32">{label}</dt>
+      <dd className="min-w-0 flex-1 text-sm">{children}</dd>
+    </dl>
   );
 }
 
@@ -329,6 +329,7 @@ export function ExecutionWorkspaceDetail() {
   const [runtimeActionMessage, setRuntimeActionMessage] = useState<string | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
+  const [jsonError, setJsonError] = useState<string | null>(null);
   const activeTab = workspaceId ? resolveExecutionWorkspaceTab(location.pathname, workspaceId) : null;
 
   const workspaceQuery = useQuery({
@@ -564,7 +565,7 @@ export function ExecutionWorkspaceDetail() {
 
           <TabsContent value="configuration">
             <div className="space-y-4 sm:space-y-6">
-              <Card className="rounded-none">
+              <Card className="rounded-lg">
                 <CardHeader>
                   <CardTitle><h2 className="text-base font-semibold leading-none">Services and jobs</h2></CardTitle>
                   <CardDescription>
@@ -598,7 +599,7 @@ export function ExecutionWorkspaceDetail() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-none">
+              <Card className="rounded-lg">
                 <CardHeader>
                   <CardTitle><h2 className="text-base font-semibold leading-none">Workspace settings</h2></CardTitle>
                   <CardDescription>
@@ -765,7 +766,10 @@ export function ExecutionWorkspaceDetail() {
 
                     <Collapsible
                       open={advancedOpen}
-                      onOpenChange={setAdvancedOpen}
+                      onOpenChange={(open) => {
+                        setAdvancedOpen(open);
+                        if (!open) setJsonError(null);
+                      }}
                       className="rounded-md border border-dashed border-border/70 bg-background px-4 py-3"
                     >
                       <CollapsibleTrigger className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
@@ -804,10 +808,24 @@ export function ExecutionWorkspaceDetail() {
                               id="runtime-json-editor"
                               className="min-h-64 font-mono sm:min-h-96"
                               value={form.workspaceRuntime}
-                              onChange={(event) => setForm((current) => current ? { ...current, workspaceRuntime: event.target.value } : current)}
+                              onChange={(event) => {
+                                const value = event.target.value;
+                                setForm((current) => current ? { ...current, workspaceRuntime: value } : current);
+                                if (!value.trim()) {
+                                  setJsonError(null);
+                                } else {
+                                  try {
+                                    JSON.parse(value);
+                                    setJsonError(null);
+                                  } catch {
+                                    setJsonError("Invalid JSON");
+                                  }
+                                }
+                              }}
                               disabled={form.inheritRuntime}
                               placeholder={'{\n  "commands": [\n    {\n      "id": "web",\n      "name": "web",\n      "kind": "service",\n      "command": "pnpm dev",\n      "cwd": ".",\n      "port": { "type": "auto" }\n    },\n    {\n      "id": "db-migrate",\n      "name": "db:migrate",\n      "kind": "job",\n      "command": "pnpm db:migrate",\n      "cwd": "."\n    }\n  ]\n}'}
                             />
+                            {jsonError ? <p role="alert" className="text-xs text-destructive mt-1">{jsonError}</p> : null}
                           </div>
                         </div>
                       </CollapsibleContent>
@@ -847,7 +865,7 @@ export function ExecutionWorkspaceDetail() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-none">
+              <Card className="rounded-lg">
                 <CardHeader>
                   <CardTitle><h2 className="text-base font-semibold leading-none">Workspace context</h2></CardTitle>
                   <CardDescription>Linked objects and relationships</CardDescription>
@@ -912,7 +930,7 @@ export function ExecutionWorkspaceDetail() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-none">
+              <Card className="rounded-lg">
                 <CardHeader>
                   <CardTitle><h2 className="text-base font-semibold leading-none">Concrete location</h2></CardTitle>
                   <CardDescription>Paths and refs</CardDescription>
@@ -960,7 +978,7 @@ export function ExecutionWorkspaceDetail() {
           </TabsContent>
 
           <TabsContent value="runtime_logs">
-            <Card className="rounded-none">
+            <Card className="rounded-lg">
               <CardHeader>
                 <CardTitle><h2 className="text-base font-semibold leading-none">Runtime and cleanup logs</h2></CardTitle>
                 <CardDescription>Recent operations</CardDescription>
