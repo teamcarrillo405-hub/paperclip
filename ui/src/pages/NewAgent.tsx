@@ -196,7 +196,7 @@ export function NewAgent() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <form className="mx-auto max-w-2xl space-y-6" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
       <div>
         <h1 className="text-lg font-semibold">New Agent</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -204,10 +204,12 @@ export function NewAgent() {
         </p>
       </div>
 
-      <div className="border border-border">
+      <div className="border border-border rounded-lg overflow-hidden">
         {/* Name */}
         <div className="px-4 pt-4 pb-2">
+          <label htmlFor="new-agent-name" className="sr-only">Agent name</label>
           <input
+            id="new-agent-name"
             className="w-full text-lg font-semibold bg-transparent outline-none placeholder:text-muted-foreground/50"
             placeholder="Agent name"
             value={name}
@@ -218,7 +220,9 @@ export function NewAgent() {
 
         {/* Title */}
         <div className="px-4 pb-2">
+          <label htmlFor="new-agent-title" className="sr-only">Agent title</label>
           <input
+            id="new-agent-title"
             className="w-full bg-transparent outline-none text-sm text-muted-foreground placeholder:text-muted-foreground/40"
             placeholder="Title (e.g. VP of Engineering)"
             value={title}
@@ -324,15 +328,15 @@ export function NewAgent() {
               Cancel
             </Button>
             <Button
+              type="submit"
               size="sm"
               disabled={!name.trim() || createAgent.isPending}
-              onClick={handleSubmit}
             >
               {createAgent.isPending ? "Creating…" : "Create agent"}
             </Button>
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 }

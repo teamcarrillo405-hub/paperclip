@@ -175,7 +175,7 @@ export function OrgChart() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
 
-  const { data: orgTree, isLoading } = useQuery({
+  const { data: orgTree, isLoading, isError } = useQuery({
     queryKey: queryKeys.org(selectedCompanyId!),
     queryFn: () => agentsApi.org(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -436,6 +436,10 @@ export function OrgChart() {
     return <PageSkeleton variant="org-chart" />;
   }
 
+  if (isError) {
+    return <EmptyState icon={Network} message="Failed to load org chart. Check your connection and try again." />;
+  }
+
   if (orgTree && orgTree.length === 0) {
     return <EmptyState icon={Network} message="No organizational hierarchy defined." />;
   }
@@ -565,7 +569,10 @@ export function OrgChart() {
               <div
                 key={node.id}
                 data-org-card
-                className="absolute bg-card border border-border rounded-lg shadow-sm hover:shadow-md hover:border-foreground/20 transition-[box-shadow,border-color] duration-150 cursor-pointer select-none"
+                role="button"
+                tabIndex={0}
+                aria-label={`${node.name}, ${agent?.title ?? roleLabel(node.role)}`}
+                className="absolute bg-card border border-border rounded-lg shadow-sm hover:shadow-md hover:border-foreground/20 transition-[box-shadow,border-color] duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 style={{
                   left: node.x,
                   top: node.y,
@@ -573,6 +580,12 @@ export function OrgChart() {
                   minHeight: CARD_H,
                 }}
                 onClick={() => navigate(agent ? agentUrl(agent) : `/agents/${node.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate(agent ? agentUrl(agent) : `/agents/${node.id}`);
+                  }
+                }}
                 onClickCapture={(e) => {
                   if (!suppressNextCardClick.current) return;
                   suppressNextCardClick.current = false;
@@ -596,16 +609,16 @@ export function OrgChart() {
                     <span className="text-sm font-semibold text-foreground leading-tight">
                       {node.name}
                     </span>
-                    <span className="text-[11px] text-muted-foreground leading-tight mt-0.5">
+                    <span className="text-xs text-muted-foreground leading-tight mt-0.5">
                       {agent?.title ?? roleLabel(node.role)}
                     </span>
                     {agent && (
-                      <span className="text-[10px] text-muted-foreground/60 font-mono leading-tight mt-1">
+                      <span className="text-xs text-muted-foreground/60 font-mono leading-tight mt-1 truncate w-full">
                         {getAdapterLabel(agent.adapterType)}
                       </span>
                     )}
                     {agent && agent.capabilities && (
-                      <span className="text-[10px] text-muted-foreground/80 leading-tight mt-1 line-clamp-2">
+                      <span className="text-xs text-muted-foreground/80 leading-tight mt-1 line-clamp-2">
                         {agent.capabilities}
                       </span>
                     )}

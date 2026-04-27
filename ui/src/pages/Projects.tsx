@@ -58,6 +58,7 @@ export function Projects() {
               size="sm"
               variant="ghost"
               className="text-xs text-muted-foreground"
+              aria-pressed={showArchived}
               onClick={() => setShowArchived((v) => !v)}
             >
               {showArchived ? "Hide archived" : `Show archived (${archivedCount})`}
@@ -88,7 +89,15 @@ export function Projects() {
         </div>
       )}
 
-      {!isLoading && !error && projects.length === 0 && (
+      {!isLoading && !error && projects.length === 0 && archivedCount > 0 && (
+        <EmptyState
+          icon={Hexagon}
+          message={`${archivedCount} archived project${archivedCount > 1 ? "s" : ""} hidden.`}
+          action="Show archived"
+          onAction={() => setShowArchived(true)}
+        />
+      )}
+      {!isLoading && !error && projects.length === 0 && archivedCount === 0 && (
         <EmptyState
           icon={Hexagon}
           message="No projects yet."

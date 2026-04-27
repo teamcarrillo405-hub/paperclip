@@ -120,7 +120,10 @@ export function Activity() {
 
   return (
     <div className="space-y-4">
-      {!error && (
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Activity</h1>
+      </div>
+      {(!error || data) && (
         <div className="flex items-center justify-end gap-2">
           <Select value={filter} onValueChange={setFilter} aria-label="Filter activity by type">
             <SelectTrigger className="w-[140px] h-8 text-xs">
@@ -149,7 +152,7 @@ export function Activity() {
       )}
 
       {error && (
-        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
           <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="text-sm text-destructive">{error.message}</p>
