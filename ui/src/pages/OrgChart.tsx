@@ -528,7 +528,8 @@ export function OrgChart() {
 
         {/* Status dot color legend for screen readers */}
         <div className="sr-only" role="note">
-          Status indicator colors: cyan = running, green = active, yellow = idle, red = error, gray = offline
+          Status indicator colors: cyan = running, green = active, yellow = idle, red = error, gray = offline.
+          Arrow keys pan the canvas. Use Arrow keys on a card to move focus between cards.
         </div>
 
         {/* Zoom controls */}

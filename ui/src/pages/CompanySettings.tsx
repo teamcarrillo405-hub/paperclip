@@ -388,7 +388,7 @@ export function CompanySettings() {
                 </div>
               </Field>
               <fieldset className="border-0 p-0 m-0">
-                <legend className="text-sm font-medium mb-1.5">Brand color</legend>
+                <legend id="brand-color-legend" className="text-sm font-medium mb-1.5">Brand color</legend>
                 <p className="text-xs text-muted-foreground mb-2">
                   Sets the hue for the company icon. Leave empty for auto-generated color.
                 </p>
@@ -398,11 +398,13 @@ export function CompanySettings() {
                     type="color"
                     value={brandColor || "#6366f1"}
                     onChange={(e) => setBrandColor(e.target.value)}
+                    aria-labelledby="brand-color-legend"
                     className="h-8 w-8 cursor-pointer rounded-md border border-border bg-transparent p-0 shadow-sm"
                   />
                   <input
                     id="brand-color-hex"
                     type="text"
+                    aria-labelledby="brand-color-legend"
                     value={brandColor}
                     onChange={(e) => {
                       const v = e.target.value;

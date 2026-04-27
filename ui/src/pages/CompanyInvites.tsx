@@ -278,7 +278,7 @@ export function CompanyInvites() {
             </div>
             <button
               type="button"
-              aria-label="Copy invite URL"
+              aria-label={`Copy invite link: ${latestInviteUrl}`}
               onClick={async () => {
                 const copied = await copyInviteUrl(latestInviteUrl);
                 setLatestInviteCopied(copied);

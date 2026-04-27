@@ -224,7 +224,7 @@ export function NewAgent() {
             <label htmlFor="new-agent-name" className="text-sm font-medium">Agent name</label>
             <input
               id="new-agent-name"
-              className="w-full text-lg font-semibold bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
+              className="w-full text-lg font-semibold bg-transparent border border-input rounded-md px-3 outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
               placeholder="Agent name"
               value={name}
               onChange={(e) => setName(e.target.value)}

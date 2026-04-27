@@ -609,8 +609,15 @@ function SkillPane({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onDelete}
+                onClick={(e) => {
+                  if (removeBlocked) {
+                    e.stopPropagation();
+                    return;
+                  }
+                  onDelete();
+                }}
                 disabled={deletePending}
+                aria-disabled={removeBlocked || deletePending}
                 title={removeDisabledReason ?? undefined}
                 className={cn(removeBlocked && "opacity-50 cursor-not-allowed")}
               >

@@ -47,6 +47,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import type { RoutineListItem, RoutineVariable } from "@paperclipai/shared";
 
@@ -339,6 +341,8 @@ export function Routines() {
     catchUpPolicy: "skip_missed",
     variables: [],
   });
+  const [search, setSearch] = useState("");
+
   const routineViewStateKey = selectedCompanyId
     ? `paperclip:routines-view:${selectedCompanyId}`
     : "paperclip:routines-view";
@@ -528,9 +532,13 @@ export function Routines() {
     }
     return ids;
   }, [liveRuns]);
+  const filteredRoutines = useMemo(
+    () => (routines ?? []).filter((r) => !search || r.title.toLowerCase().includes(search.toLowerCase())),
+    [routines, search],
+  );
   const routineGroups = useMemo(
-    () => buildRoutineGroups(routines ?? [], routineViewState.groupBy, projectById, agentById),
-    [agentById, projectById, routineViewState.groupBy, routines],
+    () => buildRoutineGroups(filteredRoutines, routineViewState.groupBy, projectById, agentById),
+    [agentById, projectById, routineViewState.groupBy, filteredRoutines],
   );
   const recentRunsIssueLinkState = useMemo(
     () =>
@@ -648,9 +656,18 @@ export function Routines() {
         />
         <TabsContent value="routines" className="space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">
-              {(routines ?? []).length} routine{(routines ?? []).length === 1 ? "" : "s"}
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                {(routines ?? []).length} routine{(routines ?? []).length === 1 ? "" : "s"}
+              </p>
+              <Input
+                placeholder="Search routines..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-48"
+                aria-label="Search routines"
+              />
+            </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-xs" aria-label="Group routines">
@@ -717,6 +734,13 @@ export function Routines() {
                 message="No routines yet. Use Create routine to define the first recurring workflow."
                 action="Create routine"
                 onAction={() => setComposerOpen(true)}
+              />
+            </div>
+          ) : filteredRoutines.length === 0 ? (
+            <div className="py-12">
+              <EmptyState
+                icon={Repeat}
+                message="No routines match your search."
               />
             </div>
           ) : (
@@ -1006,12 +1030,12 @@ export function Routines() {
                 <CollapsibleContent className="pt-3">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Concurrency</p>
+                      <Label htmlFor="concurrency-policy" className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Concurrency policy</Label>
                       <Select
                         value={draft.concurrencyPolicy}
                         onValueChange={(concurrencyPolicy) => setDraft((current) => ({ ...current, concurrencyPolicy }))}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger id="concurrency-policy">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -1025,12 +1049,12 @@ export function Routines() {
                       <p className="text-xs text-muted-foreground">{concurrencyPolicyDescriptions[draft.concurrencyPolicy]}</p>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Catch-up</p>
+                      <Label htmlFor="catch-up-policy" className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Catch-up policy</Label>
                       <Select
                         value={draft.catchUpPolicy}
                         onValueChange={(catchUpPolicy) => setDraft((current) => ({ ...current, catchUpPolicy }))}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger id="catch-up-policy">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

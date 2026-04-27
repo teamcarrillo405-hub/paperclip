@@ -268,7 +268,7 @@ export function JoinRequestQueue() {
                     <div className="rounded-lg border border-border bg-background px-3 py-2">
                       <h3 className="text-xs font-medium uppercase tracking-wide">Request details</h3>
                       <div className="mt-2">Submitted {new Date(request.createdAt).toLocaleString()}</div>
-                      <div className="font-mono text-xs break-all">Source IP {request.requestIp}</div>
+                      <div className="break-all"><span><span className="sr-only">Source IP: </span><span className="font-mono text-xs">{request.requestIp}</span></span></div>
                       {request.requestType === "agent" && request.capabilities ? <div>{request.capabilities}</div> : null}
                     </div>
                   </div>

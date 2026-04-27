@@ -439,7 +439,75 @@ export function Approvals() {
 
       {filtered.length > 0 && (
         <div role="feed" aria-label={statusFilter === "all" ? "All approvals" : "Pending approvals"} aria-busy={isBulkOperating} className="grid gap-3">
-          {filtered.map((approval, idx) => {
+          <span className="sr-only" aria-live="polite" aria-atomic="true">
+            {focusedIndex !== null ? (filtered[focusedIndex]?.type ?? "") : ""}
+          </span>
+          {statusFilter === "all" ? (() => {
+            const pendingGroup = filtered.filter((a) => a.status === "pending" || a.status === "revision_requested");
+            const resolvedGroup = filtered.filter((a) => a.status !== "pending" && a.status !== "revision_requested");
+            const allItems = [...pendingGroup, ...resolvedGroup];
+            return allItems.map((approval, idx) => {
+              const isFocused = focusedIndex === idx;
+              const isSelected = selectedIds.has(approval.id);
+              const isPending = approval.status === "pending" || approval.status === "revision_requested";
+              const isFirstResolved = resolvedGroup.length > 0 && approval.id === resolvedGroup[0]?.id;
+              return (
+                <div key={approval.id}>
+                  {isFirstResolved && (
+                    <>
+                      <div className="border-t border-border my-2" role="separator" aria-label="Resolved approvals below" />
+                      <p className="text-xs text-muted-foreground px-1 py-2">Resolved</p>
+                    </>
+                  )}
+                  <div
+                    ref={(el) => { cardRefs.current[idx] = el; }}
+                    tabIndex={-1}
+                    role="article"
+                    aria-posinset={idx + 1}
+                    aria-setsize={allItems.length}
+                    className={cn(
+                      "relative rounded-xl transition-all duration-300 focus:outline-none",
+                      isFocused && "ring-2 ring-ring ring-offset-1 ring-offset-background",
+                      optimisticStatus[approval.id] && "opacity-40 scale-[0.99] pointer-events-none",
+                    )}
+                    onClick={() => { isKeyboardNav.current = false; setFocusedIndex(idx); }}
+                  >
+                    {isPending && (
+                      <button
+                        type="button"
+                        aria-label={isSelected ? "Deselect approval" : "Select approval"}
+                        onClick={(e) => { e.stopPropagation(); toggleSelect(approval.id); }}
+                        className={cn(
+                          "absolute top-3 left-3 z-10 flex h-4 w-4 items-center justify-center border rounded-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1",
+                          isSelected ? "bg-foreground border-foreground" : "border-border bg-background hover:border-foreground/50",
+                        )}
+                      >
+                        {isSelected && (
+                          <svg className="h-2.5 w-2.5 text-background" viewBox="0 0 10 10" fill="none">
+                            <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </button>
+                    )}
+                    <ApprovalCard
+                      approval={approval}
+                      requesterAgent={approval.requestedByAgentId ? (agents ?? []).find((a) => a.id === approval.requestedByAgentId) ?? null : null}
+                      onApprove={() => approveMutation.mutate(approval.id)}
+                      onReject={() => rejectMutation.mutate(approval.id)}
+                      onRequestRevision={(decisionNote) => requestRevisionMutation.mutate({ id: approval.id, decisionNote })}
+                      detailLink={`/approvals/${approval.id}`}
+                      isPending={processingApprovalId === approval.id}
+                      pendingAction={
+                        processingApprovalId === approval.id
+                          ? approveMutation.isPending ? "approve" : rejectMutation.isPending ? "reject" : null
+                          : null
+                      }
+                    />
+                  </div>
+                </div>
+              );
+            });
+          })() : filtered.map((approval, idx) => {
             const isFocused = focusedIndex === idx;
             const isSelected = selectedIds.has(approval.id);
             const isPending = approval.status === "pending" || approval.status === "revision_requested";

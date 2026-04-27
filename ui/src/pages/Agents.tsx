@@ -411,6 +411,8 @@ export function Agents() {
       </div>
 
       {agents !== undefined && (
+        <>
+        <h2 className="sr-only">Agent statistics</h2>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {[
             { label: "Total Agents", value: String(agents.length) },
@@ -447,6 +449,7 @@ export function Agents() {
             </div>
           ))}
         </div>
+        </>
       )}
 
       {error && (
@@ -652,6 +655,15 @@ export function Agents() {
             role="toolbar"
             aria-label="Bulk actions"
             className="flex items-center gap-3 rounded-none border border-border bg-popover px-4 py-2.5 shadow-xl"
+            onKeyDown={(e) => {
+              if (e.key !== "Tab") return;
+              const focusable = Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled])'));
+              if (!focusable.length) return;
+              const first = focusable[0]!;
+              const last = focusable[focusable.length - 1]!;
+              if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+              else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }}
           >
             <span className="text-xs font-medium text-foreground">
               {selectedIds.size} selected

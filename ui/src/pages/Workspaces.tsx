@@ -137,7 +137,13 @@ export function Workspaces() {
     <EmptyState icon={Building2} message="Select a company to view workspaces." />
   );
   if (!isolatedWorkspacesEnabled) return (
-    <EmptyState icon={Settings} message="Isolated workspaces are disabled for this instance. Contact your administrator to enable them in instance settings." />
+    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+      <Settings className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+      <p className="text-sm text-muted-foreground max-w-sm">
+        Isolated workspaces are disabled for this instance. Contact your administrator to enable them in{" "}
+        <Link to="/settings/instance" className="underline underline-offset-4">instance settings</Link>.
+      </p>
+    </div>
   );
   if (dataLoading) return <PageSkeleton variant="list" />;
   if (error) {
