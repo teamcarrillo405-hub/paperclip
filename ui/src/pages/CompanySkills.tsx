@@ -257,22 +257,28 @@ function NewSkillForm({
   return (
     <div className="border-b border-border px-4 py-4">
       <div className="space-y-3">
+        {/* FIX: aria-label added to skill name input */}
         <Input
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Skill name"
+          aria-label="Skill name"
           className="h-9 rounded-none border-0 border-b border-border px-0 shadow-none"
         />
+        {/* FIX: aria-label added to skill slug input */}
         <Input
           value={slug}
           onChange={(event) => setSlug(event.target.value)}
           placeholder="optional-shortname"
+          aria-label="Skill slug"
           className="h-9 rounded-none border-0 border-b border-border px-0 shadow-none"
         />
+        {/* FIX: aria-label added to skill description textarea */}
         <Textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           placeholder="Short description"
+          aria-label="Skill description"
           className="min-h-20 rounded-none border-0 border-b border-border px-0 shadow-none"
         />
         <div className="flex items-center justify-end gap-2">
@@ -316,40 +322,36 @@ function SkillTree({
         if (node.kind === "dir") {
           return (
             <div key={node.path ?? node.name}>
-              <div
+              {/* FIX: Collapsed the two buttons (main-row + chevron) into one full-row button.
+                  The redundant unnamed main-row button was removed; the single button now
+                  covers the full row and carries the descriptive aria-label from the former
+                  chevron button. */}
+              <button
+                type="button"
                 className={cn(
-                  "group grid w-full grid-cols-[minmax(0,1fr)_2.25rem] items-center gap-x-1 pr-3 text-left text-sm text-muted-foreground hover:bg-accent/30 hover:text-foreground",
+                  "group flex w-full items-center gap-2 pr-3 text-left text-sm text-muted-foreground hover:bg-accent/30 hover:text-foreground",
                   SKILL_TREE_ROW_HEIGHT_CLASS,
                 )}
+                style={{ paddingLeft: `${SKILL_TREE_BASE_INDENT + depth * SKILL_TREE_STEP_INDENT}px` }}
+                onClick={() => node.path && onToggleDir(node.path)}
+                aria-label={expanded ? `Collapse ${node.name}` : `Expand ${node.name}`}
               >
-                <button
-                  type="button"
-                  className="flex min-w-0 items-center gap-2 py-1 text-left"
-                  style={{ paddingLeft: `${SKILL_TREE_BASE_INDENT + depth * SKILL_TREE_STEP_INDENT}px` }}
-                  onClick={() => node.path && onToggleDir(node.path)}
-                >
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center">
-                    {expanded ? (
-                      <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
-                    ) : (
-                      <Folder className="h-3.5 w-3.5" aria-hidden="true" />
-                    )}
-                  </span>
-                  <span className="truncate">{node.name}</span>
-                </button>
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center self-center rounded-sm text-muted-foreground opacity-70 transition-[background-color,color,opacity] hover:bg-accent hover:text-foreground group-hover:opacity-100"
-                  onClick={() => node.path && onToggleDir(node.path)}
-                  aria-label={expanded ? `Collapse ${node.name}` : `Expand ${node.name}`}
-                >
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                   {expanded ? (
-                    <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                    <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
                   ) : (
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    <Folder className="h-3.5 w-3.5" aria-hidden="true" />
                   )}
-                </button>
-              </div>
+                </span>
+                <span className="flex-1 truncate py-1">{node.name}</span>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+                  {expanded ? (
+                    <ChevronDown className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
+                  )}
+                </span>
+              </button>
               {expanded && (
                 <SkillTree
                   nodes={node.children}
@@ -583,16 +585,24 @@ function SkillPane({
             )}
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDelete}
-              disabled={deletePending}
-              title={removeDisabledReason ?? undefined}
-            >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-              {deletePending ? "Removing..." : "Remove"}
-            </Button>
+            {/* FIX: When removeBlocked, show an inline hint so users know why the button
+                is visually inert (it still opens the dialog, which explains it, but
+                the tooltip alone was not surfaced to all users). */}
+            <div className="flex flex-col items-end gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDelete}
+                disabled={deletePending}
+                title={removeDisabledReason ?? undefined}
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                {deletePending ? "Removing..." : "Remove"}
+              </Button>
+              {removeBlocked && (
+                <p className="text-xs text-muted-foreground">Detach from agents first</p>
+              )}
+            </div>
             {detail.editable ? (
               // FIX: aria-expanded + aria-controls on the edit toggle button
               <button
@@ -1191,7 +1201,8 @@ export function CompanySkills() {
       </Dialog>
 
       <div className="grid min-h-[calc(100vh-12rem)] gap-0 xl:grid-cols-[19rem_minmax(0,1fr)]">
-        <aside className="border-r border-border">
+        {/* FIX: aria-label="Skills list" added to aside */}
+        <aside className="border-r border-border" aria-label="Skills list">
           <div className="border-b border-border px-4 py-3">
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -1235,10 +1246,12 @@ export function CompanySkills() {
               />
             </div>
 
+            {/* FIX: onKeyDown Enter handler added so pressing Enter submits the source import */}
             <div className="mt-3 flex items-center gap-2 border-b border-border pb-2">
               <input
                 value={source}
                 onChange={(event) => setSource(event.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddSkillSource(); } }}
                 placeholder="Paste path, GitHub URL, or skills.sh command"
                 aria-label="Import skill source"
                 className="w-full bg-transparent text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring placeholder:text-muted-foreground"
