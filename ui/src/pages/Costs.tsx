@@ -289,7 +289,7 @@ export function Costs() {
     return map;
   }, [spendData?.byAgentModel]);
 
-  const { data: providerData, isError: isProviderError } = useQuery({
+  const { data: providerData, isError: isProviderError, refetch: refetchProvider, isRefetching: isProviderRefetching } = useQuery({
     queryKey: queryKeys.usageByProvider(companyId, from || undefined, to || undefined),
     queryFn: () => costsApi.byProvider(companyId, from || undefined, to || undefined),
     enabled: !!selectedCompanyId && customReady && (mainTab === "providers" || mainTab === "billers"),
@@ -297,7 +297,7 @@ export function Costs() {
     staleTime: 10_000,
   });
 
-  const { data: billerData, isError: isBillerError } = useQuery({
+  const { data: billerData, isError: isBillerError, refetch: refetchBiller, isRefetching: isBillerRefetching } = useQuery({
     queryKey: queryKeys.usageByBiller(companyId, from || undefined, to || undefined),
     queryFn: () => costsApi.byBiller(companyId, from || undefined, to || undefined),
     enabled: !!selectedCompanyId && customReady && mainTab === "billers",
@@ -565,7 +565,11 @@ export function Costs() {
           </div>
 
           {preset === "custom" ? (
-            <div className="flex flex-wrap items-center gap-2 border border-border p-3">
+            <div
+              role="group"
+              aria-label="Custom date range"
+              className="flex flex-wrap items-center gap-2 border border-border p-3"
+            >
               <input
                 type="date"
                 aria-label="Start date"
@@ -648,7 +652,7 @@ export function Costs() {
                 disabled={isOverviewRefetching}
                 onClick={() => { void refetchSpend(); void refetchFinance(); }}
               >
-                Retry
+                {isOverviewRefetching ? "Retrying\u2026" : "Retry"}
               </Button>
             </div>
           ) : (
@@ -713,10 +717,10 @@ export function Costs() {
                             className={cn(
                               "h-full transition-[width,background-color] duration-150",
                               spendData.summary.utilizationPercent > 90
-                                ? "bg-red-400"
+                                ? "bg-destructive"
                                 : spendData.summary.utilizationPercent > 70
-                                  ? "bg-yellow-400"
-                                  : "bg-emerald-400",
+                                  ? "bg-yellow-500"
+                                  : "bg-emerald-500",
                             )}
                             style={{ width: `${Math.min(100, spendData.summary.utilizationPercent)}%` }}
                           />
@@ -760,6 +764,7 @@ export function Costs() {
                               role={hasBreakdown ? "button" : undefined}
                               tabIndex={hasBreakdown ? 0 : undefined}
                               aria-expanded={hasBreakdown ? isExpanded : undefined}
+                              aria-label={hasBreakdown ? `Expand ${row.agentName ?? row.agentId} cost breakdown` : undefined}
                               onKeyDown={hasBreakdown ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleAgent(row.agentId); } } : undefined}
                             >
                               <div className="flex min-w-0 items-center gap-2">
@@ -875,12 +880,12 @@ export function Costs() {
                 disabled={isBudgetRefetching}
                 onClick={() => void refetchBudget()}
               >
-                Retry
+                {isBudgetRefetching ? "Retrying\u2026" : "Retry"}
               </Button>
             </div>
           ) : (
             <>
-              <Card className="border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]">
+              <Card className="border-border/70 bg-gradient-to-b from-muted/30 to-muted/5">
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle className="text-base">Budget control plane</CardTitle>
                   <CardDescription>
@@ -996,7 +1001,17 @@ export function Costs() {
           ) : (
             <>
               {isProviderError ? (
-                <p role="alert" className="text-sm text-destructive">Failed to load provider data. Refresh to try again.</p>
+                <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+                  <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-destructive">Failed to load provider data.</p>
+                  </div>
+                  <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+                    disabled={isProviderRefetching}
+                    onClick={() => void refetchProvider()}>
+                    {isProviderRefetching ? "Retrying\u2026" : "Retry"}
+                  </Button>
+                </div>
               ) : null}
               <Tabs value={effectiveProvider} onValueChange={setActiveProvider}>
                 <PageTabBar items={providerTabItems} value={effectiveProvider} />
@@ -1054,7 +1069,17 @@ export function Costs() {
           ) : (
             <>
               {isBillerError ? (
-                <p role="alert" className="text-sm text-destructive">Failed to load biller data. Refresh to try again.</p>
+                <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+                  <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-destructive">Failed to load biller data.</p>
+                  </div>
+                  <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+                    disabled={isBillerRefetching}
+                    onClick={() => void refetchBiller()}>
+                    {isBillerRefetching ? "Retrying\u2026" : "Retry"}
+                  </Button>
+                </div>
               ) : null}
               <Tabs value={effectiveBiller} onValueChange={setActiveBiller}>
                 <PageTabBar items={billerTabItems} value={effectiveBiller} />
@@ -1121,7 +1146,7 @@ export function Costs() {
                 disabled={isFinanceRefetching}
                 onClick={() => void refetchFinance()}
               >
-                Retry
+                {isFinanceRefetching ? "Retrying\u2026" : "Retry"}
               </Button>
             </div>
           ) : (
