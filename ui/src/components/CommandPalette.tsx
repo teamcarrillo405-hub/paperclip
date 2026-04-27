@@ -161,6 +161,21 @@ function EntityChip({ type }: { type: "issue" | "agent" | "project" | "goal" | "
   );
 }
 
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query) return <>{text}</>;
+  const tl = text.toLowerCase();
+  const ql = query.toLowerCase();
+  const idx = tl.indexOf(ql);
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span className="font-semibold text-foreground">{text.slice(idx, idx + query.length)}</span>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -536,7 +551,7 @@ export function CommandPalette() {
         {pendingApprovalsFiltered.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Pending Approvals">
+            <CommandGroup heading={pendingApprovalsFiltered.length > 0 ? `Pending Approvals (${pendingApprovalsFiltered.length})` : "Pending Approvals"}>
               {pendingApprovalsFiltered.slice(0, 8).map((approval) => {
                 const payload = approval.payload as Record<string, unknown> | null;
                 const subject = approvalSubject(payload) ?? typeLabel[approval.type] ?? approval.type;
@@ -592,7 +607,9 @@ export function CommandPalette() {
                   <span className="text-muted-foreground ml-2 mr-2 font-mono text-xs">
                     {issue.identifier ?? issue.id.slice(0, 8)}
                   </span>
-                  <span className="flex-1 truncate">{issue.title}</span>
+                  <span className="flex-1 truncate">
+                    <HighlightMatch text={issue.title} query={searchQuery} />
+                  </span>
                   {issue.assigneeAgentId && (() => {
                     const name = agentName(issue.assigneeAgentId);
                     return name ? <Identity name={name} size="sm" className="ml-2 hidden sm:inline-flex" /> : null;
@@ -613,7 +630,21 @@ export function CommandPalette() {
                   onSelect={() => go(agentUrl(agent), agent.name)}
                 >
                   <EntityChip type="agent" />
-                  <span className="ml-2 flex-1 truncate">{agent.name}</span>
+                  <span
+                    className={cn(
+                      "ml-1.5 h-1.5 w-1.5 rounded-full shrink-0",
+                      agent.status === "active" || agent.status === "running"
+                        ? "bg-emerald-500"
+                        : agent.status === "paused"
+                        ? "bg-amber-500"
+                        : agent.status === "error"
+                        ? "bg-destructive"
+                        : "bg-muted-foreground/30",
+                    )}
+                  />
+                  <span className="ml-1.5 flex-1 truncate">
+                    <HighlightMatch text={agent.name} query={searchQuery} />
+                  </span>
                   <span className="text-xs text-muted-foreground ml-2">{agent.role}</span>
                 </CommandItem>
               ))}
@@ -631,7 +662,9 @@ export function CommandPalette() {
                   onSelect={() => go(projectUrl(project), project.name)}
                 >
                   <EntityChip type="project" />
-                  <span className="ml-2 flex-1 truncate">{project.name}</span>
+                  <span className="ml-2 flex-1 truncate">
+                    <HighlightMatch text={project.name} query={searchQuery} />
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
