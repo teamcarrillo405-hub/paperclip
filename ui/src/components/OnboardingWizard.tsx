@@ -780,12 +780,15 @@ export function OnboardingWizard() {
                   <button
                     key={s}
                     type="button"
-                    onClick={() => setStep(s)}
+                    disabled={s > step}
+                    onClick={() => { if (s <= step) setStep(s); }}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 -mb-px transition-colors cursor-pointer",
+                      "flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 -mb-px transition-colors",
                       s === step
-                        ? "border-[#2F80FF] text-[#2F80FF]"
-                        : "border-transparent text-muted-foreground hover:text-foreground/70 hover:border-border"
+                        ? "border-[#2F80FF] text-[#2F80FF] cursor-pointer"
+                        : s < step
+                          ? "border-transparent text-muted-foreground hover:text-foreground/70 hover:border-border cursor-pointer"
+                          : "border-transparent text-muted-foreground opacity-50 cursor-not-allowed"
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -818,6 +821,9 @@ export function OnboardingWizard() {
               {step === 1 && (
                 <div className="space-y-5">
                   <div className="mt-3">
+                    <label className="text-base font-medium text-zinc-800 mb-2 block">
+                      Company name
+                    </label>
                     <input
                       className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:ring-2 focus:ring-[#2F80FF] focus:border-[#2F80FF] placeholder:text-zinc-400"
                       placeholder="Acme Corp"
@@ -1240,6 +1246,7 @@ export function OnboardingWizard() {
                             onClick={() => {
                               setTaskDescription(t.description);
                               setSelectedTemplateId(t.id);
+                              setTaskTitle(t.label);
                             }}
                             className={cn(
                               "text-left rounded-lg border p-3 text-xs transition-colors",
