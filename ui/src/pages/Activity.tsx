@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { History } from "lucide-react";
+import { History, AlertCircle } from "lucide-react";
 
 const ACTIVITY_PAGE_LIMIT = 200;
 
@@ -52,7 +52,7 @@ export function Activity() {
     setBreadcrumbs([{ label: "Activity" }]);
   }, [setBreadcrumbs]);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: [...queryKeys.activity(selectedCompanyId!), { limit: ACTIVITY_PAGE_LIMIT }],
     queryFn: () => activityApi.list(selectedCompanyId!, { limit: ACTIVITY_PAGE_LIMIT }),
     enabled: !!selectedCompanyId,
@@ -135,14 +135,27 @@ export function Activity() {
         </Select>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && (
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{error.message}</p>
+          </div>
+          <button
+            className="text-xs text-destructive/70 hover:text-destructive underline shrink-0"
+            onClick={() => refetch()}
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {filtered && filtered.length === 0 && (
         <EmptyState icon={History} message="No activity yet." />
       )}
 
       {filtered && filtered.length > 0 && (
-        <div className="border border-border divide-y divide-border">
+        <div className="rounded-lg border border-border divide-y divide-border overflow-hidden">
           {filtered.map((event) => (
             <ActivityRow
               key={event.id}

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Avero Paperclip — Competitive UX Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; background: #0a0e1a; color: #e2e8f0; line-height: 1.5; }
+  body { overflow-y: auto; padding: 32px 40px; }
+
+  h1 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .tagline { font-size: 13px; color: #6B85A6; margin-bottom: 28px; letter-spacing: 0.02em; }
+
+  /* ── Score table ── */
+  .score-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+  .score-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6B85A6; text-align: left; padding: 6px 10px; border-bottom: 1px solid #1E2D40; }
+  .score-table td { padding: 10px 10px; border-bottom: 1px solid #111D2B; font-size: 12px; vertical-align: middle; }
+  .score-table tr:hover td { background: #0d1525; }
+  .platform-name { font-weight: 700; color: #e2e8f0; font-size: 13px; }
+  .platform-sub { font-size: 10px; color: #6B85A6; margin-top: 2px; }
+  .score-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .score-bar { height: 6px; border-radius: 3px; background: #1A2433; flex: 1; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 3px; }
+  .score-num { font-size: 11px; font-weight: 700; color: #9AA4B2; width: 28px; text-align: right; flex-shrink: 0; }
+  .tag { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tag-win { background: #0d2b1a; color: #22c55e; border: 1px solid #14532d; }
+  .tag-gap { background: #1f1100; color: #f97316; border: 1px solid #7c2d12; }
+  .tag-ok { background: #0f172a; color: #60a5fa; border: 1px solid #1e3a5f; }
+
+  /* ── Competitor grid ── */
+  .comp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 32px; }
+  .comp-card { background: #0d1525; border: 1px solid #1E2D40; border-radius: 10px; padding: 14px; }
+  .comp-card.avero { border-color: #2F80FF; background: #060d1f; }
+  .comp-logo { font-size: 18px; margin-bottom: 6px; }
+  .comp-name { font-size: 12px; font-weight: 800; color: #e2e8f0; margin-bottom: 2px; }
+  .comp-type { font-size: 10px; color: #6B85A6; margin-bottom: 10px; }
+  .comp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .comp-row-label { font-size: 10px; color: #6B85A6; }
+  .comp-dots { display: flex; gap: 2px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #1A2433; }
+  .dot.on { background: #2F80FF; }
+  .dot.on.g { background: #22c55e; }
+  .dot.on.y { background: #eab308; }
+  .dot.on.r { background: #ef4444; }
+
+  /* ── Gap opportunities ── */
+  .gap-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+  .gap-card { border-radius: 10px; padding: 16px; border: 1px solid; }
+  .gap-card.win { background: #06180f; border-color: #14532d; }
+  .gap-card.now { background: #0f1629; border-color: #1e3a6f; }
+  .gap-card.watch { background: #1a0d00; border-color: #7c2d12; }
+  .gap-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+  .gap-card.win .gap-title { color: #22c55e; }
+  .gap-card.now .gap-title { color: #60a5fa; }
+  .gap-card.watch .gap-title { color: #f97316; }
+  .gap-item { font-size: 11px; color: #9AA4B2; margin: 5px 0; padding-left: 14px; position: relative; line-height: 1.5; }
+  .gap-item::before { content: '→'; position: absolute; left: 0; color: #4B5563; font-size: 10px; }
+
+  /* ── UX teardown ── */
+  .teardown { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 32px; }
+  .td-card { background: #0d1525; border: 1px solid #1E2D40; border-radius: 10px; padding: 14px; }
+  .td-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: #6B85A6; margin-bottom: 10px; }
+  .td-item { font-size: 11px; color: #9AA4B2; margin: 4px 0; line-height: 1.5; }
+  .td-item strong { color: #e2e8f0; }
+
+  /* ── Mock comparison ── */
+  .mock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+  .mock-frame { border-radius: 10px; overflow: hidden; border: 1px solid; }
+  .mock-frame.dark { border-color: #263447; }
+  .mock-frame.light { border-color: #d1d5db; }
+  .mock-header { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 7px 12px; }
+  .mock-header.dark-h { background: #060d1f; color: #6B85A6; border-bottom: 1px solid #1E2D40; }
+  .mock-header.light-h { background: #f9fafb; color: #6b7280; border-bottom: 1px solid #e5e7eb; }
+
+  /* Avero mock */
+  .av-body { background: #0B1220; padding: 12px; }
+  .av-cmd { display: flex; align-items: center; gap: 6px; background: #1A2433; border: 1px solid #263447; border-radius: 6px; padding: 7px 10px; margin-bottom: 10px; }
+  .av-cmd-icon { font-size: 12px; }
+  .av-cmd-text { font-size: 11px; color: #6B85A6; }
+  .av-cmd-shortcut { margin-left: auto; font-size: 9px; color: #4B5563; background: #0B1220; border: 1px solid #263447; border-radius: 3px; padding: 1px 5px; }
+  .av-agents { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .av-agent { background: #0e1929; border: 1px solid rgba(47,128,255,0.25); border-radius: 8px; padding: 8px; }
+  .av-agent-top { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+  .av-pulse { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .av-pulse.live { background: #22d3ee; box-shadow: 0 0 6px #22d3ee; }
+  .av-pulse.idle { background: #374151; }
+  .av-pulse.err { background: #ef4444; box-shadow: 0 0 5px #ef4444; }
+  .av-agent-name { font-size: 10px; font-weight: 700; color: #e2e8f0; }
+  .av-agent-role { font-size: 9px; color: #2F80FF; }
+  .av-agent-task { font-size: 9px; color: #6B85A6; padding: 3px 6px; background: #1A2433; border-radius: 4px; line-height: 1.4; }
+  .av-inbox { background: #1A2433; border: 1px solid #263447; border-radius: 8px; overflow: hidden; }
+  .av-inbox-header { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #6B85A6; padding: 7px 10px; border-bottom: 1px solid #263447; }
+  .av-inbox-row { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-bottom: 1px solid #111D2B; }
+  .av-inbox-row:last-child { border-bottom: none; }
+  .av-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .av-inbox-text { font-size: 10px; color: #9AA4B2; line-height: 1.4; flex: 1; }
+  .av-inbox-badge { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; }
+  .b-approval { background: #1f2d00; color: #a3e635; border: 1px solid #365314; }
+  .b-running { background: #0c1f35; color: #38bdf8; border: 1px solid #0c4a6e; }
+  .b-done { background: #0d2b1a; color: #4ade80; border: 1px solid #14532d; }
+
+  /* Competitor fragmented mock */
+  .frag-body { background: #f8fafc; padding: 12px; }
+  .frag-top { display: flex; gap: 6px; margin-bottom: 10px; }
+  .frag-app { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 6px 10px; font-size: 10px; font-weight: 600; color: #374151; flex: 1; text-align: center; }
+  .frag-app.active { border-color: #1A73E8; color: #1A73E8; }
+  .frag-chat { display: flex; gap: 6px; }
+  .frag-sidebar { width: 90px; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; }
+  .frag-sidebar-item { font-size: 9px; color: #6b7280; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
+  .frag-sidebar-item:last-child { border-bottom: none; }
+  .frag-main { flex: 1; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; }
+  .frag-ai-panel { position: relative; }
+  .frag-ai-tag { font-size: 9px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #1A73E8, #8b5cf6); padding: 3px 8px; border-radius: 4px; margin-bottom: 6px; display: inline-block; }
+  .frag-ai-prompt { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 5px; padding: 5px 8px; font-size: 10px; color: #6b7280; margin-bottom: 5px; }
+  .frag-ai-resp { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 5px; padding: 5px 8px; font-size: 10px; color: #1d4ed8; }
+  .frag-warning { display: flex; align-items: center; gap: 5px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 5px; padding: 5px 8px; margin-top: 6px; font-size: 10px; color: #dc2626; }
+
+  /* ── Design principles ── */
+  .principles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+  .principle { background: #0d1525; border: 1px solid #1E2D40; border-radius: 10px; padding: 16px; }
+  .principle-num { font-size: 28px; font-weight: 900; color: #1A2433; line-height: 1; margin-bottom: 4px; }
+  .principle-title { font-size: 13px; font-weight: 800; color: #2F80FF; margin-bottom: 6px; }
+  .principle-body { font-size: 11px; color: #9AA4B2; line-height: 1.7; }
+
+  /* ── Section headers ── */
+  .section-header { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #6B85A6; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .section-header::after { content: ''; flex: 1; height: 1px; background: #1E2D40; }
+
+  /* ── Bottom line ── */
+  .bottom-line { background: #060d1f; border: 1px solid #2F80FF33; border-radius: 10px; padding: 20px 24px; }
+  .bl-title { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .bl-body { font-size: 12px; color: #6B85A6; line-height: 1.8; }
+  .bl-body strong { color: #2F80FF; }
+</style>
+</head>
+<body>
+
+<h1>Avero Paperclip — Competitive UX Analysis</h1>
+<p class="tagline">How our design stacks up against Google Enterprise, Linear, Notion AI, Microsoft Copilot, and Asana · April 2026</p>
+
+<!-- SCORE TABLE -->
+<div class="section-header">UX Scorecard</div>
+<table class="score-table">
+  <thead>
+    <tr>
+      <th style="width:180px">Platform</th>
+      <th>Visual Design</th>
+      <th>Navigation</th>
+      <th>Onboarding</th>
+      <th>AI Command Center</th>
+      <th>Agent Operations</th>
+      <th>Dark / Power-User</th>
+      <th>Verdict</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><div class="platform-name">🔵 Avero Paperclip</div><div class="platform-sub">AI Agent Orchestration</div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:75%;background:#2F80FF;"></div></div><div class="score-num">75</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:72%;background:#2F80FF;"></div></div><div class="score-num">72</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:70%;background:#2F80FF;"></div></div><div class="score-num">70</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:85%;background:#22c55e;"></div></div><div class="score-num">85</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:90%;background:#22c55e;"></div></div><div class="score-num">90</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:88%;background:#22c55e;"></div></div><div class="score-num">88</div></div></td>
+      <td><span class="tag tag-win">Best in Class</span></td>
+    </tr>
+    <tr>
+      <td><div class="platform-name">⚫ Linear</div><div class="platform-sub">Modern Issue Tracking</div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:95%;background:#7B61FF;"></div></div><div class="score-num">95</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:92%;background:#7B61FF;"></div></div><div class="score-num">92</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:80%;background:#7B61FF;"></div></div><div class="score-num">80</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:10%;background:#ef4444;"></div></div><div class="score-num">10</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:5%;background:#ef4444;"></div></div><div class="score-num">5</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:95%;background:#22c55e;"></div></div><div class="score-num">95</div></div></td>
+      <td><span class="tag tag-ok">Borrow from</span></td>
+    </tr>
+    <tr>
+      <td><div class="platform-name">🔵 Google Gemini Enterprise</div><div class="platform-sub">AI in Workspace Apps</div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:65%;background:#eab308;"></div></div><div class="score-num">65</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:48%;background:#ef4444;"></div></div><div class="score-num">48</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:22%;background:#ef4444;"></div></div><div class="score-num">22</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:30%;background:#ef4444;"></div></div><div class="score-num">30</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:15%;background:#ef4444;"></div></div><div class="score-num">15</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:5%;background:#ef4444;"></div></div><div class="score-num">5</div></div></td>
+      <td><span class="tag tag-gap">We Win Here</span></td>
+    </tr>
+    <tr>
+      <td><div class="platform-name">⬜ Notion AI</div><div class="platform-sub">Doc + Database + AI</div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:78%;background:#7B61FF;"></div></div><div class="score-num">78</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:65%;background:#eab308;"></div></div><div class="score-num">65</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:82%;background:#22c55e;"></div></div><div class="score-num">82</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:12%;background:#ef4444;"></div></div><div class="score-num">12</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:0%;background:#ef4444;"></div></div><div class="score-num">0</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:8%;background:#ef4444;"></div></div><div class="score-num">8</div></div></td>
+      <td><span class="tag tag-gap">We Win Here</span></td>
+    </tr>
+    <tr>
+      <td><div class="platform-name">🔷 Microsoft Copilot</div><div class="platform-sub">Enterprise AI / Teams</div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:60%;background:#eab308;"></div></div><div class="score-num">60</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:42%;background:#ef4444;"></div></div><div class="score-num">42</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:15%;background:#ef4444;"></div></div><div class="score-num">15</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:20%;background:#ef4444;"></div></div><div class="score-num">20</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:10%;background:#ef4444;"></div></div><div class="score-num">10</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:30%;background:#ef4444;"></div></div><div class="score-num">30</div></div></td>
+      <td><span class="tag tag-gap">We Win Here</span></td>
+    </tr>
+    <tr>
+      <td><div class="platform-name">🪸 Asana</div><div class="platform-sub">Work Management</div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:70%;background:#eab308;"></div></div><div class="score-num">70</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:74%;background:#eab308;"></div></div><div class="score-num">74</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:75%;background:#eab308;"></div></div><div class="score-num">75</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:18%;background:#ef4444;"></div></div><div class="score-num">18</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:8%;background:#ef4444;"></div></div><div class="score-num">8</div></div></td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:25%;background:#ef4444;"></div></div><div class="score-num">25</div></div></td>
+      <td><span class="tag tag-gap">We Win Here</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- COMPETITOR CARDS -->
+<div class="section-header">Platform DNA at a Glance</div>
+<div class="comp-grid">
+  <div class="comp-card avero">
+    <div class="comp-logo">🔵</div>
+    <div class="comp-name">Avero Paperclip</div>
+    <div class="comp-type">Agent Orchestration OS</div>
+    <div class="comp-row"><span class="comp-row-label">Dark / Power-User</span><div class="comp-dots"><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Live Agent Ops</span><div class="comp-dots"><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Onboarding</span><div class="comp-dots"><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Visual Design</span><div class="comp-dots"><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Navigation UX</span><div class="comp-dots"><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot"></div><div class="dot"></div></div></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-logo">⚫</div>
+    <div class="comp-name">Linear</div>
+    <div class="comp-type">Issue Tracking</div>
+    <div class="comp-row"><span class="comp-row-label">Dark / Power-User</span><div class="comp-dots"><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Live Agent Ops</span><div class="comp-dots"><div class="dot r on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Onboarding</span><div class="comp-dots"><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Visual Design</span><div class="comp-dots"><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Navigation UX</span><div class="comp-dots"><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div><div class="dot on g"></div></div></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-logo">🔵</div>
+    <div class="comp-name">Google Gemini</div>
+    <div class="comp-type">Workspace AI</div>
+    <div class="comp-row"><span class="comp-row-label">Dark / Power-User</span><div class="comp-dots"><div class="dot r on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Live Agent Ops</span><div class="comp-dots"><div class="dot r on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Onboarding</span><div class="comp-dots"><div class="dot r on"></div><div class="dot r on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Visual Design</span><div class="comp-dots"><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Navigation UX</span><div class="comp-dots"><div class="dot r on"></div><div class="dot r on"></div><div class="dot r on"></div><div class="dot"></div><div class="dot"></div></div></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-logo">🔷</div>
+    <div class="comp-name">MS Copilot</div>
+    <div class="comp-type">Enterprise AI / Teams</div>
+    <div class="comp-row"><span class="comp-row-label">Dark / Power-User</span><div class="comp-dots"><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Live Agent Ops</span><div class="comp-dots"><div class="dot r on"></div><div class="dot r on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Onboarding</span><div class="comp-dots"><div class="dot r on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Visual Design</span><div class="comp-dots"><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Navigation UX</span><div class="comp-dots"><div class="dot r on"></div><div class="dot r on"></div><div class="dot r on"></div><div class="dot"></div><div class="dot"></div></div></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-logo">🪸</div>
+    <div class="comp-name">Asana</div>
+    <div class="comp-type">Work Management</div>
+    <div class="comp-row"><span class="comp-row-label">Dark / Power-User</span><div class="comp-dots"><div class="dot r on"></div><div class="dot r on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Live Agent Ops</span><div class="comp-dots"><div class="dot r on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Onboarding</span><div class="comp-dots"><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Visual Design</span><div class="comp-dots"><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot"></div></div></div>
+    <div class="comp-row"><span class="comp-row-label">Navigation UX</span><div class="comp-dots"><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot on y"></div><div class="dot"></div></div></div>
+  </div>
+</div>
+
+<!-- VISUAL MOCK COMPARISON -->
+<div class="section-header">What "AI Operations" Looks Like in Each Product</div>
+<div class="mock-row">
+  <!-- AVERO MOCK -->
+  <div class="mock-frame dark">
+    <div class="mock-header dark-h">Avero Paperclip — Live Agent Command Center (our design)</div>
+    <div class="av-body">
+      <div class="av-cmd">
+        <div class="av-cmd-icon">⚡</div>
+        <div class="av-cmd-text">Search agents, tasks, approvals, inbox...</div>
+        <div class="av-cmd-shortcut">⌘K</div>
+      </div>
+      <div class="av-agents">
+        <div class="av-agent">
+          <div class="av-agent-top"><div class="av-pulse live"></div><div><div class="av-agent-name">CEO Agent</div><div class="av-agent-role">claude_local</div></div></div>
+          <div class="av-agent-task">Drafting Q2 hiring plan & delegating to eng lead…</div>
+        </div>
+        <div class="av-agent">
+          <div class="av-agent-top"><div class="av-pulse live"></div><div><div class="av-agent-name">Marketing</div><div class="av-agent-role">claude_local</div></div></div>
+          <div class="av-agent-task">Writing 5 social posts for product launch…</div>
+        </div>
+        <div class="av-agent">
+          <div class="av-agent-top"><div class="av-pulse err"></div><div><div class="av-agent-name">Finance</div><div class="av-agent-role">codex_local</div></div></div>
+          <div class="av-agent-task" style="color:#ef4444">Error: approval required · $4,200 spend</div>
+        </div>
+      </div>
+      <div class="av-inbox">
+        <div class="av-inbox-header">Inbox — 3 items need you</div>
+        <div class="av-inbox-row">
+          <div class="av-dot" style="background:#2F80FF"></div>
+          <div class="av-inbox-text">CEO Agent: Hiring plan draft ready for review — 12 roles across 4 teams</div>
+          <div class="av-inbox-badge b-approval">Approve</div>
+        </div>
+        <div class="av-inbox-row">
+          <div class="av-dot" style="background:#22d3ee"></div>
+          <div class="av-inbox-text">Marketing Agent: Social campaign brief published to Notion draft</div>
+          <div class="av-inbox-badge b-running">Running</div>
+        </div>
+        <div class="av-inbox-row">
+          <div class="av-dot" style="background:#22c55e"></div>
+          <div class="av-inbox-text">Research Agent: Competitor pricing analysis complete — 42 data points</div>
+          <div class="av-inbox-badge b-done">Done</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRAGMENTED COMPETITOR MOCK -->
+  <div class="mock-frame light">
+    <div class="mock-header light-h">Google / Microsoft / Notion — Fragmented AI Side Panel (competitor reality)</div>
+    <div class="frag-body">
+      <div class="frag-top">
+        <div class="frag-app">📄 Docs</div>
+        <div class="frag-app active">📧 Gmail</div>
+        <div class="frag-app">📊 Sheets</div>
+        <div class="frag-app">💬 Teams</div>
+      </div>
+      <div class="frag-chat">
+        <div class="frag-sidebar">
+          <div style="font-size:9px;font-weight:700;color:#374151;margin-bottom:5px;">Inbox</div>
+          <div class="frag-sidebar-item">Sent (47)</div>
+          <div class="frag-sidebar-item">Drafts (3)</div>
+          <div class="frag-sidebar-item">Starred</div>
+          <div class="frag-sidebar-item" style="color:#1A73E8">Promotions</div>
+        </div>
+        <div class="frag-main">
+          <div style="font-size:10px;color:#374151;margin-bottom:8px;">Q2 Campaign follow-up from Sarah...</div>
+          <div class="frag-ai-tag">✨ Gemini AI — Gmail only</div>
+          <div class="frag-ai-prompt">Summarize this thread and draft a reply...</div>
+          <div class="frag-ai-resp">Summary: Sarah is asking about Q2 deliverables. Suggested reply: "Hi Sarah, thanks for reaching out..."</div>
+          <div class="frag-warning">
+            ⚠️ Gemini in Docs doesn't know what happened here. Switch apps to continue.
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:8px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;">
+        <div style="font-size:9px;font-weight:700;color:#6b7280;margin-bottom:4px;">AI AGENT STATUS — NOT AVAILABLE</div>
+        <div style="font-size:10px;color:#9ca3af;">No live view of running agents exists in this product.<br>Check individual emails, docs, and teams channels manually.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAP ANALYSIS -->
+<div class="section-header">5 Gaps We Can Win — Right Now</div>
+<div class="gap-grid">
+  <div class="gap-card win">
+    <div class="gap-title">🏆 Exclusive Advantages</div>
+    <div class="gap-item"><strong>Live agent operations view</strong> — nobody else has a real-time command center for running AI agents</div>
+    <div class="gap-item"><strong>Company-scoped context</strong> — agents share context within a company; competitors are fragmented across apps</div>
+    <div class="gap-item"><strong>Agent-as-employee model</strong> — hire, configure, assign, monitor as an org chart; no competitor conceptualizes AI this way</div>
+    <div class="gap-item"><strong>Dark + high-density power UI</strong> — Linear is the only dark alternative, but does zero AI; we own this combo</div>
+    <div class="gap-item"><strong>Inbox as agent output surface</strong> — competitors bury AI results in sidebars; we surface them as first-class actionable items</div>
+  </div>
+  <div class="gap-card now">
+    <div class="gap-title">🔄 Gaps to Close Now (UX Debt)</div>
+    <div class="gap-item"><strong>Onboarding mental model clarity</strong> — Notion's survey-to-template onboarding scores 82 vs our 70; add "here's what your org looks like when alive" preview</div>
+    <div class="gap-item"><strong>Agent identity & avatars</strong> — no platform gives agents visual personality; we can do this first</div>
+    <div class="gap-item"><strong>Keyboard-first navigation</strong> — Linear's Cmd+K scores 92 for navigation; our onboarding should teach Cmd+K immediately</div>
+    <div class="gap-item"><strong>Agent onboarding preview</strong> — show a "live" example company before the user builds one, so the mental model clicks instantly</div>
+  </div>
+  <div class="gap-card watch">
+    <div class="gap-title">⚠️ Watch These Competitor Moves</div>
+    <div class="gap-item"><strong>Linear adding AI</strong> — their navigation UX is best in class; if they add agent orchestration, the design quality bar rises fast</div>
+    <div class="gap-item"><strong>Notion AI going agentic</strong> — Notion's template + document model could pivot to autonomous workflows; they have the content layer we don't</div>
+    <div class="gap-item"><strong>Asana AI Studio</strong> — most mature no-code workflow builder; if they add live agent monitoring, they threaten our differentiator</div>
+    <div class="gap-item"><strong>Google enterprise governance panel</strong> — new in 2026; could close the "no AI command center" gap for Workspace power users</div>
+  </div>
+</div>
+
+<!-- DESIGN PRINCIPLES -->
+<div class="section-header">5 Design Principles That Beat Everyone</div>
+<div class="principles">
+  <div class="principle">
+    <div class="principle-num">01</div>
+    <div class="principle-title">Agents are people, not features</div>
+    <div class="principle-body">Every competitor renders AI as a side panel or a text box. Avero renders agents as team members — with names, roles, status indicators, and an inbox. This mental model reframe is our strongest design differentiator. Lean into it: agent avatars, capability badges, "currently working on" status, agent-to-agent delegation trails.</div>
+  </div>
+  <div class="principle">
+    <div class="principle-num">02</div>
+    <div class="principle-title">Operations are always visible</div>
+    <div class="principle-body">Google and Microsoft bury AI activity in sidebars and chat threads. Our inbox + live agent panel means the user always knows what agents are doing, what's blocked, and what needs them. The dashboard should prioritize "what's happening right now" over analytics.</div>
+  </div>
+  <div class="principle">
+    <div class="principle-num">03</div>
+    <div class="principle-title">Dark = professional, not aesthetic</div>
+    <div class="principle-body">Midnight Navy (#0B1220) is not a style choice — it's a signal. Every white-background competitor (Google, Notion, Asana, Microsoft) reads as consumer-grade or corporate-bland. Our dark palette signals seriousness, technical credibility, and high-information density. Never apologize for it; amplify it.</div>
+  </div>
+  <div class="principle">
+    <div class="principle-num">04</div>
+    <div class="principle-title">Onboarding teaches the model, not the steps</div>
+    <div class="principle-body">Asana's checklist teaches "create a task." Notion's template teaches "here's what a workspace looks like." Ours should teach: "you now run an AI-powered company — here's what that means." Show a live preview org with running agents before the user builds their own. Make the mental model click before step 1.</div>
+  </div>
+  <div class="principle">
+    <div class="principle-num">05</div>
+    <div class="principle-title">Context is a moat, not a feature</div>
+    <div class="principle-body">Microsoft Copilot's biggest failure is fragmented context — Copilot in Word doesn't know what Copilot in Teams did. Our company-scoped model means agents share context by design. Make this visible in the UI — show "company memory," agent conversation history, shared knowledge base. Turn our architecture advantage into a visible UX advantage.</div>
+  </div>
+</div>
+
+<!-- BOTTOM LINE -->
+<div class="bottom-line">
+  <div class="bl-title">Bottom Line — What Makes Us #1</div>
+  <div class="bl-body">
+    Every major competitor treats AI as a <strong>reactive feature bolted onto an existing product</strong>. Google Gemini is email + a side panel. Microsoft Copilot is Teams + a side panel. Notion AI is documents + a slash command. None of them have a coherent model for <strong>running AI agents as an operational team</strong>.<br><br>
+    Avero Paperclip is the only product built from the ground up for <strong>AI-as-workforce</strong>. Our design task is not to catch up to competitors — it is to make that architectural advantage <strong>visible and legible</strong> at every touchpoint: in onboarding (teach the model first), in the dashboard (live ops, not charts), in the sidebar (agents, not files), and in the inbox (agent output as first-class work, not buried notifications).
+  </div>
+</div>
+
+</body>
+</html>

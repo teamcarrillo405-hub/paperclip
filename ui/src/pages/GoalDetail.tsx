@@ -18,7 +18,7 @@ import { PageSkeleton } from "../components/PageSkeleton";
 import { cn, projectUrl } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, SlidersHorizontal } from "lucide-react";
+import { Plus, SlidersHorizontal, AlertCircle } from "lucide-react";
 import type { Goal, Project } from "@paperclipai/shared";
 
 interface GoalPropertiesToggleButtonProps {
@@ -57,7 +57,8 @@ export function GoalDetail() {
   const {
     data: goal,
     isLoading,
-    error
+    error,
+    refetch,
   } = useQuery({
     queryKey: queryKeys.goals.detail(goalId!),
     queryFn: () => goalsApi.get(goalId!),
@@ -136,7 +137,20 @@ export function GoalDetail() {
   }, [goal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isLoading) return <PageSkeleton variant="detail" />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return (
+    <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-destructive">{error.message}</p>
+      </div>
+      <button
+        className="text-xs text-destructive/70 hover:text-destructive underline shrink-0"
+        onClick={() => refetch()}
+      >
+        Retry
+      </button>
+    </div>
+  );
   if (!goal) return null;
 
   return (
@@ -208,7 +222,7 @@ export function GoalDetail() {
           {linkedProjects.length === 0 ? (
             <p className="text-sm text-muted-foreground">No linked projects.</p>
           ) : (
-            <div className="border border-border">
+            <div className="rounded-lg border border-border overflow-hidden">
               {linkedProjects.map((project) => (
                 <EntityRow
                   key={project.id}

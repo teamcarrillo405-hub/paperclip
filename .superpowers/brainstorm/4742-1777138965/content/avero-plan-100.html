@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Avero Paperclip — Plan to 100</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #070d1a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; }
+  body { overflow-y: auto; padding: 36px 44px 80px; }
+
+  /* ─── page header ─── */
+  .page-title { font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 4px; letter-spacing: -0.02em; }
+  .page-sub   { font-size: 13px; color: #6B85A6; margin-bottom: 36px; }
+
+  /* ─── section divider ─── */
+  .section-hdr {
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .12em; color: #6B85A6; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-hdr::after { content:''; flex:1; height:1px; background:#1A2A3F; }
+
+  /* ─── category block ─── */
+  .cat-block { margin-bottom: 42px; }
+  .cat-header {
+    display: flex; align-items: center; gap: 14px;
+    background: #0d1729; border: 1px solid #1A2A3F;
+    border-radius: 10px 10px 0 0; padding: 16px 20px;
+    border-bottom: 2px solid;
+  }
+  .cat-header.visual  { border-bottom-color: #7B61FF; }
+  .cat-header.nav     { border-bottom-color: #2F80FF; }
+  .cat-header.onboard { border-bottom-color: #00C2FF; }
+  .cat-header.command { border-bottom-color: #00A3A3; }
+  .cat-header.agent   { border-bottom-color: #22d3ee; }
+  .cat-header.dark    { border-bottom-color: #a78bfa; }
+
+  .cat-icon  { font-size: 24px; flex-shrink: 0; }
+  .cat-title { font-size: 17px; font-weight: 800; color: #fff; }
+  .cat-sub   { font-size: 12px; color: #6B85A6; margin-top: 1px; }
+  .score-pill {
+    margin-left: auto; display: flex; gap: 10px; align-items: center; flex-shrink: 0;
+  }
+  .score-from { font-size: 18px; font-weight: 900; color: #4B5563; }
+  .score-arrow { font-size: 14px; color: #6B85A6; }
+  .score-to { font-size: 22px; font-weight: 900; color: #22c55e; }
+
+  /* ─── priority rows ─── */
+  .items-wrap {
+    background: #0a1220; border: 1px solid #1A2A3F;
+    border-top: none; border-radius: 0 0 10px 10px; overflow: hidden;
+  }
+  .priority-row {
+    border-bottom: 1px solid #111D2B; display: grid;
+    grid-template-columns: 52px 1fr; gap: 0;
+  }
+  .priority-row:last-child { border-bottom: none; }
+  .prio-col {
+    padding: 14px 0; display: flex; align-items: flex-start;
+    justify-content: center; border-right: 1px solid #111D2B;
+    flex-direction: column; align-items: center; gap: 3px;
+  }
+  .prio-badge {
+    font-size: 8px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: .06em; padding: 3px 6px; border-radius: 4px;
+    writing-mode: vertical-rl; transform: rotate(180deg);
+  }
+  .p0 .prio-badge { background: #3b0000; color: #f87171; border: 1px solid #7f1d1d; }
+  .p1 .prio-badge { background: #1a2600; color: #a3e635; border: 1px solid #365314; }
+  .p2 .prio-badge { background: #0f1629; color: #60a5fa; border: 1px solid #1e3a6f; }
+
+  .item-col { padding: 14px 18px; }
+  .item-title { font-size: 13px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
+  .item-body  { font-size: 12px; color: #9AA4B2; line-height: 1.65; margin-bottom: 6px; }
+  .file-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip {
+    font-size: 10px; font-weight: 600; font-family: monospace;
+    padding: 2px 7px; border-radius: 4px; border: 1px solid;
+    white-space: nowrap;
+  }
+  .chip.file  { color: #7B61FF; border-color: #3b2d6f; background: #1a1130; }
+  .chip.api   { color: #2F80FF; border-color: #1e3a6f; background: #0c1a2e; }
+  .chip.tool  { color: #00A3A3; border-color: #0c3030; background: #071818; }
+  .chip.new   { color: #22c55e; border-color: #14532d; background: #06180f; }
+  .chip.score { color: #f59e0b; border-color: #78350f; background: #1c0f00; }
+
+  /* ─── impact bar ─── */
+  .impact-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px; background: #060d1a;
+    border-top: 1px solid #111D2B;
+    font-size: 10px; color: #6B85A6;
+  }
+  .impact-label { font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .impact-bar-wrap { flex:1; height:4px; background:#1A2433; border-radius:2px; overflow:hidden; }
+  .impact-bar-fill { height:100%; border-radius:2px; }
+
+  /* ─── summary grid ─── */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    gap: 10px; margin-bottom: 32px;
+  }
+  .sum-card {
+    background: #0d1729; border: 1px solid #1A2A3F;
+    border-radius: 10px; padding: 14px; text-align: center;
+  }
+  .sum-cat   { font-size: 10px; color: #6B85A6; margin-bottom: 6px; text-transform: uppercase; letter-spacing:.05em; }
+  .sum-score { font-size: 28px; font-weight: 900; color: #22c55e; line-height:1; }
+  .sum-from  { font-size: 11px; color: #4B5563; margin-top:3px; }
+  .sum-work  { font-size: 10px; color: #9AA4B2; margin-top:6px; }
+
+  /* ─── timeline ─── */
+  .timeline {
+    background: #0d1729; border: 1px solid #1A2A3F;
+    border-radius: 10px; overflow: hidden; margin-bottom: 32px;
+  }
+  .tl-header {
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    letter-spacing:.08em; color: #6B85A6; padding: 12px 18px;
+    border-bottom: 1px solid #1A2A3F; background: #060d1a;
+  }
+  .tl-body { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .tl-col { padding: 16px 18px; border-right: 1px solid #1A2A3F; }
+  .tl-col:last-child { border-right: none; }
+  .tl-col-title { font-size: 11px; font-weight: 800; margin-bottom: 10px; }
+  .tl-col.sprint1 .tl-col-title { color: #ef4444; }
+  .tl-col.sprint2 .tl-col-title { color: #f59e0b; }
+  .tl-col.sprint3 .tl-col-title { color: #22c55e; }
+  .tl-item { font-size: 11px; color: #9AA4B2; margin: 5px 0; padding-left: 14px; position:relative; line-height:1.5; }
+  .tl-item::before { content:'→'; position:absolute; left:0; color:#374151; font-size:10px; }
+  .tl-item strong { color: #e2e8f0; }
+
+  /* ─── bottom bar ─── */
+  .bottom { background:#060d1a; border:1px solid #2F80FF33; border-radius:10px; padding:20px 24px; }
+  .bottom-title { font-size:14px; font-weight:800; color:#fff; margin-bottom:8px; }
+  .bottom-body  { font-size:12px; color:#6B85A6; line-height:1.8; }
+  .bottom-body strong { color:#2F80FF; }
+  .bottom-body em { color:#22c55e; font-style:normal; font-weight:700; }
+
+  /* ─── tag pills on header ─── */
+  .hdr-tags { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .hdr-tag { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:2px 7px; border-radius:4px; border:1px solid; }
+  .hdr-tag.items { color:#9AA4B2; border-color:#263447; background:#111D2B; }
+  .hdr-tag.wk    { color:#f59e0b; border-color:#78350f; background:#1c0f00; }
+</style>
+</head>
+<body>
+
+<div class="page-title">Avero Paperclip — The Plan to 100</div>
+<p class="page-sub">Specific implementation roadmap for each UX category · Every item maps to a real file, API, or missing dependency · April 2026</p>
+
+<!-- SUMMARY -->
+<div class="section-hdr">Score Targets</div>
+<div class="summary-grid">
+  <div class="sum-card">
+    <div class="sum-cat">Visual Design</div>
+    <div class="sum-score">100</div>
+    <div class="sum-from">was 75</div>
+    <div class="sum-work">8 items · ~2 weeks</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-cat">Navigation</div>
+    <div class="sum-score">100</div>
+    <div class="sum-from">was 72</div>
+    <div class="sum-work">7 items · ~1.5 weeks</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-cat">Onboarding</div>
+    <div class="sum-score">100</div>
+    <div class="sum-from">was 70</div>
+    <div class="sum-work">6 items · ~2 weeks</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-cat">AI Command Center</div>
+    <div class="sum-score">100</div>
+    <div class="sum-from">was 85</div>
+    <div class="sum-work">7 items · ~1.5 weeks</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-cat">Agent Operations</div>
+    <div class="sum-score">100</div>
+    <div class="sum-from">was 90</div>
+    <div class="sum-work">6 items · ~1.5 weeks</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-cat">Dark / Power-User</div>
+    <div class="sum-score">100</div>
+    <div class="sum-from">was 88</div>
+    <div class="sum-work">6 items · ~1 week</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     1. VISUAL DESIGN
+════════════════════════════════════════════ -->
+<div class="cat-block">
+  <div class="cat-header visual">
+    <div class="cat-icon">🎨</div>
+    <div>
+      <div class="cat-title">Visual Design</div>
+      <div class="cat-sub">Typography, color system, motion, empty states, loading skeletons</div>
+      <div class="hdr-tags">
+        <span class="hdr-tag items">8 items</span>
+        <span class="hdr-tag wk">~2 weeks</span>
+      </div>
+    </div>
+    <div class="score-pill"><span class="score-from">75</span><span class="score-arrow">→</span><span class="score-to">100</span></div>
+  </div>
+  <div class="items-wrap">
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Load Sora + Space Grotesk — brand guide fonts are missing from app</div>
+        <div class="item-body">The Brand Guide v2 specifies Sora (headings) and Space Grotesk (body) but <code>ui/index.html</code> has no Google Fonts link. The app falls back to system fonts. Add <code>&lt;link&gt;</code> preconnect + stylesheet in &lt;head&gt;, then update <code>index.css</code> <code>--font-sans</code> and <code>--font-heading</code> variables. Use <code>font-display: swap</code> to prevent FOUT.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/index.html</span>
+          <span class="chip file">ui/src/index.css :root vars</span>
+          <span class="chip file">whitelabel.config.ts</span>
+          <span class="chip new">Add font-heading token</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Fix radius system — cards need 8px, only buttons stay sharp</div>
+        <div class="item-body">Currently <code>--radius-lg: 0px</code> and <code>--radius-xl: 0px</code> — everything is razor-flat. Linear uses 0px intentionally for a hyper-minimal engineering aesthetic but our brand guide specifies cards at 8px. Set <code>--radius-md: 8px</code>, <code>--radius-lg: 10px</code>, keep <code>--radius-sm: 4px</code> for badges. Buttons can stay at 6px for angular feel.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/index.css --radius-*</span>
+          <span class="chip score">+8 pts visual quality</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Replace all spinners with skeleton screens</div>
+        <div class="item-body">The shimmer animation already exists in <code>index.css</code> (<code>@keyframes shimmer-text-slide</code>). Build a <code>SkeletonCard</code> and <code>SkeletonRow</code> component using the existing <code>bg-[#1A2433]</code> + animate-shimmer pattern. Apply to Dashboard metric cards, Agents list, Issues list, and Inbox during initial load. Skeletons match the exact shape of the content — no layout shift.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/components/ui/skeleton.tsx</span>
+          <span class="chip file">ui/src/pages/Dashboard.tsx (loading states)</span>
+          <span class="chip file">ui/src/pages/Agents.tsx (loading states)</span>
+          <span class="chip file">ui/src/index.css (shimmer keyframe exists)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Add Framer Motion for spring physics on key surfaces</div>
+        <div class="item-body">Current animations are CSS cubic-bezier only — no spring physics, no stagger, no gesture responses. Install <code>framer-motion</code> and apply: (1) staggered entry animation on dashboard cards, (2) spring-based sidebar collapse, (3) spring scale on approval card hover, (4) layout animation when inbox items are approved/dismissed. Use <code>motion.div</code> as a drop-in for existing wrappers — no component rewrites needed.</div>
+        <div class="file-chips">
+          <span class="chip new">pnpm add framer-motion (ui/)</span>
+          <span class="chip file">ui/src/components/ActiveAgentsPanel.tsx</span>
+          <span class="chip file">ui/src/components/ApprovalCard.tsx</span>
+          <span class="chip file">ui/src/components/Sidebar.tsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Build illustrated empty states for all major pages</div>
+        <div class="item-body">Every page (Agents, Issues, Inbox, Goals, Projects) has a blank state when empty. Current state: generic "No X yet" text with a muted icon. Replace with inline SVG illustrations using brand palette (#2F80FF, #7B61FF, #0B1220) + a single actionable CTA. Agents empty → "Hire your first agent" + animated bot SVG. Inbox empty → "Your agents are working on it" + animated pulse. Issues empty → "Give your agents something to do" + task icon.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/EmptyState.tsx (exists — extend it)</span>
+          <span class="chip new">Add 5 illustrated SVGs to ui/public/illustrations/</span>
+          <span class="chip file">ui/src/pages/Agents.tsx EmptyState usage</span>
+          <span class="chip file">ui/src/pages/Inbox.tsx EmptyState usage</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Standardize icon weight across entire app</div>
+        <div class="item-body">Lucide React v0.574 is installed. Currently some icons are at default <code>strokeWidth=2</code>, others vary. Set a global <code>strokeWidth={1.5}</code> to match Linear's refined icon weight. Add a wrapper <code>Icon</code> component that enforces the weight + size + className defaults. This creates visual consistency across all 200+ icon usages without touching each file individually.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/components/ui/icon.tsx (wrapper)</span>
+          <span class="chip file">lucide-react v0.574.0 (installed)</span>
+          <span class="chip score">~150 icon usages standardized</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">3-level dark surface hierarchy — enforce via CSS variables</div>
+        <div class="item-body">The design needs 3 distinct surfaces to create depth without shadows: Level 0 = <code>#070d1a</code> (page bg), Level 1 = <code>#0B1220</code> (sidebar + panels), Level 2 = <code>#1A2433</code> (cards), Level 3 = <code>#1E2B3C</code> (elevated, hover, input focus). Add <code>--surface-0</code> through <code>--surface-3</code> tokens to <code>index.css</code> and replace all hardcoded hex values in components to use the tokens. Enforce via ESLint rule.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/index.css (add --surface-* tokens)</span>
+          <span class="chip new">eslint-plugin-css-tokens (enforce no hardcoded hex)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p2">
+      <div class="prio-col"><div class="prio-badge">P2</div></div>
+      <div class="item-col">
+        <div class="item-title">Activate and expand the DesignGuide page</div>
+        <div class="item-body"><code>ui/src/pages/DesignGuide.tsx</code> already exists. Expand it into a living component library: colors, typography scale, button variants, badge variants, empty states, skeleton examples, icon grid. Accessible at <code>/design-guide</code> (dev only). Use this to validate every visual change before shipping — no more "check the browser" guesswork.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/pages/DesignGuide.tsx (expand existing)</span>
+          <span class="chip chip score">Dev-only route, zero production cost</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-row">
+      <span class="impact-label">Visual Impact</span>
+      <div class="impact-bar-wrap"><div class="impact-bar-fill" style="width:100%;background:linear-gradient(90deg,#7B61FF,#2F80FF);"></div></div>
+      <span style="font-size:10px;color:#7B61FF;font-weight:700;">Highest — fonts + radius + skeletons alone close 70% of the gap</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     2. NAVIGATION
+════════════════════════════════════════════ -->
+<div class="cat-block">
+  <div class="cat-header nav">
+    <div class="cat-icon">🧭</div>
+    <div>
+      <div class="cat-title">Navigation</div>
+      <div class="cat-sub">Sidebar collapse, keyboard shortcuts, command palette history, breadcrumbs</div>
+      <div class="hdr-tags"><span class="hdr-tag items">7 items</span><span class="hdr-tag wk">~1.5 weeks</span></div>
+    </div>
+    <div class="score-pill"><span class="score-from">72</span><span class="score-arrow">→</span><span class="score-to">100</span></div>
+  </div>
+  <div class="items-wrap">
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Collapsible sidebar — icon rail at 56px, full at 240px</div>
+        <div class="item-body">The sidebar is hardcoded <code>w-60</code> (240px) with no collapse logic — a major power-user complaint and the biggest screen real-estate waster. Add a collapse toggle (double-chevron button at the bottom of the sidebar). Collapsed state: show only icons + badge counts. Persist state in <code>localStorage('sidebar-collapsed')</code>. Animate with Framer Motion layout transition. API: use the existing <code>sidebar-preferences</code> route (<code>/server/src/routes/sidebar-preferences.ts</code>) to persist per-user on server.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/Sidebar.tsx</span>
+          <span class="chip api">GET/POST /api/sidebar-preferences</span>
+          <span class="chip file">ui/src/components/SidebarNavItem.tsx (icon-only mode)</span>
+          <span class="chip new">SidebarCollapseButton component</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Command palette: recent searches + pinned commands</div>
+        <div class="item-body">The palette (<code>CommandPalette.tsx</code>, 240 lines) shows no history. Add: (1) recent searches stored in <code>localStorage('cmd-recent', [])</code>, max 8, shown when query is empty, (2) pinned commands shown at top with ⭐ icon, (3) keyboard shortcut hints on the right side of each result row. Use the existing <code>cmdk</code> library already installed — add a <code>Command.Group label="Recent"</code> before the main results.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/CommandPalette.tsx</span>
+          <span class="chip tool">localStorage (recent + pinned)</span>
+          <span class="chip score">cmdk library already installed</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">J/K keyboard navigation in every list (Linear-style)</div>
+        <div class="item-body">Linear's defining UX feature is J/K up/down through issue lists without clicking. Add a <code>useListKeyNav(items, onSelect)</code> hook that fires on <code>keydown</code> when no text input is focused. Apply to: Issues list, Inbox rows, Agents list, Approvals list. Highlight the focused row with <code>ring-1 ring-[#2F80FF]</code>. Press Enter to open. Press E to edit inline. Zero new dependencies — uses existing React state.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/hooks/useListKeyNav.ts</span>
+          <span class="chip file">ui/src/pages/Issues.tsx</span>
+          <span class="chip file">ui/src/pages/Inbox.tsx</span>
+          <span class="chip file">ui/src/pages/Agents.tsx</span>
+          <span class="chip file">ui/src/pages/Approvals.tsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Sidebar section restructure — 3 zones instead of 18-item scroll</div>
+        <div class="item-body">The current sidebar has 18+ items in one "Work" section — overwhelming even for power users. Restructure into 3 collapsible zones: <strong>Operate</strong> (Inbox, Dashboard, Agents, Approvals — daily use), <strong>Build</strong> (Issues, Projects, Goals, Routines — weekly use), <strong>Analyze</strong> (Reports, Costs, ROI, Activity — reference). Each zone remembers its collapsed state per-user. Use <code>sidebar-preferences</code> API to persist.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/Sidebar.tsx (restructure sections)</span>
+          <span class="chip file">ui/src/components/SidebarSection.tsx (expand)</span>
+          <span class="chip api">POST /api/sidebar-preferences</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Breadcrumb navigation on all deep pages</div>
+        <div class="item-body">Issue detail, Agent detail, Approval detail — all lack breadcrumbs. The <code>BreadcrumbBar.tsx</code> component already exists in the codebase. Wire it to the router: <code>Company → Issues → [ACME-42]</code>. Each crumb is a link. On mobile, show only the last 2 levels. This eliminates the "how did I get here?" confusion that plagues nested navigation without heavy sidebar state tracking.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/BreadcrumbBar.tsx (exists — wire it)</span>
+          <span class="chip file">ui/src/pages/IssueDetail.tsx</span>
+          <span class="chip file">ui/src/pages/AgentDetail.tsx</span>
+          <span class="chip file">ui/src/pages/ApprovalDetail.tsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Keyboard shortcut cheatsheet (Cmd+? or ?)</div>
+        <div class="item-body">No shortcut reference exists. Add a modal triggered by <code>?</code> (when no input focused) or <code>Cmd+?</code>. Show a 2-column grid: Navigation shortcuts (Cmd+K, G+I=Inbox, G+D=Dashboard, G+A=Agents), Action shortcuts (C=new issue, J/K=navigate, Enter=open, E=edit, A=approve, R=reject). Use <code>KeyboardShortcutsCheatsheet.tsx</code> — this component already exists in <code>ui/src/components/</code>. Just wire the global key listener.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/KeyboardShortcutsCheatsheet.tsx (exists)</span>
+          <span class="chip new">Global ? key listener in App.tsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p2">
+      <div class="prio-col"><div class="prio-badge">P2</div></div>
+      <div class="item-col">
+        <div class="item-title">URL-persistent filters — browser back preserves list state</div>
+        <div class="item-body">Filtering issues, then going to a detail page, then pressing back clears the filter. Encode all filter/sort state into URL query params (<code>?status=open&priority=high&sort=updated</code>). React Router v7 (installed) has first-class URL state — use <code>useSearchParams()</code> as the source of truth for all filter states. Zero server changes needed.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/pages/Issues.tsx (useSearchParams)</span>
+          <span class="chip file">ui/src/pages/Agents.tsx (useSearchParams)</span>
+          <span class="chip score">react-router-dom v7.1.5 installed</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-row">
+      <span class="impact-label">User Impact</span>
+      <div class="impact-bar-wrap"><div class="impact-bar-fill" style="width:95%;background:linear-gradient(90deg,#1d4ed8,#2F80FF);"></div></div>
+      <span style="font-size:10px;color:#2F80FF;font-weight:700;">Very High — sidebar collapse + J/K nav are daily-use improvements</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     3. ONBOARDING
+════════════════════════════════════════════ -->
+<div class="cat-block">
+  <div class="cat-header onboard">
+    <div class="cat-icon">🚀</div>
+    <div>
+      <div class="cat-title">Onboarding</div>
+      <div class="cat-sub">Live org preview, mental model clarity, adapter setup guides, post-onboarding flow</div>
+      <div class="hdr-tags"><span class="hdr-tag items">6 items</span><span class="hdr-tag wk">~2 weeks</span></div>
+    </div>
+    <div class="score-pill"><span class="score-from">70</span><span class="score-arrow">→</span><span class="score-to">100</span></div>
+  </div>
+  <div class="items-wrap">
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Animated "Live Org Preview" before Step 1 — show what success looks like</div>
+        <div class="item-body">Every competitor fails here: Notion shows templates, Asana shows checklists, but nobody shows "here's a live AI company running right now." Add a Step 0 splash to <code>OnboardingWizard.tsx</code>: a 12-second animated loop in the left panel showing (1) 3 agents appearing with names, (2) tasks being assigned, (3) inbox items arriving, (4) an approval getting clicked. Pure CSS animation — no video dependency. After the loop: "This is what Avero builds for you. Takes 4 steps." CTA advances to Step 1.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/OnboardingWizard.tsx (add Step 0 state)</span>
+          <span class="chip new">ui/src/components/OnboardingLivePreview.tsx (animated mockup)</span>
+          <span class="chip score">Closes #1 mental model gap vs all competitors</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Left panel evolves per step — shows what you're building, not just a progress list</div>
+        <div class="item-body">Currently the left panel shows: logo + tagline + 4 step dots. Redesign it to be contextual: Step 1 = shows the company "taking shape" (building icon animating), Step 2 = shows the agent avatar appearing in an org chart slot, Step 3 = shows the task card appearing on a board, Step 4 = shows the full org with everything lit up (the launch moment). Each panel state is pure CSS — swap via step state. This is how Linear's onboarding creates a "cinematic" feel.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/OnboardingWizard.tsx (left panel section, line ~648)</span>
+          <span class="chip new">OnboardingPanelStep1/2/3/4 sub-components</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Copy-to-clipboard + one-click docs for adapter setup in Step 2</div>
+        <div class="item-body">Step 2 adapter environment test shows the CLI debug command as raw text — users must manually copy it. Add: (1) a copy-to-clipboard button (lucide <code>Copy</code> icon, already imported) next to every debug command string, (2) a "Setup Guide" link per adapter type that opens <code>docs.averoai.com/adapters/{type}</code>, (3) a "Quick install" button for <code>claude_local</code> that copies <code>npm install -g @anthropic-ai/claude-code</code>. The adapter type → install command map lives in a static const — zero backend changes.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/OnboardingWizard.tsx (Step 2, lines ~1014–1130)</span>
+          <span class="chip file">ui/src/adapters/adapter-display-registry.ts (add installCmd field)</span>
+          <span class="chip tool">navigator.clipboard.writeText()</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">AI-suggested first task based on company goal (Step 3 pre-fill)</div>
+        <div class="item-body">Step 1 collects the company goal/mission. Step 3 asks for the first task — but it defaults to a generic "Hire your first engineer" placeholder that has nothing to do with the user's actual goal. Wire the goal text to an API call: <code>POST /api/companies/{id}/onboarding-suggest-task</code> (new endpoint, ~20 lines of server code using the LLM route) that returns a suggested task title + description based on the goal. Pre-fill Step 3 with the suggestion. User can edit. If API fails, fall back to the current default.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/OnboardingWizard.tsx (Step 3, line ~539)</span>
+          <span class="chip new">server/src/routes/onboarding.ts (add suggest-task endpoint)</span>
+          <span class="chip api">POST /api/companies/:id/onboarding-suggest-task</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Post-onboarding "Getting Started" checklist in Dashboard</div>
+        <div class="item-body">After launch, users see the dashboard with no guidance. Notion's top strength is the embedded getting-started tutorial. Add a <code>GettingStartedPanel</code> to the Dashboard that shows for new companies (company age &lt; 7 days): 3 items: ✓ Your agent is hired, → Assign it a real task, → Check the inbox when it's done. Each item is actionable (links to the right place). Dismissable with a "I got it" button. Backend: <code>GET /api/companies/{id}/onboarding-checklist</code> tracks completion state.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/components/GettingStartedPanel.tsx</span>
+          <span class="chip file">ui/src/pages/Dashboard.tsx (add panel above metric cards)</span>
+          <span class="chip api">GET /api/companies/:id/onboarding-checklist</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p2">
+      <div class="prio-col"><div class="prio-badge">P2</div></div>
+      <div class="item-col">
+        <div class="item-title">Wizard progress persistence — resume if browser closes mid-setup</div>
+        <div class="item-body">If a user completes Step 1 (company created) and closes the browser, on return they see the dashboard with an empty company. They've lost their place in the wizard. Persist wizard state to <code>localStorage('onboarding-state-{companyId}')</code> after each successful step — companyId, step, agentId. On next login, if a company exists with no agents, prompt to "Resume setup" from where they left off. Uses the existing onboarding route <code>/setup</code> with <code>?step=2&companyId=xxx</code> query params.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/OnboardingWizard.tsx</span>
+          <span class="chip file">ui/src/lib/onboarding-route.ts</span>
+          <span class="chip tool">localStorage persistence</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-row">
+      <span class="impact-label">Conversion Impact</span>
+      <div class="impact-bar-wrap"><div class="impact-bar-fill" style="width:92%;background:linear-gradient(90deg,#0e7490,#00C2FF);"></div></div>
+      <span style="font-size:10px;color:#00C2FF;font-weight:700;">Very High — live preview + mental model clarity are the #1 retention driver</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     4. AI COMMAND CENTER
+════════════════════════════════════════════ -->
+<div class="cat-block">
+  <div class="cat-header command">
+    <div class="cat-icon">⚡</div>
+    <div>
+      <div class="cat-title">AI Command Center</div>
+      <div class="cat-sub">WebSocket real-time, approval keyboard shortcuts, agent controls, toast notifications</div>
+      <div class="hdr-tags"><span class="hdr-tag items">7 items</span><span class="hdr-tag wk">~1.5 weeks</span></div>
+    </div>
+    <div class="score-pill"><span class="score-from">85</span><span class="score-arrow">→</span><span class="score-to">100</span></div>
+  </div>
+  <div class="items-wrap">
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Connect WebSocket to Dashboard — eliminate 15s polling lag</div>
+        <div class="item-body">The WebSocket server at <code>/api/companies/{companyId}/events/ws</code> is fully built and emitting events. The Dashboard and ActiveAgentsPanel use 15-second polling instead. Create a <code>useCompanyLiveEvents(companyId)</code> hook that: (1) opens a WebSocket connection, (2) dispatches events to React Query cache invalidations, (3) reconnects on drop (exponential backoff). Replace <code>refetchInterval: 15000</code> with this hook in <code>Dashboard.tsx</code> and <code>ActiveAgentsPanel.tsx</code>. Result: agent status changes appear in &lt;1s instead of up to 15s. Zero backend work — the server already sends events.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/hooks/useCompanyLiveEvents.ts</span>
+          <span class="chip file">ui/src/pages/Dashboard.tsx (replace polling)</span>
+          <span class="chip file">ui/src/components/ActiveAgentsPanel.tsx (replace polling)</span>
+          <span class="chip api">ws://localhost:3100/api/companies/:id/events/ws (exists)</span>
+          <span class="chip score">Zero backend changes needed</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Approval keyboard shortcuts — A=approve, R=reject, J/K=navigate</div>
+        <div class="item-body">Approvals are currently click-only. Power users reviewing 10+ approvals must click through each. Add keyboard shortcuts when the Approvals page is focused: <code>J</code> = select next, <code>K</code> = previous, <code>A</code> = approve selected, <code>R</code> = reject selected, <code>Enter</code> = open detail. Show the key hints in the top-right of each card (faint, <code>text-[10px]</code>) so users discover them. Use the <code>useListKeyNav</code> hook from the Navigation plan — this is the same pattern applied to approvals.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/pages/Approvals.tsx</span>
+          <span class="chip file">ui/src/components/ApprovalCard.tsx (add key hint overlay)</span>
+          <span class="chip new">ui/src/hooks/useListKeyNav.ts (shared with Navigation plan)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Toast notification system wired to WebSocket events</div>
+        <div class="item-body">The <code>ToastViewport.tsx</code> component exists but is minimally used. Wire it to the WebSocket event stream: when an agent completes a run → toast "✓ CEO Agent finished: Hiring plan ready", when an approval arrives → toast "⏳ Approval needed: $4,200 budget request", when an agent errors → toast "⚠ Finance Agent needs attention". Toasts include a direct action link. Use <code>sonner</code> (already in the Radix stack) or the existing toast primitive. No new dependencies.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/ToastViewport.tsx (expand)</span>
+          <span class="chip new">ui/src/hooks/useCompanyLiveEvents.ts (dispatch toasts)</span>
+          <span class="chip file">ui/src/components/ui/sonner.tsx (check if exists)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Pause / Cancel / Retry run controls directly on agent cards</div>
+        <div class="item-body">The <code>ActiveAgentsPanel</code> shows agent runs as read-only transcript previews. Users must navigate to the full run to control it. Add 3 icon buttons to each agent card header: pause (⏸), cancel (✕), retry (↺). These call the existing <code>agentsApi</code> endpoints (check <code>server/src/routes/agents.ts</code> for run control endpoints). Only show the relevant button based on run state — pause for running, retry for error, cancel for running. The <code>WorkspaceRuntimeControls.tsx</code> component already has this logic — extract and embed it in the card.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/ActiveAgentsPanel.tsx</span>
+          <span class="chip file">ui/src/components/WorkspaceRuntimeControls.tsx (extract logic)</span>
+          <span class="chip api">POST /api/agents/:id/runs/:runId/pause|cancel|retry</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Per-agent session cost badge on dashboard cards</div>
+        <div class="item-body">The Costs page tracks spend, but users can't see cost for a currently-running agent session. Add a cost badge to each agent card in <code>ActiveAgentsPanel</code>: "↑ $0.04" (live session cost in green, updates via WebSocket). Uses the existing cost API (<code>server/src/routes/costs.ts</code>) — add a <code>GET /api/companies/:id/runs/:runId/cost</code> endpoint that returns real-time token cost. Display as a small badge in the card's top-right. Helps users understand AI spend without leaving the dashboard.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/ActiveAgentsPanel.tsx</span>
+          <span class="chip new">server/src/routes/costs.ts (add live run cost endpoint)</span>
+          <span class="chip api">GET /api/companies/:id/runs/:runId/cost</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Chain-of-thought ticker on agent cards — wire existing animation</div>
+        <div class="item-body">The <code>cot-line-slide-in</code> and <code>cot-line-slide-out</code> keyframe animations already exist in <code>index.css</code>. They animate a "thought ticker" that scrolls through agent reasoning lines. This animation is defined but apparently not wired to live data in the dashboard cards. Wire it to the agent run's live event stream: when the WebSocket emits a reasoning step, push it to the ticker. Shows users exactly what the agent is thinking in the command center — our #1 UX differentiator vs competitors who show nothing.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/index.css (cot-line-slide-in/out keyframes — use them)</span>
+          <span class="chip file">ui/src/components/ActiveAgentsPanel.tsx</span>
+          <span class="chip file">ui/src/components/RunChatSurface.tsx (extract COT renderer)</span>
+          <span class="chip api">WS: agent_reasoning_step events</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p2">
+      <div class="prio-col"><div class="prio-badge">P2</div></div>
+      <div class="item-col">
+        <div class="item-title">Pinned agents — always show specific agents at top of dashboard</div>
+        <div class="item-body">The CEO agent should always appear first in the dashboard, regardless of status. Add a pin system: long-press (desktop: right-click context menu) on any agent card shows "Pin to dashboard." Pinned agents persist via <code>sidebar-preferences</code> API (<code>pinnedAgentIds: string[]</code>). Pinned agents float to top of <code>ActiveAgentsPanel</code>. If pinned agent is idle, show their last run instead of an empty card. Max 2 pinned agents to prevent dashboard bloat.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/ActiveAgentsPanel.tsx</span>
+          <span class="chip api">PATCH /api/sidebar-preferences (pinnedAgentIds)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-row">
+      <span class="impact-label">Real-Time Impact</span>
+      <div class="impact-bar-wrap"><div class="impact-bar-fill" style="width:88%;background:linear-gradient(90deg,#0f766e,#00A3A3);"></div></div>
+      <span style="font-size:10px;color:#00A3A3;font-weight:700;">High — WebSocket alone makes the product feel 10x more alive, zero backend work</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     5. AGENT OPERATIONS
+════════════════════════════════════════════ -->
+<div class="cat-block">
+  <div class="cat-header agent">
+    <div class="cat-icon">🤖</div>
+    <div>
+      <div class="cat-title">Agent Operations</div>
+      <div class="cat-sub">Agent identity, capability badges, performance stats, timeline, delegation graph</div>
+      <div class="hdr-tags"><span class="hdr-tag items">6 items</span><span class="hdr-tag wk">~1.5 weeks</span></div>
+    </div>
+    <div class="score-pill"><span class="score-from">90</span><span class="score-arrow">→</span><span class="score-to">100</span></div>
+  </div>
+  <div class="items-wrap">
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Agent avatars + color identity — make agents feel like people, not config rows</div>
+        <div class="item-body">No competitor gives AI agents visual identity. The <code>CompanyPatternIcon.tsx</code> and <code>Identity.tsx</code> components exist. Extend them: each agent gets a deterministic avatar color generated from their name hash (e.g., CEO=Electric Blue, Marketing=Violet, Finance=Teal). Add the avatar to: Agents list rows, ActiveAgentsPanel cards, AgentDetail header, Inbox attribution, and Approvals requester field. Also add a role-based icon (🎯 CEO, 📣 Marketing, 💰 Finance, 🔬 Research) that appears alongside the avatar.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/Identity.tsx (extend with color hash)</span>
+          <span class="chip file">ui/src/components/CompanyPatternIcon.tsx</span>
+          <span class="chip new">ui/src/lib/agent-identity.ts (name→color hash fn)</span>
+          <span class="chip score">Applies everywhere agents appear — highest ROI change</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Capability badges — show what each agent can do at a glance</div>
+        <div class="item-body">The <code>AgentProperties.tsx</code> panel shows raw adapter config. Replace that with human-readable capability badges: <code>Code</code> (if adapter=claude/codex), <code>Write</code> (if adapter=claude), <code>Research</code> (all), <code>Approve</code> (if has approval rights), <code>Delegate</code> (if CEO role), <code>Browse</code> (if has browser MCP), <code>Email</code> (if email integration), <code>$Budget</code> (with spend limit). Derive badges from adapter type + config + MCP tools. Show on Agents list (truncated, +N more), and AgentDetail (full set). Makes agent capabilities scannable in 2 seconds.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/lib/agent-capabilities.ts (derive from config)</span>
+          <span class="chip new">ui/src/components/AgentCapabilityBadges.tsx</span>
+          <span class="chip file">ui/src/components/AgentProperties.tsx</span>
+          <span class="chip file">ui/src/pages/Agents.tsx (add to list rows)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Per-agent performance stats on AgentDetail — tasks, cost, approval rate</div>
+        <div class="item-body">The <code>AgentDetail.tsx</code> page (409 lines) shows config and recent runs but no performance summary. Add a stats row at the top: Tasks Completed (30d), Approval Rate (%), Average Task Duration, Total Cost ($), Last Active. Pull from existing <code>costs.ts</code> and <code>activity.ts</code> APIs — filter by agentId. Show as 5 metric chips in the header. These are vanity metrics that make agents feel like real employees with track records — no competitor has this.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/pages/AgentDetail.tsx</span>
+          <span class="chip api">GET /api/companies/:id/activity?agentId=&period=30d</span>
+          <span class="chip api">GET /api/companies/:id/costs?agentId=</span>
+          <span class="chip new">AgentStatsRow component</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Agent timeline — chronological history of all runs on AgentDetail</div>
+        <div class="item-body">Currently AgentDetail shows a list of recent runs without chronological context. Add a vertical timeline tab ("Timeline") that shows: today → tasks created → runs started/finished → approvals requested → approvals given → handoffs made. Each event is a dot on the line with a short description and timestamp. Click any event to navigate to the full run/issue/approval. Uses existing <code>activity.ts</code> API filtered by agentId. No new backend work.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/pages/AgentDetail.tsx (add Timeline tab)</span>
+          <span class="chip new">ui/src/components/AgentTimeline.tsx</span>
+          <span class="chip api">GET /api/companies/:id/activity?agentId=&limit=100</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Delegation visualization — show agent-to-agent task handoffs on Issue detail</div>
+        <div class="item-body">When the CEO agent creates a task and assigns it to the Marketing agent, that delegation chain is invisible. Add a "Delegation chain" section to <code>IssueDetail.tsx</code>: a small horizontal flow <code>CEO → Marketing Agent → [task]</code> with avatars and arrows. Pull from the issue's <code>assigneeAgentId</code> + the issue creator's agentId. If multiple agents touched the issue (via activity log), show the full chain. This makes the org chart feel operational, not decorative.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/pages/IssueDetail.tsx</span>
+          <span class="chip new">ui/src/components/DelegationChain.tsx</span>
+          <span class="chip api">GET /api/companies/:id/activity?issueId= (delegation events)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p2">
+      <div class="prio-col"><div class="prio-badge">P2</div></div>
+      <div class="item-col">
+        <div class="item-title">Agent comparison panel — side-by-side cost + performance for 2 agents</div>
+        <div class="item-body">Enterprise customers running 5+ agents need to compare performance to optimize their AI workforce. Add a "Compare" button on the Agents page (select 2 agents → Compare). Opens a split-panel page: left agent vs right agent, showing the same 5 stats side by side with delta indicators (↑ +12% win rate, ↓ -$0.8 cost/task). Uses same APIs as AgentDetail stats — same data, different layout. Accessible at <code>/agents/compare?a={id}&b={id}</code>.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/pages/AgentComparePage.tsx</span>
+          <span class="chip file">ui/src/pages/Agents.tsx (add compare mode multi-select)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-row">
+      <span class="impact-label">Differentiation Impact</span>
+      <div class="impact-bar-wrap"><div class="impact-bar-fill" style="width:96%;background:linear-gradient(90deg,#0891b2,#22d3ee);"></div></div>
+      <span style="font-size:10px;color:#22d3ee;font-weight:700;">Extreme — agent identity is our biggest design advantage that zero competitors have attempted</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     6. DARK / POWER-USER
+════════════════════════════════════════════ -->
+<div class="cat-block">
+  <div class="cat-header dark">
+    <div class="cat-icon">⌨️</div>
+    <div>
+      <div class="cat-title">Dark / Power-User</div>
+      <div class="cat-sub">Compact density mode, bulk actions, advanced filters, full keyboard coverage</div>
+      <div class="hdr-tags"><span class="hdr-tag items">6 items</span><span class="hdr-tag wk">~1 week</span></div>
+    </div>
+    <div class="score-pill"><span class="score-from">88</span><span class="score-arrow">→</span><span class="score-to">100</span></div>
+  </div>
+  <div class="items-wrap">
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Compact / Default density toggle — 30% row height reduction</div>
+        <div class="item-body">Power users like Linear's high information density. Add a density toggle (two icons in the top-right of list pages: ▤ Default / ▥ Compact). Compact mode: sets <code>data-density="compact"</code> on <code>&lt;body&gt;</code>. CSS selectors in <code>index.css</code>: <code>[data-density="compact"] .issue-row { padding: 4px 12px; }</code> etc. Reduces all list row heights from ~48px to ~32px. Persist in <code>localStorage('ui-density')</code>. Apply to Issues, Inbox, Agents, Activity, Approvals. Same data, 50% more rows visible on screen — no scrolling needed for most sessions.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/index.css (add [data-density="compact"] selectors)</span>
+          <span class="chip new">ui/src/components/DensityToggle.tsx</span>
+          <span class="chip file">ui/src/pages/Issues.tsx, Inbox.tsx, Agents.tsx</span>
+          <span class="chip tool">localStorage('ui-density')</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p0">
+      <div class="prio-col"><div class="prio-badge">P0</div></div>
+      <div class="item-col">
+        <div class="item-title">Bulk multi-select across Issues, Inbox, Agents — Shift+click + Cmd+A</div>
+        <div class="item-body">No page supports bulk actions. Add: (1) checkbox appears on row hover (left side, shifts text right by 20px), (2) <code>Shift+click</code> selects a range, (3) <code>Cmd+A</code> selects all visible, (4) a floating action bar appears at bottom of screen when items are selected (count + bulk actions). Bulk actions per page: Issues → Close, Assign, Change Status. Inbox → Archive, Mark Read. Agents → Pause All, Resume All. Approvals → Approve All, Reject All. Use React state for selected IDs + batch API calls.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/hooks/useMultiSelect.ts (range select logic)</span>
+          <span class="chip new">ui/src/components/BulkActionBar.tsx (floating bar)</span>
+          <span class="chip file">ui/src/pages/Issues.tsx, Inbox.tsx, Agents.tsx, Approvals.tsx</span>
+          <span class="chip api">POST /api/issues/batch, /api/agents/batch</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Advanced filter panel for Inbox and Issues — agent, status, date, approval required</div>
+        <div class="item-body">The <code>FilterBar.tsx</code> component exists but is basic. Extend it with an advanced panel (click "Filter ▾" to expand): filter by Agent (multi-select dropdown showing all agents with avatars), by Status (checkbox list), by Date Range (from/to date pickers), by "Has approval" toggle, by "Blocked" toggle. Each active filter shows as a removable chip below the search bar. Filter state encodes to URL params (from Navigation P2 plan) so it's shareable and bookmarkable.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/FilterBar.tsx (extend)</span>
+          <span class="chip file">ui/src/pages/Inbox.tsx</span>
+          <span class="chip file">ui/src/pages/Issues.tsx</span>
+          <span class="chip tool">URL search params (from Navigation plan)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Go-To shortcuts (G+I, G+D, G+A) — navigate without Cmd+K</div>
+        <div class="item-body">Linear uses "G then letter" chords for instant navigation: G+I = Inbox, G+D = Dashboard, G+A = Agents, G+P = Projects, G+R = Reports. Implement with a 300ms chord window: press G, highlight it in a status indicator at bottom-right (like VS Code's Vim mode indicator), then the second key navigates. If no second key in 300ms, cancel. Zero dependencies — uses existing React Router's <code>useNavigate()</code>. Add chord hints to the keyboard shortcuts cheatsheet from Navigation P1.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/hooks/useGoToShortcuts.ts (chord window logic)</span>
+          <span class="chip file">ui/src/App.tsx (register global listener)</span>
+          <span class="chip file">ui/src/components/KeyboardShortcutsCheatsheet.tsx (add chord docs)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p1">
+      <div class="prio-col"><div class="prio-badge">P1</div></div>
+      <div class="item-col">
+        <div class="item-title">Persistent per-page view memory — sort, filter, density remembered</div>
+        <div class="item-body">Currently every page refresh resets to default state. Add a <code>usePagePreferences(pageKey)</code> hook that reads/writes sort order, active filters, and density from <code>localStorage</code>. Keys: <code>prefs-issues</code>, <code>prefs-inbox</code>, <code>prefs-agents</code>. When user sets "Sort by Priority" on Issues, it stays that way across sessions. Sync to server via <code>sidebar-preferences</code> API for cross-device persistence (optional, add later). Zero new dependencies.</div>
+        <div class="file-chips">
+          <span class="chip new">ui/src/hooks/usePagePreferences.ts</span>
+          <span class="chip file">ui/src/pages/Issues.tsx, Inbox.tsx, Agents.tsx</span>
+          <span class="chip tool">localStorage per-page keys</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-row p2">
+      <div class="prio-col"><div class="prio-badge">P2</div></div>
+      <div class="item-col">
+        <div class="item-title">Focus mode — hide sidebar + header for distraction-free inbox review</div>
+        <div class="item-body">For users processing 20+ inbox items, the sidebar and header are visual noise. Add a Focus Mode toggle (<code>F</code> key when in Inbox/Issues): hides sidebar (0px) and header, expands content to full width, shows a minimal "Exit focus (F)" hint in top-right corner. Framer Motion layout animation for the expand/collapse. Pairs with J/K navigation and bulk actions for a full keyboard-only processing workflow. Exit via <code>F</code>, <code>Escape</code>, or clicking the exit hint.</div>
+        <div class="file-chips">
+          <span class="chip file">ui/src/components/Layout.tsx (add focus mode state)</span>
+          <span class="chip file">ui/src/components/Sidebar.tsx (respond to focus mode)</span>
+          <span class="chip new">ui/src/hooks/useFocusMode.ts</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-row">
+      <span class="impact-label">Retention Impact</span>
+      <div class="impact-bar-wrap"><div class="impact-bar-fill" style="width:85%;background:linear-gradient(90deg,#5b21b6,#a78bfa);"></div></div>
+      <span style="font-size:10px;color:#a78bfa;font-weight:700;">High — density + bulk actions are the difference between daily use and occasional use</span>
+    </div>
+  </div>
+</div>
+
+<!-- SPRINT TIMELINE -->
+<div class="section-hdr">Implementation Timeline</div>
+<div class="timeline">
+  <div class="tl-header">Sprint Sequence — All P0 items first, then P1, then P2</div>
+  <div class="tl-body">
+    <div class="tl-col sprint1">
+      <div class="tl-col-title">Sprint 1 · Week 1-2 · Foundation</div>
+      <div class="tl-item"><strong>Fonts</strong> — Sora + Space Grotesk loaded</div>
+      <div class="tl-item"><strong>Radius fix</strong> — cards at 8px, buttons at 6px</div>
+      <div class="tl-item"><strong>WebSocket hook</strong> — real-time dashboard (zero backend)</div>
+      <div class="tl-item"><strong>Toast notifications</strong> — wired to WS events</div>
+      <div class="tl-item"><strong>Sidebar collapse</strong> — icon rail at 56px</div>
+      <div class="tl-item"><strong>Approval keyboard shortcuts</strong> — A, R, J/K</div>
+      <div class="tl-item"><strong>J/K nav hook</strong> — shared across all list pages</div>
+      <div class="tl-item"><strong>Agent avatars</strong> — color hash + role icons everywhere</div>
+      <div class="tl-item"><strong>Capability badges</strong> — derived from adapter config</div>
+      <div class="tl-item"><strong>Density toggle</strong> — compact mode on all lists</div>
+      <div class="tl-item"><strong>Bulk multi-select</strong> — Shift+click + Cmd+A</div>
+      <div class="tl-item"><strong>Onboarding live preview</strong> — Step 0 animated mockup</div>
+    </div>
+    <div class="tl-col sprint2">
+      <div class="tl-col-title">Sprint 2 · Week 3-4 · Polish</div>
+      <div class="tl-item"><strong>Skeleton screens</strong> — all major pages</div>
+      <div class="tl-item"><strong>Framer Motion</strong> — spring animations</div>
+      <div class="tl-item"><strong>Empty states</strong> — illustrated SVGs</div>
+      <div class="tl-item"><strong>Icon weight</strong> — standardize to 1.5</div>
+      <div class="tl-item"><strong>Surface hierarchy</strong> — --surface-0 through 3</div>
+      <div class="tl-item"><strong>Cmd palette history</strong> — recent + pinned</div>
+      <div class="tl-item"><strong>Sidebar restructure</strong> — 3 zones</div>
+      <div class="tl-item"><strong>Breadcrumbs</strong> — all detail pages</div>
+      <div class="tl-item"><strong>Onboarding panel evolution</strong> — contextual per step</div>
+      <div class="tl-item"><strong>Copy-to-clipboard adapter</strong> — Step 2 debug UX</div>
+      <div class="tl-item"><strong>Run controls</strong> — pause/cancel on agent cards</div>
+      <div class="tl-item"><strong>COT ticker</strong> — wire to live events</div>
+      <div class="tl-item"><strong>Agent stats</strong> — perf metrics on detail page</div>
+      <div class="tl-item"><strong>Agent timeline</strong> — history tab on detail</div>
+      <div class="tl-item"><strong>Advanced filters</strong> — Inbox + Issues</div>
+      <div class="tl-item"><strong>Go-To shortcuts</strong> — G+I, G+D, G+A chords</div>
+      <div class="tl-item"><strong>Page preference memory</strong> — sort/filter persist</div>
+    </div>
+    <div class="tl-col sprint3">
+      <div class="tl-col-title">Sprint 3 · Week 5-6 · Power Features</div>
+      <div class="tl-item"><strong>DesignGuide expansion</strong> — living component library</div>
+      <div class="tl-item"><strong>URL-persistent filters</strong> — browser back works</div>
+      <div class="tl-item"><strong>Keyboard cheatsheet</strong> — Cmd+? modal</div>
+      <div class="tl-item"><strong>AI task suggestion</strong> — Step 3 pre-fill from goal</div>
+      <div class="tl-item"><strong>Getting Started panel</strong> — post-onboarding guide</div>
+      <div class="tl-item"><strong>Wizard resume</strong> — localStorage persistence</div>
+      <div class="tl-item"><strong>Session cost badge</strong> — per agent on dashboard</div>
+      <div class="tl-item"><strong>Pinned agents</strong> — persistent dashboard top</div>
+      <div class="tl-item"><strong>Delegation chain</strong> — on Issue detail</div>
+      <div class="tl-item"><strong>Agent comparison</strong> — side-by-side metrics</div>
+      <div class="tl-item"><strong>Focus mode</strong> — F key, full-width inbox</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM LINE -->
+<div class="bottom">
+  <div class="bottom-title">The Definitive Competitive Advantage — After These 40 Items</div>
+  <div class="bottom-body">
+    After this plan, Avero Paperclip will be the <strong>only AI platform in the world</strong> that simultaneously delivers: (1) <em>real-time agent operations</em> in a live command center, (2) <em>agent identity and personality</em> — avatars, capability badges, stats, timelines, (3) <em>the fastest keyboard-driven workflow</em> of any work management tool (matching Linear), (4) <em>the best-in-class dark theme</em> with genuine power-user density controls, and (5) <em>the most human onboarding</em> in the AI tools category — showing what a live AI company looks like before asking you to build one.<br><br>
+    Google and Microsoft treat AI as a <strong>side panel</strong>. Notion treats it as a <strong>slash command</strong>. Linear doesn't have AI at all. <em>We are the only product where AI agents are the entire point — and this plan makes that visible in every pixel.</em>
+  </div>
+</div>
+
+</body>
+</html>

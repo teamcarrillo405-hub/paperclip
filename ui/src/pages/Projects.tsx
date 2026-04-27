@@ -11,7 +11,7 @@ import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { formatDate, projectUrl } from "../lib/utils";
 import { Button } from "@/components/ui/button";
-import { Hexagon, Plus } from "lucide-react";
+import { Hexagon, Plus, AlertCircle } from "lucide-react";
 
 export function Projects() {
   const { selectedCompanyId } = useCompany();
@@ -22,7 +22,7 @@ export function Projects() {
     setBreadcrumbs([{ label: "Projects" }]);
   }, [setBreadcrumbs]);
 
-  const { data: allProjects, isLoading, error } = useQuery({
+  const { data: allProjects, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -49,7 +49,20 @@ export function Projects() {
         </Button>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && (
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{error.message}</p>
+          </div>
+          <button
+            className="text-xs text-destructive/70 hover:text-destructive underline shrink-0"
+            onClick={() => refetch()}
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {!isLoading && projects.length === 0 && (
         <EmptyState
@@ -61,7 +74,7 @@ export function Projects() {
       )}
 
       {projects.length > 0 && (
-        <div className="border border-border">
+        <div className="rounded-lg border border-border overflow-hidden">
           {projects.map((project) => (
             <EntityRow
               key={project.id}

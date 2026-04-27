@@ -8,6 +8,7 @@ import { issuesApi } from "../api/issues";
 import { projectsApi } from "../api/projects";
 import { ProjectWorkspacesContent } from "../components/ProjectWorkspacesContent";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { AlertCircle } from "lucide-react";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { buildProjectWorkspaceSummaries, type ProjectWorkspaceSummary } from "../lib/project-workspaces-tab";
@@ -116,7 +117,12 @@ export function Workspaces() {
   if (experimentalSettingsQuery.isLoading) return <PageSkeleton variant="detail" />;
   if (!isolatedWorkspacesEnabled) return <Navigate to="/issues" replace />;
   if (dataLoading) return <PageSkeleton variant="list" />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return (
+    <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+      <p className="text-sm text-destructive">{error.message}</p>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
