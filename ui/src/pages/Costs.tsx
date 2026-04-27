@@ -290,7 +290,7 @@ export function Costs() {
     return map;
   }, [spendData?.byAgentModel]);
 
-  const { data: providerData, isError: isProviderError, refetch: refetchProvider, isRefetching: isProviderRefetching } = useQuery({
+  const { data: providerData, isLoading: isProviderLoading, isError: isProviderError, refetch: refetchProvider, isRefetching: isProviderRefetching } = useQuery({
     queryKey: queryKeys.usageByProvider(companyId, from || undefined, to || undefined),
     queryFn: () => costsApi.byProvider(companyId, from || undefined, to || undefined),
     enabled: !!selectedCompanyId && customReady && (mainTab === "providers" || mainTab === "billers"),
@@ -298,7 +298,7 @@ export function Costs() {
     staleTime: 10_000,
   });
 
-  const { data: billerData, isError: isBillerError, refetch: refetchBiller, isRefetching: isBillerRefetching } = useQuery({
+  const { data: billerData, isLoading: isBillerLoading, isError: isBillerError, refetch: refetchBiller, isRefetching: isBillerRefetching } = useQuery({
     queryKey: queryKeys.usageByBiller(companyId, from || undefined, to || undefined),
     queryFn: () => costsApi.byBiller(companyId, from || undefined, to || undefined),
     enabled: !!selectedCompanyId && customReady && mainTab === "billers",
@@ -566,44 +566,48 @@ export function Costs() {
           </div>
 
           {preset === "custom" ? (
-            <div
-              role="group"
-              aria-label="Custom date range"
-              className="flex flex-wrap items-center gap-2 rounded-md border border-border p-3"
-            >
-              <input
-                type="date"
-                aria-label="Start date"
-                value={customFrom}
-                onChange={(event) => setCustomFrom(event.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
-              />
-              <span className="text-sm text-muted-foreground" aria-hidden="true">to</span>
-              <input
-                type="date"
-                aria-label="End date"
-                value={customTo}
-                onChange={(event) => setCustomTo(event.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
-              />
+            <div className="space-y-1">
+              <div
+                role="group"
+                aria-label="Custom date range"
+                className="flex flex-wrap items-center gap-2 rounded-md border border-border p-3"
+              >
+                <input
+                  type="date"
+                  aria-label="Start date"
+                  value={customFrom}
+                  onChange={(event) => setCustomFrom(event.target.value)}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                />
+                <span className="text-sm text-muted-foreground" aria-hidden="true">to</span>
+                <input
+                  type="date"
+                  aria-label="End date"
+                  value={customTo}
+                  onChange={(event) => setCustomTo(event.target.value)}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1" aria-live="polite">{showCustomPrompt ? "Select both dates to load data." : null}</p>
             </div>
           ) : null}
 
           {/* FIX 2: skeleton placeholders during load for the 4 top-level MetricTiles */}
-          <div className="grid gap-3 lg:grid-cols-4">
-            {(spendLoading || financeLoading) ? (
+          {(spendLoading || financeLoading) ? (
+            <div className="grid gap-3 lg:grid-cols-4">
               <div className="h-20 rounded-md bg-muted animate-pulse" />
-            ) : (
+              <div className="h-20 rounded-md bg-muted animate-pulse" />
+              <div className="h-20 rounded-md bg-muted animate-pulse" />
+              <div className="h-20 rounded-md bg-muted animate-pulse" />
+            </div>
+          ) : (
+            <div className="grid gap-3 lg:grid-cols-4">
               <MetricTile
                 label="Inference spend"
                 value={formatCents(spendData?.summary.spendCents ?? 0)}
                 subtitle={`${formatTokens(inferenceTokenTotal)} tokens across request-scoped events`}
                 icon={DollarSign}
               />
-            )}
-            {(spendLoading || financeLoading) ? (
-              <div className="h-20 rounded-md bg-muted animate-pulse" />
-            ) : (
               <MetricTile
                 label="Budget"
                 value={activeBudgetIncidents.length > 0 ? String(activeBudgetIncidents.length) : (
@@ -620,28 +624,20 @@ export function Costs() {
                 }
                 icon={Coins}
               />
-            )}
-            {(spendLoading || financeLoading) ? (
-              <div className="h-20 rounded-md bg-muted animate-pulse" />
-            ) : (
               <MetricTile
                 label="Finance net"
                 value={formatCents(financeData?.summary.netCents ?? 0)}
                 subtitle={`${formatCents(financeData?.summary.debitCents ?? 0)} debits · ${formatCents(financeData?.summary.creditCents ?? 0)} credits`}
                 icon={ReceiptText}
               />
-            )}
-            {(spendLoading || financeLoading) ? (
-              <div className="h-20 rounded-md bg-muted animate-pulse" />
-            ) : (
               <MetricTile
                 label="Finance events"
                 value={String(financeData?.summary.eventCount ?? 0)}
                 subtitle={`${formatCents(financeData?.summary.estimatedDebitCents ?? 0)} estimated in range`}
                 icon={ArrowUpRight}
               />
-            )}
-          </div>
+            </div>
+          )}
       </div>
 
       <Tabs value={mainTab} onValueChange={(value) => setMainTab(value as typeof mainTab)}>
@@ -1019,6 +1015,8 @@ export function Costs() {
         <TabsContent value="providers" className="mt-4 space-y-4">
           {showCustomPrompt ? (
             <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+          ) : isProviderLoading ? (
+            <PageSkeleton variant="list" />
           ) : (
             <>
               {isProviderError ? (
@@ -1087,6 +1085,8 @@ export function Costs() {
         <TabsContent value="billers" className="mt-4 space-y-4">
           {showCustomPrompt ? (
             <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+          ) : isBillerLoading ? (
+            <PageSkeleton variant="list" />
           ) : (
             <>
               {isBillerError ? (

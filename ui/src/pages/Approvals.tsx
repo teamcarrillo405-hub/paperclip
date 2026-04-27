@@ -12,6 +12,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { ShieldCheck, AlertCircle, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApprovalCard } from "../components/ApprovalCard";
+import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { useCompanyLiveEvents } from "../hooks/useCompanyLiveEvents";
 
@@ -177,13 +178,13 @@ export function Approvals() {
         });
       } else if ((e.key === "a" || e.key === "A") && focusedIndex !== null) {
         const item = filtered[focusedIndex];
-        if (item && (item.status === "pending" || item.status === "revision_requested")) {
+        if (item && (item.status === "pending" || item.status === "revision_requested") && !isBulkOperating) {
           e.preventDefault();
           approveMutation.mutate(item.id);
         }
       } else if ((e.key === "r" || e.key === "R") && focusedIndex !== null) {
         const item = filtered[focusedIndex];
-        if (item && (item.status === "pending" || item.status === "revision_requested")) {
+        if (item && (item.status === "pending" || item.status === "revision_requested") && !isBulkOperating) {
           e.preventDefault();
           rejectMutation.mutate(item.id);
         }
@@ -241,7 +242,7 @@ export function Approvals() {
   }
 
   if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">Select a company first.</p>;
+    return <EmptyState icon={ShieldCheck} message="Select a company to view approvals." />;
   }
 
   if (isLoading) {

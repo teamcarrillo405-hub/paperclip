@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  AlertCircle,
   Boxes,
   ChevronDown,
   ChevronRight,
@@ -428,7 +429,7 @@ function SkillList({
   }
 
   return (
-    <div>
+    <div role="list">
       {filteredSkills.map((skill, index) => {
         const expanded = expandedSkillId === skill.id;
         const tree = buildTree(skill.fileInventory);
@@ -437,7 +438,7 @@ function SkillList({
         const accordionId = `skill-detail-${skill.id ?? index}`;
 
         return (
-          <div key={skill.id} className="border-b border-border">
+          <div key={skill.id} role="listitem" className="border-b border-border">
             <div
               className={cn(
                 "group grid grid-cols-[minmax(0,1fr)_2.25rem] items-center gap-x-1 px-3 py-1.5 hover:bg-accent/30",
@@ -766,7 +767,8 @@ function SkillPane({
         {fileLoading ? (
           <PageSkeleton variant="detail" />
         ) : fileError ? (
-          <p role="alert" className="text-sm text-destructive p-4">
+          <p role="alert" className="flex items-center gap-2 text-sm text-destructive p-4">
+            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
             {fileError.message ?? "Failed to load file."}
           </p>
         ) : !file ? (
@@ -1276,6 +1278,7 @@ export function CompanySkills() {
                 variant="ghost"
                 onClick={handleAddSkillSource}
                 disabled={importSkill.isPending}
+                aria-label={importSkill.isPending ? "Adding skill..." : undefined}
               >
                 {importSkill.isPending ? <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Add"}
               </Button>
@@ -1329,7 +1332,7 @@ export function CompanySkills() {
           )}
         </aside>
 
-        <div className="min-w-0 pl-6 pr-6">
+        <div className="min-w-0 px-5">
           <SkillPane
             loading={skillsQuery.isLoading || detailQuery.isLoading}
             detail={activeDetail}
