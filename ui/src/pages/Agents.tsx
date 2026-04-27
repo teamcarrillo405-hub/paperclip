@@ -352,8 +352,36 @@ export function Agents() {
         </div>
       </div>
 
-      {sortedAgents.length > 0 && (
-        <p className="text-xs text-muted-foreground">{sortedAgents.length} agent{sortedAgents.length !== 1 ? "s" : ""}</p>
+      {agents && agents.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            { label: "Total Agents", value: String(agents.length) },
+            {
+              label: "Active Now",
+              value: String(
+                (runs ?? []).filter((r) => r.status === "running" || r.status === "queued").length,
+              ),
+            },
+            {
+              label: "Cost MTD",
+              value: (() => {
+                const total = [...costByAgentId.values()].reduce((s, c) => s + c, 0);
+                return total > 0 ? formatCents(total) : "—";
+              })(),
+            },
+            { label: "Runs Today", value: String((runs ?? []).length) },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="rounded-lg border border-border/60 bg-card/50 px-3 py-2"
+            >
+              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                {label}
+              </p>
+              <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">{value}</p>
+            </div>
+          ))}
+        </div>
       )}
 
       {error && <p className="text-sm text-destructive">{error.message}</p>}
@@ -419,9 +447,14 @@ export function Agents() {
                     to={agentUrl(agent)}
                     className={agent.pausedAt && tab !== "paused" ? "opacity-50" : ""}
                     leading={
-                      <span className="relative flex h-2.5 w-2.5">
+                      <span className="relative flex h-2.5 w-2.5 shrink-0">
+                        {(agent.status === "active" || agent.status === "running") && (
+                          <span
+                            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-50 ${agentStatusDot[agent.status] ?? agentStatusDotDefault}`}
+                          />
+                        )}
                         <span
-                          className={`absolute inline-flex h-full w-full rounded-full ${agentStatusDot[agent.status] ?? agentStatusDotDefault}`}
+                          className={`relative inline-flex h-2.5 w-2.5 rounded-full ${agentStatusDot[agent.status] ?? agentStatusDotDefault}`}
                         />
                       </span>
                     }
@@ -518,7 +551,7 @@ export function Agents() {
               className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               <Download className="h-3 w-3" />
-              Export CSV
+              Export CSV ({selectedIds.size})
             </button>
             <button
               type="button"
