@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useSearchParams } from "@/lib/router";
+import { Link, useNavigate, useSearchParams } from "@/lib/router";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { agentsApi } from "../api/agents";
@@ -237,6 +237,8 @@ export function NewAgent() {
               <button
                 type="button"
                 aria-label={`Agent role: ${effectiveRole}`}
+                aria-expanded={roleOpen}
+                aria-haspopup="listbox"
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors",
                   isFirstAgent && "opacity-60 cursor-not-allowed"
@@ -248,19 +250,23 @@ export function NewAgent() {
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-36 p-1" align="start">
-              {AGENT_ROLES.map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  className={cn(
-                    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                    r === role && "bg-accent"
-                  )}
-                  onClick={() => { setRole(r); setRoleOpen(false); }}
-                >
-                  {roleLabels[r] ?? r}
-                </button>
-              ))}
+              <div role="listbox">
+                {AGENT_ROLES.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    role="option"
+                    aria-selected={effectiveRole === r}
+                    className={cn(
+                      "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
+                      r === role && "bg-accent"
+                    )}
+                    onClick={() => { setRole(r); setRoleOpen(false); }}
+                  >
+                    {roleLabels[r] ?? r}
+                  </button>
+                ))}
+              </div>
             </PopoverContent>
           </Popover>
 
@@ -293,7 +299,7 @@ export function NewAgent() {
             </div>
             {availableSkills.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                No optional company skills installed yet.
+                <>No company skills installed. <Link to="/company/skills" className="underline text-xs">Manage skills</Link></>
               </p>
             ) : (
               <div className="space-y-3">

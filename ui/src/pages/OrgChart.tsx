@@ -448,7 +448,14 @@ export function OrgChart() {
   }
 
   if (orgTree && orgTree.length === 0) {
-    return <EmptyState icon={Network} message="No organizational hierarchy defined." />;
+    return (
+      <EmptyState
+        icon={Network}
+        message="No organizational hierarchy defined."
+        action="Add your first agent"
+        onAction={() => navigate("/agents/new")}
+      />
+    );
   }
 
   return (
@@ -630,7 +637,7 @@ export function OrgChart() {
                       {agent?.title ?? roleLabel(node.role)}
                     </span>
                     {agent && (
-                      <span className="text-xs text-muted-foreground/60 font-mono leading-tight mt-1 truncate w-full">
+                      <span className="text-xs text-muted-foreground/60 leading-tight mt-1 truncate w-full">
                         {getAdapterLabel(agent.adapterType)}
                       </span>
                     )}
