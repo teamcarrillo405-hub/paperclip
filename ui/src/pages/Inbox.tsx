@@ -435,6 +435,7 @@ function ApprovalInboxRow({
                 className={cn(
                   "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
                   "hover:bg-blue-500/20",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                 )}
                 aria-label="Mark as read"
               >
@@ -486,7 +487,7 @@ function ApprovalInboxRow({
           <div className="hidden shrink-0 items-center gap-2 sm:flex">
             <Button
               size="sm"
-              className="h-8 bg-green-700 px-3 text-white hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700"
+              className="h-8 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 px-3 text-white"
               onClick={onApprove}
               disabled={isPending}
               aria-label={`Approve: ${label}`}
@@ -510,7 +511,7 @@ function ApprovalInboxRow({
         <div className="mt-3 flex gap-2 sm:hidden">
           <Button
             size="sm"
-            className="h-8 bg-green-700 px-3 text-white hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700"
+            className="h-8 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 px-3 text-white"
             onClick={onApprove}
             disabled={isPending}
             aria-label={`Approve: ${label}`}
@@ -575,6 +576,7 @@ function JoinRequestInboxRow({
                 className={cn(
                   "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
                   "hover:bg-blue-500/20",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                 )}
                 aria-label="Mark as read"
               >
@@ -618,7 +620,7 @@ function JoinRequestInboxRow({
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           <Button
             size="sm"
-            className="h-8 bg-green-700 px-3 text-white hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700"
+            className="h-8 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 px-3 text-white"
             onClick={onApprove}
             disabled={isPending}
             aria-label={`Approve: ${label}`}
@@ -642,7 +644,7 @@ function JoinRequestInboxRow({
       <div className="mt-3 flex gap-2 sm:hidden">
         <Button
           size="sm"
-          className="h-8 bg-green-700 px-3 text-white hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700"
+          className="h-8 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 px-3 text-white"
           onClick={onApprove}
           disabled={isPending}
           aria-label={`Approve: ${label}`}

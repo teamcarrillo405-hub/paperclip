@@ -566,7 +566,7 @@ export function ExecutionWorkspaceDetail() {
             <div className="space-y-4 sm:space-y-6">
               <Card className="rounded-none">
                 <CardHeader>
-                  <CardTitle>Services and jobs</CardTitle>
+                  <CardTitle><h2 className="text-base font-semibold leading-none">Services and jobs</h2></CardTitle>
                   <CardDescription>
                     Source: {runtimeConfigSource === "execution_workspace"
                       ? "execution workspace override"
@@ -600,7 +600,7 @@ export function ExecutionWorkspaceDetail() {
 
               <Card className="rounded-none">
                 <CardHeader>
-                  <CardTitle>Workspace settings</CardTitle>
+                  <CardTitle><h2 className="text-base font-semibold leading-none">Workspace settings</h2></CardTitle>
                   <CardDescription>
                     Edit the concrete path, repo, branch, provisioning, teardown, and runtime overrides attached to this execution workspace.
                   </CardDescription>
@@ -849,13 +849,16 @@ export function ExecutionWorkspaceDetail() {
 
               <Card className="rounded-none">
                 <CardHeader>
-                  <CardTitle>Workspace context</CardTitle>
+                  <CardTitle><h2 className="text-base font-semibold leading-none">Workspace context</h2></CardTitle>
                   <CardDescription>Linked objects and relationships</CardDescription>
                 </CardHeader>
                 <CardContent>
                 <DetailRow label="Project">
                   {projectQuery.error ? (
-                    <span className="text-xs text-destructive">Failed to load</span>
+                    <span className="inline-flex items-center gap-2">
+                      <span className="text-xs text-destructive">Failed to load</span>
+                      <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" onClick={() => void projectQuery.refetch()}>Retry</Button>
+                    </span>
                   ) : project ? (
                     <Link to={`/projects/${projectRef}`} className="hover:underline">{project.name}</Link>
                   ) : (
@@ -873,7 +876,10 @@ export function ExecutionWorkspaceDetail() {
                 </DetailRow>
                 <DetailRow label="Source issue">
                   {sourceIssueQuery.error ? (
-                    <span className="text-xs text-destructive">Failed to load</span>
+                    <span className="inline-flex items-center gap-2">
+                      <span className="text-xs text-destructive">Failed to load</span>
+                      <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" onClick={() => void sourceIssueQuery.refetch()}>Retry</Button>
+                    </span>
                   ) : sourceIssue ? (
                     <Link to={issueUrl(sourceIssue)} className="hover:underline">
                       {sourceIssue.identifier ?? sourceIssue.id} · {sourceIssue.title}
@@ -886,7 +892,10 @@ export function ExecutionWorkspaceDetail() {
                 </DetailRow>
                 <DetailRow label="Derived from">
                   {derivedWorkspaceQuery.error ? (
-                    <span className="text-xs text-destructive">Failed to load</span>
+                    <span className="inline-flex items-center gap-2">
+                      <span className="text-xs text-destructive">Failed to load</span>
+                      <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" onClick={() => void derivedWorkspaceQuery.refetch()}>Retry</Button>
+                    </span>
                   ) : derivedWorkspace ? (
                     <Link to={executionWorkspaceTabPath(derivedWorkspace.id, "configuration")} className="hover:underline">
                       {derivedWorkspace.name}
@@ -905,7 +914,7 @@ export function ExecutionWorkspaceDetail() {
 
               <Card className="rounded-none">
                 <CardHeader>
-                  <CardTitle>Concrete location</CardTitle>
+                  <CardTitle><h2 className="text-base font-semibold leading-none">Concrete location</h2></CardTitle>
                   <CardDescription>Paths and refs</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -953,7 +962,7 @@ export function ExecutionWorkspaceDetail() {
           <TabsContent value="runtime_logs">
             <Card className="rounded-none">
               <CardHeader>
-                <CardTitle>Runtime and cleanup logs</CardTitle>
+                <CardTitle><h2 className="text-base font-semibold leading-none">Runtime and cleanup logs</h2></CardTitle>
                 <CardDescription>Recent operations</CardDescription>
               </CardHeader>
               <CardContent>

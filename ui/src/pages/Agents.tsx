@@ -89,7 +89,7 @@ export function Agents() {
     enabled: !!selectedCompanyId,
   });
 
-  const { data: orgTree, isLoading: isOrgLoading } = useQuery({
+  const { data: orgTree, isLoading: isOrgLoading, isError: isOrgError, error: orgError, refetch: refetchOrg } = useQuery({
     queryKey: queryKeys.org(selectedCompanyId!),
     queryFn: () => agentsApi.org(selectedCompanyId!),
     enabled: !!selectedCompanyId && effectiveView === "org",
@@ -320,6 +320,7 @@ export function Agents() {
           <div className="relative" ref={filterDropdownRef}>
             <button
               ref={filterTriggerRef}
+              id="filter-menu-trigger"
               aria-expanded={filtersOpen}
               aria-haspopup="menu"
               className={cn(
@@ -341,6 +342,7 @@ export function Agents() {
             {filtersOpen && (
               <div
                 role="menu"
+                aria-labelledby="filter-menu-trigger"
                 onKeyDown={(e) => {
                   if (e.key === "Escape") {
                     setFiltersOpen(false);
@@ -599,6 +601,16 @@ export function Agents() {
           <p className="text-sm text-muted-foreground">
             {searchTrimmed ? "No agents match your search." : "No agents match the selected filter."}
           </p>
+        </div>
+      )}
+
+      {effectiveView === "org" && isOrgError && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{orgError instanceof Error ? orgError.message : "Failed to load agents."}</p>
+          </div>
+          <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0" onClick={() => refetchOrg()}>Retry</Button>
         </div>
       )}
 
