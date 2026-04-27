@@ -249,7 +249,8 @@ export function NewAgent() {
 
         {/* Property chips: Role + Reports To */}
         <div className="px-4 pt-2 pb-1 border-t border-border">
-          <span id="role-label" className="text-sm font-medium">Role</span>
+          <h2 className="text-sm font-semibold text-foreground">Role</h2>
+          <span id="role-label" className="sr-only">Role</span>
         </div>
         <div className="flex items-center gap-1.5 px-4 py-2 flex-wrap">
           {agentsLoading && (
@@ -266,11 +267,14 @@ export function NewAgent() {
                   aria-expanded={roleOpen}
                   aria-haspopup="menu"
                   aria-controls="role-menu"
+                  aria-disabled={isFirstAgent ? "true" : undefined}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors",
                     isFirstAgent && "opacity-60 cursor-not-allowed"
                   )}
-                  disabled={isFirstAgent}
+                  onClick={(e) => {
+                    if (isFirstAgent) { e.preventDefault(); return; }
+                  }}
                 >
                   <Shield className="h-3 w-3 text-muted-foreground" />
                   {roleLabels[effectiveRole] ?? effectiveRole}
@@ -380,27 +384,30 @@ export function NewAgent() {
                 <>No company skills installed. <Link to="/company/skills" className="underline text-xs">Manage skills</Link></>
               </p>
             ) : (
-              <div className="space-y-3">
-                {availableSkills.map((skill) => {
-                  const inputId = `skill-${skill.id}`;
-                  const checked = selectedSkillKeys.includes(skill.key);
-                  return (
-                    <div key={skill.id} className="flex items-start gap-3">
-                      <Checkbox
-                        id={inputId}
-                        checked={checked}
-                        onCheckedChange={(next) => toggleSkill(skill.key, next === true)}
-                      />
-                      <label htmlFor={inputId} className="grid gap-1 leading-none">
-                        <span className="text-sm font-medium">{skill.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {skill.description ?? skill.key}
-                        </span>
-                      </label>
-                    </div>
-                  );
-                })}
-              </div>
+              <fieldset className="border-0 p-0 m-0">
+                <legend className="sr-only">Company skills</legend>
+                <div className="space-y-3">
+                  {availableSkills.map((skill) => {
+                    const inputId = `skill-${skill.id}`;
+                    const checked = selectedSkillKeys.includes(skill.key);
+                    return (
+                      <div key={skill.id} className="flex items-start gap-3">
+                        <Checkbox
+                          id={inputId}
+                          checked={checked}
+                          onCheckedChange={(next) => toggleSkill(skill.key, next === true)}
+                        />
+                        <label htmlFor={inputId} className="grid gap-1 leading-none">
+                          <span className="text-sm font-medium">{skill.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {skill.description ?? skill.key}
+                          </span>
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+              </fieldset>
             )}
           </div>
         </div>
