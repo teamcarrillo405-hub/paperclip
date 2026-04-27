@@ -172,7 +172,7 @@ export function JoinRequestQueue() {
               const isPending = pendingIds.has(request.id);
 
               return (
-                <li key={request.id} className="rounded-xl border border-border bg-card p-4">
+                <li key={request.id} className={`rounded-xl border border-border bg-card p-4${request.status === "rejected" ? " opacity-60" : ""}`}>
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
@@ -267,7 +267,7 @@ export function JoinRequestQueue() {
                     <div className="rounded-lg border border-border bg-background px-3 py-2">
                       <div className="text-xs font-medium uppercase tracking-wide">Request details</div>
                       <div className="mt-2">Submitted {new Date(request.createdAt).toLocaleString()}</div>
-                      <div>Source IP {request.requestIp}</div>
+                      <div className="font-mono text-xs break-all">Source IP {request.requestIp}</div>
                       {request.requestType === "agent" && request.capabilities ? <div>{request.capabilities}</div> : null}
                     </div>
                   </div>

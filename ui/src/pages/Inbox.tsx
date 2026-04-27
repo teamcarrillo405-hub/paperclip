@@ -17,6 +17,7 @@ import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useGeneralSettings } from "../context/GeneralSettingsContext";
 import { useSidebar } from "../context/SidebarContext";
+import { useToast } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 import {
   applyIssueFilters,
@@ -481,7 +482,7 @@ function ApprovalInboxRow({
           <div className="hidden shrink-0 items-center gap-2 sm:flex">
             <Button
               size="sm"
-              className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
+              className="h-8 bg-green-700 px-3 text-white hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700"
               onClick={onApprove}
               disabled={isPending}
               aria-label={`Approve: ${label}`}
@@ -505,7 +506,7 @@ function ApprovalInboxRow({
         <div className="mt-3 flex gap-2 sm:hidden">
           <Button
             size="sm"
-            className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
+            className="h-8 bg-green-700 px-3 text-white hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700"
             onClick={onApprove}
             disabled={isPending}
             aria-label={`Approve: ${label}`}
@@ -613,7 +614,7 @@ function JoinRequestInboxRow({
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           <Button
             size="sm"
-            className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
+            className="h-8 bg-green-700 px-3 text-white hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700"
             onClick={onApprove}
             disabled={isPending}
             aria-label={`Approve: ${label}`}
@@ -635,7 +636,7 @@ function JoinRequestInboxRow({
       <div className="mt-3 flex gap-2 sm:hidden">
         <Button
           size="sm"
-          className="h-8 bg-emerald-600 px-3 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600"
+          className="h-8 bg-green-700 px-3 text-white hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700"
           onClick={onApprove}
           disabled={isPending}
           aria-label={`Approve: ${label}`}
@@ -665,6 +666,7 @@ export function Inbox() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
+  const { pushToast } = useToast();
   const { keyboardShortcutsEnabled } = useGeneralSettings();
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
@@ -1405,6 +1407,7 @@ export function Inbox() {
     onSuccess: ({ newRun, originalRun }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(originalRun.companyId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(originalRun.companyId, originalRun.agentId) });
+      pushToast({ title: "Run retried. Loading new run…", tone: "success" });
       navigate(`/agents/${originalRun.agentId}/runs/${newRun.id}`);
     },
     onError: (err) => {
@@ -2047,6 +2050,7 @@ export function Inbox() {
                 className="h-8 shrink-0"
                 onClick={() => setShowMarkAllReadConfirm(true)}
                 disabled={markAllReadMutation.isPending}
+                aria-disabled={markAllReadMutation.isPending}
               >
                 {markAllReadMutation.isPending ? "Marking…" : "Mark all as read"}
               </Button>
@@ -2154,7 +2158,7 @@ export function Inbox() {
         <>
           {showSeparatorBefore("work_items") && <Separator />}
           <div>
-            <div ref={listRef} className="overflow-hidden rounded-xl border border-border bg-card">
+            <div ref={listRef} role="list" aria-label="Inbox items" className="overflow-hidden rounded-xl border border-border bg-card">
               {(() => {
                 const renderInboxIssue = ({
                   issue,

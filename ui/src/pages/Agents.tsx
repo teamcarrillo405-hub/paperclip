@@ -76,6 +76,7 @@ export function Agents() {
   const [showTerminated, setShowTerminated] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
+  const firstMenuItemRef = useRef<HTMLButtonElement>(null);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<{ col: SortCol; dir: SortDir } | null>(null);
@@ -322,7 +323,13 @@ export function Agents() {
                 "flex items-center gap-1.5 px-2 py-1.5 text-xs transition-colors border border-border",
                 filtersOpen || showTerminated ? "text-foreground bg-accent" : "text-muted-foreground hover:bg-accent/50"
               )}
-              onClick={() => setFiltersOpen(!filtersOpen)}
+              onClick={() => {
+                const opening = !filtersOpen;
+                setFiltersOpen(opening);
+                if (opening) {
+                  setTimeout(() => firstMenuItemRef.current?.focus(), 50);
+                }
+              }}
             >
               <SlidersHorizontal className="h-3 w-3" aria-hidden="true" />
               Filters
@@ -335,6 +342,7 @@ export function Agents() {
                 className="absolute right-0 top-full mt-1 z-50 w-48 border border-border bg-popover shadow-md p-1"
               >
                 <button
+                  ref={firstMenuItemRef}
                   role="menuitemcheckbox"
                   aria-checked={showTerminated}
                   className="flex items-center gap-2 w-full px-2 py-1.5 text-xs text-left hover:bg-accent/50 transition-colors"
@@ -378,7 +386,7 @@ export function Agents() {
             </div>
           )}
           <Button size="sm" variant="outline" onClick={openNewAgent}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            <Plus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
             New Agent
           </Button>
         </div>
@@ -425,7 +433,7 @@ export function Agents() {
 
       {error && (
         <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1 min-w-0">
             <p className="text-sm text-destructive">{error.message || "Failed to load agents."}</p>
           </div>
