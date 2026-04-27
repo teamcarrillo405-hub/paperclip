@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../context/ToastContext";
 import type {
   BudgetPolicySummary,
   CostByAgentModel,
@@ -81,7 +82,7 @@ function MetricTile({
   icon: ComponentType<{ className?: string }>;
 }) {
   return (
-    <section aria-label={label} className="rounded-md border border-border p-4">
+    <div className="rounded-md border border-border p-4">
       <div className="flex items-center justify-between gap-3">
         <dl className="min-w-0">
           <dt className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{label}</dt>
@@ -92,7 +93,7 @@ function MetricTile({
           <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -150,6 +151,7 @@ function FinanceSummaryCard({
 export function Costs() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { pushToast } = useToast();
   const queryClient = useQueryClient();
 
   const [mainTab, setMainTab] = useState<"overview" | "budgets" | "providers" | "billers" | "finance">("overview");
@@ -222,12 +224,18 @@ export function Costs() {
         windowKind: input.windowKind,
       }),
     onSuccess: invalidateBudgetViews,
+    onError: (error) => {
+      pushToast({ title: error instanceof Error ? error.message : "Failed to update budget policy.", tone: "error" });
+    },
   });
 
   const incidentMutation = useMutation({
     mutationFn: (input: { incidentId: string; action: "keep_paused" | "raise_budget_and_resume"; amount?: number }) =>
       budgetsApi.resolveIncident(companyId, input.incidentId, input),
     onSuccess: invalidateBudgetViews,
+    onError: (error) => {
+      pushToast({ title: error instanceof Error ? error.message : "Failed to resolve incident.", tone: "error" });
+    },
   });
 
   const { data: spendData, isLoading: spendLoading, error: spendError, refetch: refetchSpend, isRefetching: isSpendRefetching } = useQuery({
@@ -641,7 +649,7 @@ export function Costs() {
       </div>
 
       <Tabs value={mainTab} onValueChange={(value) => setMainTab(value as typeof mainTab)}>
-        <TabsList variant="line" className="justify-start">
+        <TabsList variant="line" className="justify-start" aria-label="Cost analysis tabs">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="budgets">Budgets</TabsTrigger>
           <TabsTrigger value="providers">Providers</TabsTrigger>

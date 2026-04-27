@@ -89,14 +89,14 @@ export function Dashboard() {
     refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
-  const { data: activity, error: activityError } = useQuery({
+  const { data: activity, error: activityError, refetch: refetchActivity } = useQuery({
     queryKey: [...queryKeys.activity(selectedCompanyId!), { limit: DASHBOARD_ACTIVITY_LIMIT }],
     queryFn: () => activityApi.list(selectedCompanyId!, { limit: DASHBOARD_ACTIVITY_LIMIT }),
     enabled: !!selectedCompanyId,
     refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
-  const { data: issues, error: issuesError } = useQuery({
+  const { data: issues, error: issuesError, refetch: refetchIssues } = useQuery({
     queryKey: queryKeys.issues.list(selectedCompanyId!),
     queryFn: () => issuesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -272,7 +272,7 @@ export function Dashboard() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {selectedCompany?.name ?? "Dashboard"}
         </h1>
-        <p aria-live="polite" aria-atomic="true" className="text-xs text-muted-foreground mt-0.5">
+        <p aria-live="polite" className="text-xs text-muted-foreground mt-0.5">
           {liveRunCount > 0
             ? `${liveRunCount} agent${liveRunCount !== 1 ? "s" : ""} running · `
             : ""}
@@ -393,6 +393,7 @@ export function Dashboard() {
                     key={d}
                     type="button"
                     aria-pressed={chartDays === d}
+                    aria-label={`Last ${d} days`}
                     onClick={() => setChartDays(d)}
                     className={cn(
                       "px-2.5 py-1 text-xs font-medium rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
@@ -407,22 +408,22 @@ export function Dashboard() {
               </div>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <section aria-label="Run Activity">
+              <section>
                 <ChartCard title="Run Activity" subtitle={`Last ${chartDays} days`}>
                   <RunActivityChart activity={data.runActivity} days={chartDays} />
                 </ChartCard>
               </section>
-              <section aria-label="Issues by Priority">
+              <section>
                 <ChartCard title="Issues by Priority" subtitle={`Last ${chartDays} days`}>
                   <PriorityChart issues={issues ?? []} days={chartDays} />
                 </ChartCard>
               </section>
-              <section aria-label="Issues by Status">
+              <section>
                 <ChartCard title="Issues by Status" subtitle={`Last ${chartDays} days`}>
                   <IssueStatusChart issues={issues ?? []} days={chartDays} />
                 </ChartCard>
               </section>
-              <section aria-label="Success Rate">
+              <section>
                 <ChartCard title="Success Rate" subtitle={`Last ${chartDays} days`}>
                   <SuccessRateChart activity={data.runActivity} days={chartDays} />
                 </ChartCard>
@@ -446,7 +447,10 @@ export function Dashboard() {
                 Recent Activity
               </h3>
               {activityError ? (
-                <p role="alert" className="text-xs text-destructive">Could not load activity.</p>
+                <div role="alert" className="flex items-center gap-2">
+                  <p className="text-xs text-destructive">Could not load activity.</p>
+                  <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" onClick={() => refetchActivity()}>Retry</Button>
+                </div>
               ) : recentActivity.length === 0 ? (
                 <div className="rounded-lg border border-border p-4">
                   <p className="text-sm text-muted-foreground">No recent activity.</p>
@@ -475,7 +479,10 @@ export function Dashboard() {
                 Recent Tasks
               </h3>
               {issuesError ? (
-                <p role="alert" className="text-xs text-destructive">Could not load activity.</p>
+                <div role="alert" className="flex items-center gap-2">
+                  <p className="text-xs text-destructive">Could not load tasks.</p>
+                  <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" onClick={() => refetchIssues()}>Retry</Button>
+                </div>
               ) : recentIssues.length === 0 ? (
                 <div className="rounded-lg border border-border p-4">
                   <p className="text-sm text-muted-foreground">No tasks yet.</p>

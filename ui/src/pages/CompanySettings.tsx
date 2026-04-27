@@ -66,6 +66,7 @@ export function CompanySettings() {
 
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSnippet, setInviteSnippet] = useState<string | null>(null);
+  const [inviteGenerated, setInviteGenerated] = useState(false);
   const [snippetCopied, setSnippetCopied] = useState(false);
   const [snippetCopyDelightId, setSnippetCopyDelightId] = useState(0);
 
@@ -147,6 +148,7 @@ export function CompanySettings() {
         : `${base}${onboardingTextLink}`;
       setSnippetCopied(false);
       setSnippetCopyDelightId(0);
+      setInviteGenerated(false);
       let snippet: string;
       try {
         const manifest = await accessApi.getInviteOnboarding(invite.token);
@@ -166,6 +168,7 @@ export function CompanySettings() {
         });
       }
       setInviteSnippet(snippet);
+      setInviteGenerated(true);
       try {
         await navigator.clipboard.writeText(snippet);
         setSnippetCopied(true);
@@ -207,7 +210,11 @@ export function CompanySettings() {
     onSuccess: (company) => {
       setLogoUploadError(null);
       syncLogoState(company.logoUrl);
-    }
+      pushToast({ title: "Logo removed.", tone: "success" });
+    },
+    onError: (error) => {
+      pushToast({ title: error instanceof Error ? error.message : "Failed to remove logo.", tone: "error" });
+    },
   });
 
   function handleLogoFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -225,6 +232,7 @@ export function CompanySettings() {
   useEffect(() => {
     setInviteError(null);
     setInviteSnippet(null);
+    setInviteGenerated(false);
     setSnippetCopied(false);
     setSnippetCopyDelightId(0);
   }, [selectedCompanyId]);

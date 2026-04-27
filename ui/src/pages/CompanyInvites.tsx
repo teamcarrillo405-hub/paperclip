@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Check, ExternalLink, LoaderCircle, MailPlus } from "lucide-react";
+import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
@@ -53,6 +54,7 @@ export function CompanyInvites() {
   const [humanRole, setHumanRole] = useState<"owner" | "admin" | "operator" | "viewer">("operator");
   const [latestInviteUrl, setLatestInviteUrl] = useState<string | null>(null);
   const [latestInviteCopied, setLatestInviteCopied] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!latestInviteCopied) return;
@@ -137,12 +139,17 @@ export function CompanyInvites() {
   });
 
   const revokeMutation = useMutation({
-    mutationFn: (inviteId: string) => accessApi.revokeInvite(inviteId),
+    mutationFn: (inviteId: string) => {
+      setRevokingId(inviteId);
+      return accessApi.revokeInvite(inviteId);
+    },
     onSuccess: async () => {
+      setRevokingId(null);
       await queryClient.invalidateQueries({ queryKey: inviteHistoryQueryKey });
       pushToast({ title: "Invite revoked", tone: "success" });
     },
     onError: (error) => {
+      setRevokingId(null);
       pushToast({
         title: "Failed to revoke invite",
         body: error instanceof Error ? error.message : "Unknown error",
@@ -152,7 +159,7 @@ export function CompanyInvites() {
   });
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">Select a company to manage invites.</div>;
+    return <EmptyState icon={MailPlus} message="Select a company to view invites." />;
   }
 
   if (invitesQuery.isLoading) {
@@ -186,8 +193,8 @@ export function CompanyInvites() {
     <div className="max-w-5xl space-y-8">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <MailPlus className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">Company Invites</h1>
+          <MailPlus className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          <h1 className="text-2xl font-semibold">Company Invites</h1>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
           Create human invite links for company access. New invite links are copied to your clipboard when they are generated.

@@ -280,6 +280,7 @@ export function ProfileSettings() {
               aria-describedby="profile-email-hint"
               value={sessionQuery.data.user.email ?? ""}
               readOnly
+              aria-readonly="true"
               className="opacity-60 cursor-default"
             />
             <p id="profile-email-hint" className="text-xs text-muted-foreground">

@@ -76,6 +76,7 @@ export function Agents() {
   const [showTerminated, setShowTerminated] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
+  const filterTriggerRef = useRef<HTMLButtonElement>(null);
   const firstMenuItemRef = useRef<HTMLButtonElement>(null);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -287,6 +288,7 @@ export function Agents() {
 
   return (
     <div className="space-y-4">
+      <h1 className="sr-only">Agents</h1>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={tab} onValueChange={(v) => navigate(`/agents/${v}`)}>
           <PageTabBar
@@ -317,6 +319,7 @@ export function Agents() {
           </div>
           <div className="relative" ref={filterDropdownRef}>
             <button
+              ref={filterTriggerRef}
               aria-expanded={filtersOpen}
               aria-haspopup="menu"
               className={cn(
@@ -338,7 +341,15 @@ export function Agents() {
             {filtersOpen && (
               <div
                 role="menu"
-                onKeyDown={(e) => { if (e.key === "Escape") setFiltersOpen(false); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setFiltersOpen(false);
+                    filterTriggerRef.current?.focus();
+                  } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                    e.preventDefault();
+                    firstMenuItemRef.current?.focus();
+                  }
+                }}
                 className="absolute right-0 top-full mt-1 z-50 w-48 border border-border bg-popover shadow-md p-1"
               >
                 <button
@@ -594,6 +605,7 @@ export function Agents() {
       {effectiveView === "org" && isOrgLoading && agents && agents.length > 0 && (
         <div className="flex justify-center py-8">
           <LoaderCircle className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
+          <span className="sr-only" role="status" aria-live="polite">Loading org chart...</span>
         </div>
       )}
 

@@ -32,6 +32,7 @@ export function Approvals() {
   const [isBulkRejecting, setIsBulkRejecting] = useState(false);
   const isBulkOperating = isBulkApproving || isBulkRejecting;
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const isKeyboardNav = useRef(false);
   const [optimisticStatus, setOptimisticStatus] = useState<Record<string, "approved" | "rejected">>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -60,8 +61,9 @@ export function Approvals() {
   }, [setBreadcrumbs]);
 
   useEffect(() => {
-    if (focusedIndex !== null) {
+    if (focusedIndex !== null && isKeyboardNav.current) {
       cardRefs.current[focusedIndex]?.focus();
+      isKeyboardNav.current = false;
     }
   }, [focusedIndex]);
 
@@ -164,6 +166,7 @@ export function Approvals() {
 
       if (e.key === "j" || e.key === "J") {
         e.preventDefault();
+        isKeyboardNav.current = true;
         setFocusedIndex((prev) => {
           if (filtered.length === 0) return null;
           if (prev === null) return 0;
@@ -171,6 +174,7 @@ export function Approvals() {
         });
       } else if (e.key === "k" || e.key === "K") {
         e.preventDefault();
+        isKeyboardNav.current = true;
         setFocusedIndex((prev) => {
           if (filtered.length === 0) return null;
           if (prev === null) return filtered.length - 1;
@@ -253,6 +257,7 @@ export function Approvals() {
 
   return (
     <div className="space-y-4">
+      <h1 className="sr-only">Approvals</h1>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Tabs value={statusFilter} onValueChange={(v) => navigate(`/approvals/${v}`)}>
@@ -269,12 +274,12 @@ export function Approvals() {
             ]} />
           </Tabs>
           {isConnected ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
+            <span role="status" aria-live="polite" className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse" />
               Live
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/20 bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/60">
+            <span role="status" aria-live="polite" className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/20 bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/60">
               <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
               Offline
             </span>
@@ -414,7 +419,7 @@ export function Approvals() {
       )}
 
       {filtered.length > 0 && (
-        <div role="feed" className="grid gap-3">
+        <div role="feed" aria-label="Pending approvals" className="grid gap-3">
           {filtered.map((approval, idx) => {
             const isFocused = focusedIndex === idx;
             const isSelected = selectedIds.has(approval.id);
@@ -432,7 +437,7 @@ export function Approvals() {
                   isFocused && "ring-2 ring-ring ring-offset-1 ring-offset-background",
                   optimisticStatus[approval.id] && "opacity-40 scale-[0.99] pointer-events-none",
                 )}
-                onClick={() => setFocusedIndex(idx)}
+                onClick={() => { isKeyboardNav.current = false; setFocusedIndex(idx); }}
               >
                 {isPending && (
                   <button

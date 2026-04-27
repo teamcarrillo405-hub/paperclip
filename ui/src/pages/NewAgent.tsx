@@ -87,7 +87,7 @@ export function NewAgent() {
     enabled: Boolean(selectedCompanyId),
   });
 
-  const { data: companySkills, isError: companySkillsError, refetch: refetchCompanySkills } = useQuery({
+  const { data: companySkills, isLoading: companySkillsLoading, isError: companySkillsError, refetch: refetchCompanySkills } = useQuery({
     queryKey: queryKeys.companySkills.list(selectedCompanyId ?? ""),
     queryFn: () => companySkillsApi.list(selectedCompanyId!),
     enabled: Boolean(selectedCompanyId),
@@ -214,7 +214,7 @@ export function NewAgent() {
           <legend className="sr-only">Agent identity</legend>
           {/* Name */}
           <div className="px-4 pt-4 pb-2">
-            <label htmlFor="new-agent-name" className="sr-only">Agent name</label>
+            <label htmlFor="new-agent-name" className="text-sm font-medium">Agent name</label>
             <input
               id="new-agent-name"
               className="w-full text-lg font-semibold bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
@@ -229,7 +229,7 @@ export function NewAgent() {
 
           {/* Title */}
           <div className="px-4 pb-2">
-            <label htmlFor="new-agent-title" className="sr-only">Agent title</label>
+            <label htmlFor="new-agent-title" className="text-sm font-medium">Title</label>
             <input
               id="new-agent-title"
               className="w-full bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm text-muted-foreground placeholder:text-muted-foreground/40"
@@ -252,8 +252,8 @@ export function NewAgent() {
                   type="button"
                   aria-label={`Agent role: ${effectiveRole}`}
                   aria-expanded={roleOpen}
-                  aria-haspopup="listbox"
-                  aria-controls="role-listbox"
+                  aria-haspopup="menu"
+                  aria-controls="role-menu"
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors",
                     isFirstAgent && "opacity-60 cursor-not-allowed"
@@ -265,13 +265,12 @@ export function NewAgent() {
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-36 p-1" align="start">
-                <div id="role-listbox" role="listbox">
+                <div id="role-menu" role="menu">
                   {AGENT_ROLES.map((r) => (
                     <button
                       key={r}
                       type="button"
-                      role="option"
-                      aria-selected={effectiveRole === r}
+                      role="menuitem"
                       className={cn(
                         "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
                         r === role && "bg-accent"
@@ -328,6 +327,10 @@ export function NewAgent() {
                 <p role="alert" className="text-xs text-destructive">Could not load company skills.</p>
                 <Button variant="ghost" size="sm" onClick={() => void refetchCompanySkills()}>Retry</Button>
               </div>
+            ) : companySkillsLoading ? (
+              <div className="space-y-1">
+                {[1, 2, 3].map((i) => <div key={i} className="h-6 rounded bg-muted animate-pulse" />)}
+              </div>
             ) : availableSkills.length === 0 ? (
               <p className="text-xs text-muted-foreground">
                 <>No company skills installed. <Link to="/company/skills" className="underline text-xs">Manage skills</Link></>
@@ -366,6 +369,7 @@ export function NewAgent() {
           {formError && (
             <p role="alert" className="text-xs text-destructive mb-2">{formError}</p>
           )}
+          {!name.trim() && <p id="submit-hint" className="text-xs text-muted-foreground text-right">Enter an agent name to continue.</p>}
           <div className="flex items-center justify-end gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => navigate("/agents")}>
               Cancel
@@ -374,7 +378,7 @@ export function NewAgent() {
               type="submit"
               size="sm"
               disabled={!name.trim() || createAgent.isPending}
-              title={!name.trim() ? "Enter an agent name to continue" : undefined}
+              aria-describedby={!name.trim() ? "submit-hint" : undefined}
             >
               {createAgent.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
               {createAgent.isPending ? "Creating…" : "Create agent"}

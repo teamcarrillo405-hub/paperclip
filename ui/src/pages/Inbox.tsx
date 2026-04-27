@@ -289,7 +289,7 @@ export function FailedRunInboxRow({
                 type="button"
                 onClick={onArchive}
                 disabled={archiveDisabled}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
                 aria-label="Dismiss from inbox"
               >
                 <X className="h-3.5 w-3.5" />
@@ -445,7 +445,7 @@ function ApprovalInboxRow({
                 type="button"
                 onClick={onArchive}
                 disabled={archiveDisabled}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
                 aria-label="Dismiss from inbox"
               >
                 <X className="h-3.5 w-3.5" />
@@ -585,7 +585,7 @@ function JoinRequestInboxRow({
                 type="button"
                 onClick={onArchive}
                 disabled={archiveDisabled}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
                 aria-label="Dismiss from inbox"
               >
                 <X className="h-3.5 w-3.5" />
@@ -2158,7 +2158,7 @@ export function Inbox() {
         <>
           {showSeparatorBefore("work_items") && <Separator />}
           <div>
-            <div ref={listRef} role="list" aria-label="Inbox items" className="overflow-hidden rounded-xl border border-border bg-card">
+            <div ref={listRef} role="list" aria-label="Inbox items" aria-keyshortcuts="j k a r U" className="overflow-hidden rounded-xl border border-border bg-card">
               {(() => {
                 const renderInboxIssue = ({
                   issue,
