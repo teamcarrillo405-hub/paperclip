@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo, useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Issue } from "@paperclipai/shared";
@@ -201,19 +201,26 @@ const AgentRunCard = memo(function AgentRunCard({
     [pauseMutation],
   );
 
-  // Elapsed time — only meaningful while active or when we have a start time
-  const elapsedLabel = useMemo(
-    () => formatElapsed(run.startedAt, run.createdAt),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [run.startedAt, run.createdAt],
+  // Elapsed time — ticks every second while run is active
+  const [elapsedLabel, setElapsedLabel] = useState(() =>
+    formatElapsed(run.startedAt, run.createdAt),
   );
+  useEffect(() => {
+    if (!isActive) return;
+    setElapsedLabel(formatElapsed(run.startedAt, run.createdAt));
+    const id = setInterval(
+      () => setElapsedLabel(formatElapsed(run.startedAt, run.createdAt)),
+      1_000,
+    );
+    return () => clearInterval(id);
+  }, [isActive, run.startedAt, run.createdAt]);
 
   return (
     <div
       className={cn(
         "group flex h-[320px] flex-col overflow-hidden rounded-xl border shadow-sm",
         isActive
-          ? "border-cyan-500/25 bg-cyan-500/[0.04] shadow-[0_16px_40px_rgba(6,182,212,0.08)]"
+          ? "border-cyan-500/40 bg-cyan-500/[0.04] shadow-[0_0_0_1px_rgba(6,182,212,0.15),0_8px_32px_rgba(6,182,212,0.12)]"
           : "border-border bg-background/70",
       )}
       onMouseEnter={() => setHovered(true)}
@@ -327,7 +334,7 @@ const AgentRunCard = memo(function AgentRunCard({
         <button
           type="button"
           onClick={() => setTranscriptExpanded(true)}
-          className="absolute top-2 right-2 opacity-0 group-hover/transcript:opacity-100 transition-opacity p-1 rounded bg-background/80 text-muted-foreground hover:text-foreground"
+          className="absolute top-2 right-2 opacity-30 group-hover/transcript:opacity-100 transition-opacity p-1 rounded bg-background/80 text-muted-foreground hover:text-foreground"
           title="Expand transcript"
         >
           <Maximize2 className="h-3 w-3" />
