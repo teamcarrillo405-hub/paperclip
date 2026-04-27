@@ -691,6 +691,8 @@ export function Routines() {
               <EmptyState
                 icon={Repeat}
                 message="No routines yet. Use Create routine to define the first recurring workflow."
+                action="Create routine"
+                onAction={() => setComposerOpen(true)}
               />
             </div>
           ) : (
@@ -717,7 +719,7 @@ export function Routines() {
                         aria-label={`${group.label}, ${group.items.length} item${group.items.length === 1 ? "" : "s"}`}
                       >
                         <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
-                        <span className="text-sm font-semibold uppercase tracking-widest">
+                        <span className="text-sm font-semibold uppercase tracking-wide">
                           {group.label}
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -831,7 +833,7 @@ export function Routines() {
                 }}
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground">Tip: type &#123;&#123; in the title to add template variables.</p>
+              <p className="text-xs text-muted-foreground">Tip: type <code className="font-mono">{'{{'}</code> in the title to add template variables.</p>
             </div>
 
             <div className="px-5 pb-3">
@@ -944,7 +946,7 @@ export function Routines() {
                 bordered={false}
                 contentClassName="min-h-[160px] text-sm text-muted-foreground"
                 onSubmit={() => {
-                  if (!createRoutine.isPending && draft.title.trim() && draft.projectId && draft.assigneeAgentId) {
+                  if (!createRoutine.isPending && draft.title.trim()) {
                     createRoutine.mutate();
                   }
                 }}

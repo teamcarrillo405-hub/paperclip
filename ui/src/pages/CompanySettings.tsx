@@ -336,9 +336,11 @@ export function CompanySettings() {
               <Field
                 label="Logo"
                 hint="Upload a PNG, JPEG, WEBP, GIF, or SVG logo image."
+                htmlFor="logo-upload"
               >
                 <div className="space-y-2">
                   <input
+                    id="logo-upload"
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
                     onChange={handleLogoFileChange}
@@ -449,6 +451,7 @@ export function CompanySettings() {
             checked={!!selectedCompany.requireBoardApprovalForNewAgents}
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="company-settings-team-approval-toggle"
+            disabled={settingsMutation.isPending}
           />
         </div>
       </div>
@@ -463,6 +466,7 @@ export function CompanySettings() {
             hint="Only AI-generated outputs you explicitly vote on are eligible for feedback sharing."
             checked={!!selectedCompany.feedbackDataSharingEnabled}
             onChange={(enabled) => feedbackSharingMutation.mutate(enabled)}
+            disabled={feedbackSharingMutation.isPending}
           />
           <p className="text-sm text-muted-foreground">
             Votes are always saved locally. This setting controls whether voted AI outputs may also be marked for sharing with Paperclip Labs.
@@ -535,7 +539,7 @@ export function CompanySettings() {
                 <span
                   aria-live="polite"
                   aria-atomic="true"
-                  className="flex items-center gap-1 text-xs text-green-600"
+                  className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400"
                 >
                   {snippetCopied && (
                     <span
@@ -588,8 +592,7 @@ export function CompanySettings() {
         </div>
         <div className="rounded-md border border-border px-4 py-4">
           <p className="text-sm text-muted-foreground">
-            Import and export have moved to dedicated pages accessible from the{" "}
-            <a href="/org" className="underline hover:text-foreground">Org Chart</a> header.
+            Access import, export, and package templates from the links below.
           </p>
           <div className="mt-3 flex items-center gap-2">
             <Button size="sm" variant="outline" asChild>

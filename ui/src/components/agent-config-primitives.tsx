@@ -108,12 +108,14 @@ export function ToggleField({
   checked,
   onChange,
   toggleTestId,
+  disabled,
 }: {
   label: string;
   hint?: string;
   checked: boolean;
   onChange: (v: boolean) => void;
   toggleTestId?: string;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between">
@@ -128,8 +130,9 @@ export function ToggleField({
         role="switch"
         aria-checked={checked}
         aria-label={label}
+        disabled={disabled}
         className={cn(
-          "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+          "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed",
           checked ? "bg-green-600" : "bg-muted"
         )}
         onClick={() => onChange(!checked)}
