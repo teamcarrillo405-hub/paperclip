@@ -27,7 +27,7 @@ const DASHBOARD_LOG_READ_LIMIT_BYTES = 64_000;
 const DASHBOARD_MAX_CHUNKS_PER_RUN = 40;
 // Fallback polling interval for live-runs when the WebSocket is not connected.
 // LiveUpdatesProvider invalidates this query in real time when connected.
-const DASHBOARD_LIVE_RUNS_POLL_INTERVAL_MS = 60_000;
+const DASHBOARD_LIVE_RUNS_POLL_INTERVAL_MS = 10_000;
 const EMPTY_TRANSCRIPT: TranscriptEntry[] = [];
 
 function isRunActive(run: LiveRunForIssue): boolean {
@@ -98,7 +98,7 @@ export function ActiveAgentsPanel({ companyId, isLive = false }: ActiveAgentsPan
     maxChunksPerRun: DASHBOARD_MAX_CHUNKS_PER_RUN,
     logPollIntervalMs: DASHBOARD_LOG_POLL_INTERVAL_MS,
     logReadLimitBytes: DASHBOARD_LOG_READ_LIMIT_BYTES,
-    enableRealtimeUpdates: false,
+    enableRealtimeUpdates: isLive,
   });
 
   return (
@@ -260,7 +260,7 @@ const AgentRunCard = memo(function AgentRunCard({
           </div>
 
           {/* Action controls — always visible when hovered, or when run is failed */}
-          <div className={cn("flex items-center gap-0.5 transition-opacity", hovered || isFailed ? "opacity-100" : "opacity-0")}>
+          <div className={cn("flex items-center gap-0.5 transition-opacity focus-within:opacity-100", hovered || isFailed ? "opacity-100" : "opacity-0")}>
             {isFailed && (
               <Link
                 to={`/agents/${run.agentId}/runs/${run.id}`}
@@ -337,7 +337,7 @@ const AgentRunCard = memo(function AgentRunCard({
         <button
           type="button"
           onClick={() => setTranscriptExpanded(true)}
-          className="absolute top-2 right-2 opacity-30 group-hover/transcript:opacity-100 transition-opacity p-1 rounded bg-background/80 text-muted-foreground hover:text-foreground"
+          className="absolute top-2 right-2 opacity-30 group-hover/transcript:opacity-100 focus:opacity-100 focus-visible:opacity-100 transition-opacity p-1 rounded bg-background/80 text-muted-foreground hover:text-foreground"
           title="Expand transcript"
         >
           <Maximize2 className="h-3 w-3" />
