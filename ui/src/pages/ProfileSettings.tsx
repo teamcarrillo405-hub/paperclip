@@ -6,6 +6,7 @@ import { authApi } from "@/api/auth";
 import { assetsApi } from "@/api/assets";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
+import { useToast } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +23,7 @@ function deriveInitials(name: string) {
 export function ProfileSettings() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { selectedCompanyId, selectedCompany } = useCompany();
+  const { pushToast } = useToast();
   const queryClient = useQueryClient();
   const avatarInputId = useId();
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -77,6 +79,7 @@ export function ProfileSettings() {
       setActionError(null);
       setName(profile.name ?? "");
       setImage(profile.image ?? "");
+      pushToast({ title: "Profile saved successfully", tone: "success" });
     },
     onError: (error) => {
       setActionError(error instanceof Error ? error.message : "Failed to update profile.");
@@ -166,9 +169,13 @@ export function ProfileSettings() {
         <div role="alert" className="flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
           <span className="flex-1">{actionError}</span>
-          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="text-destructive/70 hover:text-destructive ml-1">×</button>
+          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="ml-1 flex h-6 w-6 items-center justify-center text-destructive/70 hover:text-destructive">×</button>
         </div>
       ) : null}
+
+      <span aria-live="polite" aria-atomic="true" className="sr-only">
+        {uploadAvatarMutation.isSuccess ? "Profile photo updated." : removeAvatarMutation.isSuccess ? "Profile photo removed." : ""}
+      </span>
 
       <section className="space-y-8">
         <div className="relative overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-sm">
@@ -242,6 +249,8 @@ export function ProfileSettings() {
           </div>
         </div>
 
+        <h2 className="text-sm font-semibold text-foreground">Profile details</h2>
+
         <form
           className="grid gap-6 md:grid-cols-2"
           onSubmit={(event) => {
@@ -253,12 +262,13 @@ export function ProfileSettings() {
             <Label htmlFor="profile-name">Display name</Label>
             <Input
               id="profile-name"
+              aria-describedby="profile-name-hint"
               value={name}
               onChange={(event) => setName(event.target.value)}
               maxLength={120}
               placeholder="Board"
             />
-            <p className="text-xs text-muted-foreground">
+            <p id="profile-name-hint" className="text-xs text-muted-foreground">
               Shown in the sidebar account footer and comment author surfaces.
             </p>
           </div>
@@ -267,11 +277,12 @@ export function ProfileSettings() {
             <Label htmlFor="profile-email">Email</Label>
             <Input
               id="profile-email"
+              aria-describedby="profile-email-hint"
               value={sessionQuery.data.user.email ?? ""}
               readOnly
               className="opacity-60 cursor-default"
             />
-            <p className="text-xs text-muted-foreground">
+            <p id="profile-email-hint" className="text-xs text-muted-foreground">
               Email is managed by your auth session and is read-only here.
             </p>
           </div>

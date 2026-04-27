@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Check, ExternalLink, MailPlus } from "lucide-react";
+import { AlertCircle, Check, ExternalLink, LoaderCircle, MailPlus } from "lucide-react";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
@@ -218,8 +218,7 @@ export function CompanyInvites() {
                     value={option.value}
                     checked={checked}
                     onChange={() => setHumanRole(option.value)}
-                    className="mt-1 h-4 w-4 border-border text-foreground"
-                    style={{ accentColor: "hsl(var(--primary))" }}
+                    className="mt-1 h-4 w-4 border-border text-foreground accent-[color:hsl(var(--primary))]"
                   />
                   <span className="min-w-0 space-y-1">
                     <span className="flex flex-wrap items-center gap-2">
@@ -244,7 +243,7 @@ export function CompanyInvites() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button onClick={() => createInviteMutation.mutate()} disabled={createInviteMutation.isPending}>
+          <Button type="button" onClick={() => createInviteMutation.mutate()} disabled={createInviteMutation.isPending}>
             {createInviteMutation.isPending ? "Creating…" : "Create invite"}
           </Button>
           <span className="text-sm text-muted-foreground">Invite history below keeps the audit trail.</span>
@@ -257,7 +256,7 @@ export function CompanyInvites() {
                 <div className="text-sm font-medium">Latest invite link</div>
                 <div aria-live="polite" aria-atomic="true" className="min-w-[52px]">
                   {latestInviteCopied ? (
-                    <span className="flex items-center gap-1 text-xs text-green-600 animate-pulse">
+                    <span className="flex items-center gap-1 text-xs text-green-600 motion-safe:animate-pulse">
                       <Check aria-hidden="true" className="h-3 w-3" />
                       Copied
                     </span>
@@ -353,13 +352,15 @@ export function CompanyInvites() {
                       <td className="px-5 py-3 text-right align-top">
                         {invite.state === "active" ? (
                           <Button
+                            type="button"
                             size="sm"
                             variant="outline"
                             aria-label={`Revoke invite created ${new Date(invite.createdAt).toLocaleDateString()}`}
                             onClick={() => revokeMutation.mutate(invite.id)}
                             disabled={revokeMutation.isPending}
                           >
-                            Revoke
+                            {revokeMutation.isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
+                            {revokeMutation.isPending ? "Revoking\u2026" : "Revoke"}
                           </Button>
                         ) : (
                           <span className="text-xs text-muted-foreground">Inactive</span>

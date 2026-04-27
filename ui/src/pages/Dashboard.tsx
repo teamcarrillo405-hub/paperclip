@@ -272,13 +272,11 @@ export function Dashboard() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {selectedCompany?.name ?? "Dashboard"}
         </h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          <span aria-live="polite" aria-atomic="true">
-            {liveRunCount > 0
-              ? `${liveRunCount} agent${liveRunCount !== 1 ? "s" : ""} running · `
-              : ""}
-            Last synced {syncedSecondsAgo < 5 ? "just now" : syncedSecondsAgo < 60 ? `${syncedSecondsAgo}s ago` : `${Math.floor(syncedSecondsAgo / 60)}m ago`}
-          </span>
+        <p aria-live="polite" aria-atomic="true" className="text-xs text-muted-foreground mt-0.5">
+          {liveRunCount > 0
+            ? `${liveRunCount} agent${liveRunCount !== 1 ? "s" : ""} running · `
+            : ""}
+          Last synced {syncedSecondsAgo < 5 ? "just now" : syncedSecondsAgo < 60 ? `${syncedSecondsAgo}s ago` : `${Math.floor(syncedSecondsAgo / 60)}m ago`}
         </p>
       </div>
 
@@ -431,6 +429,8 @@ export function Dashboard() {
             itemClassName="rounded-lg border bg-card p-4 shadow-sm"
           />
 
+          <section>
+          <h2 className="sr-only">Recent activity and tasks</h2>
           <div className="grid md:grid-cols-2 gap-4">
             {/* Recent Activity */}
             <div className="min-w-0">
@@ -513,6 +513,7 @@ export function Dashboard() {
               )}
             </div>
           </div>
+          </section>
 
         </>
       )}

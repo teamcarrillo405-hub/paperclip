@@ -81,18 +81,18 @@ function MetricTile({
   icon: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="rounded-md border border-border p-4">
+    <section aria-label={label} className="rounded-md border border-border p-4">
       <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
-          <div className="mt-2 text-2xl font-semibold tabular-nums">{value}</div>
-          <div className="mt-1 text-xs leading-5 text-muted-foreground">{subtitle}</div>
-        </div>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-border">
+        <dl className="min-w-0">
+          <dt className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{label}</dt>
+          <dd className="mt-2 text-2xl font-semibold tabular-nums">{value}</dd>
+          <dd className="mt-1 text-xs leading-5 text-muted-foreground">{subtitle}</dd>
+        </dl>
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border">
           <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -549,7 +549,7 @@ export function Costs() {
                 </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div role="group" aria-label="Date range preset" className="flex flex-wrap items-center gap-2">
               {PRESET_KEYS.map((key) => (
                 <Button
                   key={key}
@@ -569,7 +569,7 @@ export function Costs() {
             <div
               role="group"
               aria-label="Custom date range"
-              className="flex flex-wrap items-center gap-2 border border-border p-3"
+              className="flex flex-wrap items-center gap-2 rounded-md border border-border p-3"
             >
               <input
                 type="date"
@@ -1027,7 +1027,7 @@ export function Costs() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-destructive">Failed to load provider data.</p>
                   </div>
-                  <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+                  <Button type="button" size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
                     disabled={isProviderRefetching}
                     onClick={() => void refetchProvider()}>
                     {isProviderRefetching ? "Retrying\u2026" : "Retry"}
@@ -1095,7 +1095,7 @@ export function Costs() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-destructive">Failed to load biller data.</p>
                   </div>
-                  <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+                  <Button type="button" size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
                     disabled={isBillerRefetching}
                     onClick={() => void refetchBiller()}>
                     {isBillerRefetching ? "Retrying\u2026" : "Retry"}

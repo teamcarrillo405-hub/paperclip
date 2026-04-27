@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { goalsApi } from "../api/goals";
+import { ApiError } from "../api/client";
 import { projectsApi } from "../api/projects";
 import { assetsApi } from "../api/assets";
 import { usePanel } from "../context/PanelContext";
@@ -19,7 +20,7 @@ import { EmptyState } from "../components/EmptyState";
 import { cn, projectUrl } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, SlidersHorizontal, AlertCircle, Target, X } from "lucide-react";
+import { Plus, SlidersHorizontal, AlertCircle, Target, X, LoaderCircle } from "lucide-react";
 import type { Goal, Project } from "@paperclipai/shared";
 
 interface GoalPropertiesToggleButtonProps {
@@ -165,9 +166,16 @@ export function GoalDetail() {
       </Button>
     </div>
   );
-  if (!goal) return (
-    <EmptyState icon={Target} message="Goal not found." action="Back to goals" onAction={() => navigate("/goals")} />
-  );
+  if (!goal) {
+    const anyError = error as unknown;
+    const notFoundMessage =
+      anyError instanceof ApiError && anyError.status === 403
+        ? "You don't have permission to view this goal."
+        : "This goal could not be found.";
+    return (
+      <EmptyState icon={Target} message={notFoundMessage} action="Back to goals" onAction={() => navigate("/goals")} />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -203,12 +211,17 @@ export function GoalDetail() {
           </div>
         </div>
 
-        <InlineEditor
-          value={goal.title}
-          onSave={(title) => updateGoal.mutate({ title })}
-          as="h1"
-          className="text-2xl font-semibold"
-        />
+        <div className="flex items-center gap-2">
+          <InlineEditor
+            value={goal.title}
+            onSave={(title) => updateGoal.mutate({ title })}
+            as="h1"
+            className="text-2xl font-semibold"
+          />
+          {updateGoal.isPending ? (
+            <LoaderCircle className="size-4 animate-spin text-muted-foreground shrink-0" aria-hidden="true" />
+          ) : null}
+        </div>
 
         <InlineEditor
           value={goal.description ?? ""}
@@ -266,10 +279,10 @@ export function GoalDetail() {
 
         <TabsContent value="projects" className="mt-4">
           {linkedProjects.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
-              No linked projects yet.{" "}
+            <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-center">
+              <p className="text-sm text-muted-foreground">No linked projects yet.</p>
               <Link to="/projects" className="text-xs text-primary hover:underline">Browse projects</Link>
-            </p>
+            </div>
           ) : (
             <div className="rounded-lg border border-border overflow-hidden">
               {linkedProjects.map((project) => (
