@@ -792,7 +792,6 @@ export function Routines() {
                 setAdvancedOpen(false);
               }}
               disabled={createRoutine.isPending}
-              aria-disabled={createRoutine.isPending}
             >
               Cancel
             </Button>

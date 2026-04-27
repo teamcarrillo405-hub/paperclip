@@ -310,7 +310,21 @@ export function CompanyAccess() {
         </div>
 
         {joinRequestsQuery.isError && (
-          <p role="alert" className="text-xs text-destructive mt-1">Could not load join requests.</p>
+          <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-destructive">Could not load join requests.</p>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+              disabled={joinRequestsQuery.isRefetching}
+              onClick={() => joinRequestsQuery.refetch()}
+            >
+              {joinRequestsQuery.isRefetching ? "Retrying…" : "Retry"}
+            </Button>
+          </div>
         )}
         {access?.canApproveJoinRequests && pendingHumanJoinRequests.length > 0 ? (
           <div className="space-y-3 rounded-xl border border-border px-4 py-4">
