@@ -88,7 +88,7 @@ function MetricTile({
           <div className="mt-1 text-xs leading-5 text-muted-foreground">{subtitle}</div>
         </div>
         <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-border">
-          <Icon className="h-4 w-4 text-muted-foreground" />
+          <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         </div>
       </div>
     </div>
@@ -191,7 +191,7 @@ export function Costs() {
   const weekRange = useMemo(() => currentWeekRange(), [today]);
   const companyId = selectedCompanyId ?? NO_COMPANY;
 
-  const { data: budgetData, isLoading: budgetLoading, error: budgetError } = useQuery({
+  const { data: budgetData, isLoading: budgetLoading, error: budgetError, refetch: refetchBudget, isRefetching: isBudgetRefetching } = useQuery({
     queryKey: queryKeys.budgets.overview(companyId),
     queryFn: () => budgetsApi.overview(companyId),
     enabled: !!selectedCompanyId && customReady,
@@ -229,7 +229,7 @@ export function Costs() {
     onSuccess: invalidateBudgetViews,
   });
 
-  const { data: spendData, isLoading: spendLoading, error: spendError } = useQuery({
+  const { data: spendData, isLoading: spendLoading, error: spendError, refetch: refetchSpend, isRefetching: isSpendRefetching } = useQuery({
     queryKey: queryKeys.costs(companyId, from || undefined, to || undefined),
     queryFn: async () => {
       const [summary, byAgent, byProject, byAgentModel] = await Promise.all([
@@ -243,7 +243,7 @@ export function Costs() {
     enabled: !!selectedCompanyId && customReady,
   });
 
-  const { data: financeData, isLoading: financeLoading, error: financeError } = useQuery({
+  const { data: financeData, isLoading: financeLoading, error: financeError, refetch: refetchFinance, isRefetching: isFinanceRefetching } = useQuery({
     queryKey: [
       queryKeys.financeSummary(companyId, from || undefined, to || undefined),
       queryKeys.financeByBiller(companyId, from || undefined, to || undefined),
@@ -289,7 +289,7 @@ export function Costs() {
     return map;
   }, [spendData?.byAgentModel]);
 
-  const { data: providerData } = useQuery({
+  const { data: providerData, isError: isProviderError } = useQuery({
     queryKey: queryKeys.usageByProvider(companyId, from || undefined, to || undefined),
     queryFn: () => costsApi.byProvider(companyId, from || undefined, to || undefined),
     enabled: !!selectedCompanyId && customReady && (mainTab === "providers" || mainTab === "billers"),
@@ -297,7 +297,7 @@ export function Costs() {
     staleTime: 10_000,
   });
 
-  const { data: billerData } = useQuery({
+  const { data: billerData, isError: isBillerError } = useQuery({
     queryKey: queryKeys.usageByBiller(companyId, from || undefined, to || undefined),
     queryFn: () => costsApi.byBiller(companyId, from || undefined, to || undefined),
     enabled: !!selectedCompanyId && customReady && mainTab === "billers",
@@ -535,6 +535,7 @@ export function Costs() {
   const showCustomPrompt = preset === "custom" && !customReady;
   const showOverviewLoading = (spendLoading || financeLoading) && customReady;
   const overviewError = spendError ?? financeError;
+  const isOverviewRefetching = isSpendRefetching || isFinanceRefetching;
 
   return (
     <div className="space-y-6">
@@ -551,8 +552,10 @@ export function Costs() {
               {PRESET_KEYS.map((key) => (
                 <Button
                   key={key}
+                  type="button"
                   variant={preset === key ? "secondary" : "ghost"}
                   size="sm"
+                  aria-pressed={preset === key}
                   onClick={() => setPreset(key)}
                 >
                   {PRESET_LABELS[key]}
@@ -637,6 +640,16 @@ export function Costs() {
             <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
               <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
               <p className="text-sm text-destructive">{(overviewError as Error).message || "Failed to load overview."}</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+                disabled={isOverviewRefetching}
+                onClick={() => { void refetchSpend(); void refetchFinance(); }}
+              >
+                Retry
+              </Button>
             </div>
           ) : (
             <>
@@ -752,8 +765,8 @@ export function Costs() {
                               <div className="flex min-w-0 items-center gap-2">
                                 {hasBreakdown ? (
                                   isExpanded
-                                    ? <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
-                                    : <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+                                    ? <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden="true" />
+                                    : <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden="true" />
                                 ) : (
                                   <span className="h-3 w-3 shrink-0" />
                                 )}
@@ -854,6 +867,16 @@ export function Costs() {
             <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
               <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
               <p className="text-sm text-destructive">{(budgetError as Error).message || "Failed to load budgets."}</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+                disabled={isBudgetRefetching}
+                onClick={() => void refetchBudget()}
+              >
+                Retry
+              </Button>
             </div>
           ) : (
             <>
@@ -972,6 +995,9 @@ export function Costs() {
             <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
           ) : (
             <>
+              {isProviderError ? (
+                <p role="alert" className="text-sm text-destructive">Failed to load provider data. Refresh to try again.</p>
+              ) : null}
               <Tabs value={effectiveProvider} onValueChange={setActiveProvider}>
                 <PageTabBar items={providerTabItems} value={effectiveProvider} />
 
@@ -1027,6 +1053,9 @@ export function Costs() {
             <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
           ) : (
             <>
+              {isBillerError ? (
+                <p role="alert" className="text-sm text-destructive">Failed to load biller data. Refresh to try again.</p>
+              ) : null}
               <Tabs value={effectiveBiller} onValueChange={setActiveBiller}>
                 <PageTabBar items={billerTabItems} value={effectiveBiller} />
 
@@ -1084,6 +1113,16 @@ export function Costs() {
             <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
               <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
               <p className="text-sm text-destructive">{(financeError as Error).message || "Failed to load finance data."}</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+                disabled={isFinanceRefetching}
+                onClick={() => void refetchFinance()}
+              >
+                Retry
+              </Button>
             </div>
           ) : (
             <>
