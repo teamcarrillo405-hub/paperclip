@@ -90,6 +90,7 @@ import {
   UserPlus,
   Search,
   ListTree,
+  AlertCircle,
 } from "lucide-react";
 
 const INBOX_HEARTBEAT_RUN_LIMIT = 200;
@@ -2098,8 +2099,18 @@ export function Inbox() {
         </div>
       )}
 
-      {approvalsError && <p className="text-sm text-destructive">{approvalsError.message}</p>}
-      {actionError && <p className="text-sm text-destructive">{actionError}</p>}
+      {approvalsError && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-sm text-destructive">{approvalsError.message}</p>
+        </div>
+      )}
+      {actionError && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-sm text-destructive">{actionError}</p>
+        </div>
+      )}
 
       {!allLoaded && visibleSections.length === 0 && (
         <PageSkeleton variant="inbox" />

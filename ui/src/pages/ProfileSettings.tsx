@@ -163,7 +163,7 @@ export function ProfileSettings() {
       </div>
 
       {actionError ? (
-        <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+        <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {actionError}
         </div>
       ) : null}
@@ -184,6 +184,7 @@ export function ProfileSettings() {
                     id={avatarInputId}
                     type="file"
                     accept="image/*"
+                    aria-label="Upload profile photo"
                     className="sr-only"
                     disabled={!selectedCompanyId || isSavingProfile}
                     onChange={(event) => {
@@ -266,7 +267,7 @@ export function ProfileSettings() {
               id="profile-email"
               value={sessionQuery.data.user.email ?? ""}
               readOnly
-              disabled
+              className="opacity-60 cursor-default"
             />
             <p className="text-xs text-muted-foreground">
               Email is managed by your auth session and is read-only here.

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { UserPlus2 } from "lucide-react";
+import { AlertCircle, UserPlus2 } from "lucide-react";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageSkeleton } from "../components/PageSkeleton";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
@@ -60,7 +61,7 @@ export function JoinRequestQueue() {
   }
 
   if (requestsQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading join requests…</div>;
+    return <PageSkeleton variant="list" />;
   }
 
   if (requestsQuery.error) {
@@ -70,7 +71,20 @@ export function JoinRequestQueue() {
         : requestsQuery.error instanceof Error
           ? requestsQuery.error.message
           : "Failed to load join requests.";
-    return <div className="text-sm text-destructive">{message}</div>;
+    return (
+      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-destructive">{message}</p>
+        </div>
+        {!(requestsQuery.error instanceof ApiError && requestsQuery.error.status === 403) ? (
+          <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            onClick={() => requestsQuery.refetch()}>
+            Retry
+          </Button>
+        ) : null}
+      </div>
+    );
   }
 
   return (

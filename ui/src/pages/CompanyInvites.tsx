@@ -172,6 +172,12 @@ export function CompanyInvites() {
         <div className="flex-1 min-w-0">
           <p className="text-sm text-destructive">{message}</p>
         </div>
+        {!(invitesQuery.error instanceof ApiError && invitesQuery.error.status === 403) ? (
+          <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            onClick={() => invitesQuery.refetch()}>
+            Retry
+          </Button>
+        ) : null}
       </div>
     );
   }
@@ -248,12 +254,14 @@ export function CompanyInvites() {
             <div className="space-y-1">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-sm font-medium">Latest invite link</div>
-                {latestInviteCopied ? (
-                  <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
-                    <Check className="h-3.5 w-3.5" />
-                    Copied
-                  </div>
-                ) : null}
+                <div aria-live="polite" aria-atomic="true" className="min-w-[52px]">
+                  {latestInviteCopied ? (
+                    <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
+                      <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                      Copied
+                    </div>
+                  ) : null}
+                </div>
               </div>
               <div className="text-sm text-muted-foreground">
                 This URL includes the current Paperclip domain returned by the server.
@@ -261,19 +269,21 @@ export function CompanyInvites() {
             </div>
             <button
               type="button"
+              aria-label="Copy invite URL"
               onClick={async () => {
                 const copied = await copyInviteUrl(latestInviteUrl);
                 setLatestInviteCopied(copied);
               }}
-              className="w-full rounded-md border border-border bg-muted/60 px-3 py-2 text-left text-sm break-all transition-colors hover:bg-background"
+              className="w-full rounded-md border border-border bg-muted/60 px-3 py-2 text-left text-sm break-all transition-colors hover:bg-background cursor-copy"
             >
               {latestInviteUrl}
             </button>
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" asChild>
-                <a href={latestInviteUrl} target="_blank" rel="noreferrer">
-                  <ExternalLink className="h-4 w-4" />
+                <a href={latestInviteUrl} target="_blank" rel="noreferrer noopener">
+                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
                   Open invite
+                  <span className="sr-only">(opens in new tab)</span>
                 </a>
               </Button>
             </div>
@@ -304,19 +314,19 @@ export function CompanyInvites() {
               <table className="min-w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="px-5 py-3 font-medium text-muted-foreground">State</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Role</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Created</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
-                    <th className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">State</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">Role</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">Created</th>
+                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
+                    <th scope="col" className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {inviteHistory.map((invite) => (
                     <tr key={invite.id} className="border-b border-border last:border-b-0">
                       <td className="px-5 py-3 align-top">
-                        <span className="inline-flex rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                        <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${inviteStatePillClass(invite.state)}`}>
                           {formatInviteState(invite.state)}
                         </span>
                       </td>
@@ -344,6 +354,7 @@ export function CompanyInvites() {
                           <Button
                             size="sm"
                             variant="outline"
+                            aria-label={`Revoke invite created ${new Date(invite.createdAt).toLocaleDateString()}`}
                             onClick={() => revokeMutation.mutate(invite.id)}
                             disabled={revokeMutation.isPending}
                           >
@@ -379,4 +390,18 @@ export function CompanyInvites() {
 
 function formatInviteState(state: "active" | "accepted" | "expired" | "revoked") {
   return state.charAt(0).toUpperCase() + state.slice(1);
+}
+
+function inviteStatePillClass(state: "active" | "accepted" | "expired" | "revoked") {
+  switch (state) {
+    case "active":
+      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400";
+    case "accepted":
+      return "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400";
+    case "revoked":
+      return "border-destructive/30 bg-destructive/10 text-destructive";
+    case "expired":
+    default:
+      return "border-border bg-muted/40 text-muted-foreground";
+  }
 }
