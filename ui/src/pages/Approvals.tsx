@@ -109,6 +109,16 @@ export function Approvals() {
   );
   const pendingCount = pendingItems.length;
 
+  useEffect(() => {
+    const prev = document.title;
+    if (pendingCount > 0) {
+      document.title = `(${pendingCount}) Approvals — Avero`;
+    } else {
+      document.title = "Approvals — Avero";
+    }
+    return () => { document.title = prev; };
+  }, [pendingCount]);
+
   // J/K keyboard navigation + A/R approve/reject shortcuts
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -212,10 +222,15 @@ export function Approvals() {
               { value: "all", label: "All" },
             ]} />
           </Tabs>
-          {isConnected && (
+          {isConnected ? (
             <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse" />
               Live
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/20 bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/60">
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+              Offline
             </span>
           )}
         </div>
