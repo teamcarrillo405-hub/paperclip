@@ -15,6 +15,8 @@ interface InlineEditorProps {
   onDropFile?: (file: File) => Promise<void>;
   mentions?: MentionOption[];
   nullable?: boolean;
+  /** When true, prevents entering edit mode (e.g. while a mutation is pending). */
+  disabled?: boolean;
 }
 
 /** Shared padding so display and edit modes occupy the exact same box. */
@@ -47,6 +49,7 @@ export function InlineEditor({
   placeholder = "Click to edit...",
   multiline = false,
   nullable = false,
+  disabled = false,
   imageUploadHandler,
   onDropFile,
   mentions,
@@ -220,6 +223,7 @@ export function InlineEditor({
           multilineFocused ? "bg-transparent" : "hover:bg-accent/20",
         )}
         onFocusCapture={() => {
+          if (disabled) return;
           cancelPendingBlurCommit();
           setMultilineFocused(true);
         }}
@@ -301,7 +305,7 @@ export function InlineEditor({
         !value && "text-muted-foreground italic",
         className,
       )}
-      onClick={() => setEditing(true)}
+      onClick={() => { if (!disabled) setEditing(true); }}
     >
       {value || placeholder}
     </DisplayTag>

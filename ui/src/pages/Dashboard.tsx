@@ -285,7 +285,7 @@ export function Dashboard() {
         // light and dark mode without requiring a custom warning semantic token.
         <div className="flex items-center justify-between gap-3 rounded-md border border-yellow-500/30 bg-yellow-500/5 px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <Bot className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
+            <Bot className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" aria-hidden="true" />
             <p className="text-sm text-foreground">
               You have no agents.
             </p>
@@ -395,7 +395,7 @@ export function Dashboard() {
                     aria-pressed={chartDays === d}
                     onClick={() => setChartDays(d)}
                     className={cn(
-                      "px-2.5 py-1 text-[11px] font-medium rounded transition-colors",
+                      "px-2.5 py-1 text-[11px] font-medium rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                       chartDays === d
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground",
@@ -475,7 +475,7 @@ export function Dashboard() {
                     <Link
                       key={issue.id}
                       to={`/issues/${issue.identifier ?? issue.id}`}
-                      aria-label={issue.title}
+                      aria-label={`${issue.identifier ?? ""} ${issue.title}${issue.status ? ` — ${issue.status}` : ""}${issue.assigneeAgentId ? ` assigned to ${agentName(issue.assigneeAgentId) ?? "an agent"}` : ""}`.trim()}
                       className="px-4 py-3 text-sm cursor-pointer hover:bg-accent/50 transition-colors no-underline text-inherit block"
                     >
                       <div className="flex items-start gap-2 sm:items-center sm:gap-3">

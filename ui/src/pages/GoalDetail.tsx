@@ -42,6 +42,8 @@ export function GoalPropertiesToggleButton({
       )}
       onClick={onShowProperties}
       aria-label="Show properties"
+      aria-hidden={panelVisible}
+      tabIndex={panelVisible ? -1 : 0}
     >
       <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
     </Button>
@@ -196,12 +198,9 @@ export function GoalDetail() {
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <span
-            className="text-xs uppercase text-muted-foreground"
-            aria-label={`Level: ${goal.level}`}
-          >
-            {goal.level}
-          </span>
+          <p className="text-xs uppercase text-muted-foreground m-0">
+            <span className="sr-only">Level: </span>{goal.level}
+          </p>
           <StatusBadge status={goal.status} />
           <div className="ml-auto">
             <GoalPropertiesToggleButton
@@ -217,6 +216,7 @@ export function GoalDetail() {
             onSave={(title) => updateGoal.mutate({ title })}
             as="h1"
             className="text-2xl font-semibold"
+            disabled={updateGoal.isPending}
           />
           {updateGoal.isPending ? (
             <LoaderCircle className="size-4 animate-spin text-muted-foreground shrink-0" aria-hidden="true" />
@@ -230,6 +230,7 @@ export function GoalDetail() {
           className="text-sm text-muted-foreground"
           placeholder="Add a description..."
           multiline
+          disabled={updateGoal.isPending}
           imageUploadHandler={async (file) => {
             const asset = await uploadImage.mutateAsync(file);
             return asset.contentPath;
@@ -240,10 +241,10 @@ export function GoalDetail() {
       <Tabs defaultValue="children">
         <TabsList>
           <TabsTrigger value="children">
-            Sub-Goals <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums">{childGoals.length}</span>
+            Sub-Goals <span aria-label={`${childGoals.length} sub-goal${childGoals.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums">{childGoals.length}</span>
           </TabsTrigger>
           <TabsTrigger value="projects">
-            Projects <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums">{linkedProjects.length}</span>
+            Projects <span aria-label={`${linkedProjects.length} project${linkedProjects.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums">{linkedProjects.length}</span>
           </TabsTrigger>
         </TabsList>
 
