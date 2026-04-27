@@ -255,8 +255,9 @@ export function CompanyAccess() {
         </div>
         {!(membersQuery.error instanceof ApiError && membersQuery.error.status === 403) ? (
           <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            disabled={membersQuery.isRefetching}
             onClick={() => membersQuery.refetch()}>
-            Retry
+            {membersQuery.isRefetching ? "Retrying…" : "Retry"}
           </Button>
         ) : null}
       </div>

@@ -593,8 +593,8 @@ export function ExecutionWorkspaceDetail() {
                   }
                   onAction={(request) => controlRuntimeServices.mutate(request)}
                 />
-                {runtimeActionErrorMessage ? <p role="alert" className="mt-4 text-sm text-destructive">{runtimeActionErrorMessage}</p> : null}
-                {!runtimeActionErrorMessage && runtimeActionMessage ? <p role="status" aria-live="polite" className="mt-4 text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
+                <p role="status" aria-live="polite" className="sr-only">{runtimeActionMessage ?? ""}</p>
+                <p role="alert" aria-live="assertive" className={runtimeActionErrorMessage ? "mt-4 text-sm text-destructive" : "sr-only"}>{runtimeActionErrorMessage ?? ""}</p>
                 </CardContent>
               </Card>
 
@@ -815,26 +815,34 @@ export function ExecutionWorkspaceDetail() {
                   </div>
                 </div>
 
-                <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                  <Button className="w-full sm:w-auto" disabled={!isDirty || updateWorkspace.isPending} onClick={saveChanges}>
-                    {updateWorkspace.isPending ? <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Save changes
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                    disabled={!isDirty || updateWorkspace.isPending}
-                    onClick={() => {
-                      setForm(initialState);
-                      setErrorMessage(null);
-                      setRuntimeActionErrorMessage(null);
-                      setRuntimeActionMessage(null);
-                    }}
-                  >
-                    Reset
-                  </Button>
-                  {errorMessage ? <p role="alert" className="text-sm text-destructive">{errorMessage}</p> : null}
-                  {!errorMessage && hasSaved && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
+                <div className="mt-6">
+                  <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                    <Button type="button" className="w-full sm:w-auto" disabled={!isDirty || updateWorkspace.isPending} onClick={saveChanges}>
+                      {updateWorkspace.isPending ? (
+                        <><Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                      ) : (
+                        "Save changes"
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full sm:w-auto"
+                      disabled={!isDirty || updateWorkspace.isPending}
+                      onClick={() => {
+                        setForm(initialState);
+                        setErrorMessage(null);
+                        setRuntimeActionErrorMessage(null);
+                        setRuntimeActionMessage(null);
+                      }}
+                    >
+                      Reset
+                    </Button>
+                    {!errorMessage && hasSaved && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
+                  </div>
+                  {errorMessage && (
+                    <p role="alert" className="mt-1 text-sm text-destructive">{errorMessage}</p>
+                  )}
                 </div>
                 </CardContent>
               </Card>

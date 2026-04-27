@@ -354,12 +354,12 @@ export function Routines() {
     queryFn: () => routinesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const { data: agents, error: agentsError } = useQuery({
+  const { data: agents, error: agentsError, refetch: refetchAgents } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const { data: projects, error: projectsError } = useQuery({
+  const { data: projects, error: projectsError, refetch: refetchProjects } = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -560,7 +560,11 @@ export function Routines() {
     setRunDialogRoutine(routine);
   }
 
+  const lastToggleRef = useRef(0);
   function handleToggleEnabled(routine: RoutineListItem, enabled: boolean) {
+    const now = Date.now();
+    if (now - lastToggleRef.current < 500) return;
+    lastToggleRef.current = now;
     if (!enabled && !routine.assigneeAgentId) {
       pushToast({
         title: "Default agent required",
@@ -929,10 +933,16 @@ export function Routines() {
                 </div>
               </div>
               {agentsError && (
-                <p role="alert" className="text-xs text-destructive">Could not load agents.</p>
+                <div role="alert" className="flex items-center gap-2">
+                  <p className="text-xs text-destructive flex-1">Could not load agents.</p>
+                  <Button size="sm" variant="ghost" onClick={() => refetchAgents()}>Retry</Button>
+                </div>
               )}
               {projectsError && (
-                <p role="alert" className="text-xs text-destructive">Could not load projects.</p>
+                <div role="alert" className="flex items-center gap-2">
+                  <p className="text-xs text-destructive flex-1">Could not load projects.</p>
+                  <Button size="sm" variant="ghost" onClick={() => refetchProjects()}>Retry</Button>
+                </div>
               )}
             </div>
 
