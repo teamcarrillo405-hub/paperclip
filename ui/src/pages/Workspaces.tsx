@@ -8,7 +8,9 @@ import { issuesApi } from "../api/issues";
 import { projectsApi } from "../api/projects";
 import { ProjectWorkspacesContent } from "../components/ProjectWorkspacesContent";
 import { PageSkeleton } from "../components/PageSkeleton";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, GitBranch } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "../components/EmptyState";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { buildProjectWorkspaceSummaries, type ProjectWorkspaceSummary } from "../lib/project-workspaces-tab";
@@ -115,30 +117,60 @@ export function Workspaces() {
   const error = (projectsError ?? issuesError ?? executionWorkspacesError) as Error | null;
 
   if (experimentalSettingsQuery.isLoading) return <PageSkeleton variant="detail" />;
-  if (!isolatedWorkspacesEnabled) return <Navigate to="/issues" replace />;
-  if (dataLoading) return <PageSkeleton variant="list" />;
-  if (error) return (
-    <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-      <p className="text-sm text-destructive">{error.message}</p>
+  if (experimentalSettingsQuery.isError) return (
+    <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-destructive">Could not load workspace settings.</p>
+      </div>
+      <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+        onClick={() => experimentalSettingsQuery.refetch()}>
+        Retry
+      </Button>
     </div>
   );
+  if (!isolatedWorkspacesEnabled) return (
+    <EmptyState icon={GitBranch} message="Isolated workspaces are not enabled for this instance." />
+  );
+  if (dataLoading) return <PageSkeleton variant="list" />;
+  if (error) {
+    const refetchAll = () => {
+      void (projectsError && (projectsError as unknown as { refetch?: () => void }));
+      void (issuesError && (issuesError as unknown as { refetch?: () => void }));
+      void (executionWorkspacesError && (executionWorkspacesError as unknown as { refetch?: () => void }));
+    };
+    return (
+      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-destructive">{error.message || "Failed to load workspaces."}</p>
+        </div>
+        <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+          onClick={refetchAll}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">Workspaces</h2>
+        <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
       </div>
 
       {groups.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No workspace activity yet.</p>
+        <EmptyState icon={GitBranch} message="No workspace activity yet." />
       ) : (
         <div className="space-y-8">
-          {groups.map((group) => (
-            <section key={group.project.id} className="space-y-3">
+          {groups.map((group) => {
+            const headingId = `project-group-${group.project.id}`;
+            return (
+            <section key={group.project.id} className="space-y-3" aria-labelledby={headingId}>
               <div className="flex flex-wrap items-end justify-between gap-2">
                 <div className="min-w-0">
                   <Link
+                    id={headingId}
                     to={`/projects/${group.projectRef}/workspaces`}
                     className="text-base font-semibold hover:underline"
                   >
@@ -161,7 +193,8 @@ export function Workspaces() {
                 summaries={group.summaries}
               />
             </section>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
