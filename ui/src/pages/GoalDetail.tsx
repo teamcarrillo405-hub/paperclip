@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { goalsApi } from "../api/goals";
@@ -54,6 +54,8 @@ export function GoalDetail() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
 
+  const [updateError, setUpdateError] = useState<string | null>(null);
+
   const {
     data: goal,
     isLoading,
@@ -97,8 +99,8 @@ export function GoalDetail() {
         });
       }
     },
-    onError: (err: Error) => {
-      alert(`Failed to update goal: ${err.message}`);
+    onError: (err: unknown) => {
+      setUpdateError(err instanceof Error ? err.message : "Failed to update goal.");
     },
   });
 
@@ -111,8 +113,8 @@ export function GoalDetail() {
         `goals/${goalId ?? "draft"}`
       );
     },
-    onError: (err: Error) => {
-      alert(`Failed to upload image: ${err.message}`);
+    onError: (err: unknown) => {
+      setUpdateError(err instanceof Error ? err.message : "Failed to upload image.");
     },
   });
 
@@ -146,7 +148,7 @@ export function GoalDetail() {
   if (isLoading) return <PageSkeleton variant="detail" />;
   if (error) return (
     <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <p className="text-sm text-destructive">{error.message}</p>
       </div>
@@ -165,9 +167,27 @@ export function GoalDetail() {
 
   return (
     <div className="space-y-6">
+      {updateError && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+          <span className="flex-1">{updateError}</span>
+          <button
+            type="button"
+            aria-label="Dismiss error"
+            onClick={() => setUpdateError(null)}
+            className="text-destructive/70 hover:text-destructive ml-1"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs uppercase text-muted-foreground">
+          <span
+            className="text-xs uppercase text-muted-foreground"
+            aria-label={`Level: ${goal.level}`}
+          >
             {goal.level}
           </span>
           <StatusBadge status={goal.status} />
@@ -182,7 +202,7 @@ export function GoalDetail() {
         <InlineEditor
           value={goal.title}
           onSave={(title) => updateGoal.mutate({ title })}
-          as="h2"
+          as="h1"
           className="text-xl font-bold"
         />
 
