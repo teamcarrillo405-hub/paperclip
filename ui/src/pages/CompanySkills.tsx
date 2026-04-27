@@ -429,11 +429,12 @@ function SkillList({
 
   return (
     <div>
-      {filteredSkills.map((skill) => {
+      {filteredSkills.map((skill, index) => {
         const expanded = expandedSkillId === skill.id;
         const tree = buildTree(skill.fileInventory);
         const source = sourceMeta(skill.sourceBadge, skill.sourceLabel);
         const SourceIcon = source.icon;
+        const accordionId = `skill-detail-${skill.id ?? index}`;
 
         return (
           <div key={skill.id} className="border-b border-border">
@@ -468,6 +469,8 @@ function SkillList({
                 className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-sm text-muted-foreground opacity-80 transition-[background-color,color,opacity] hover:bg-accent hover:text-foreground group-hover:opacity-100"
                 onClick={() => onToggleSkill(skill.id)}
                 aria-label={expanded ? `Collapse ${skill.name}` : `Expand ${skill.name}`}
+                aria-expanded={expanded}
+                aria-controls={accordionId}
               >
                 {expanded ? (
                   <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
@@ -477,6 +480,7 @@ function SkillList({
               </button>
             </div>
             <div
+              id={accordionId}
               aria-hidden={!expanded}
               className={cn(
                 "grid overflow-hidden transition-[grid-template-rows,opacity] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
@@ -608,6 +612,7 @@ function SkillPane({
             {detail.editable ? (
               // FIX: aria-expanded + aria-controls on the edit toggle button
               <button
+                type="button"
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
                 onClick={() => setEditMode(!editMode)}
                 aria-expanded={editMode}
@@ -630,7 +635,9 @@ function SkillPane({
                 <SourceIcon className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 {detail.sourcePath ? (
                   <button
-                    className="truncate hover:text-foreground text-muted-foreground transition-colors cursor-pointer"
+                    type="button"
+                    className="truncate hover:text-foreground hover:underline text-muted-foreground transition-colors cursor-pointer"
+                    aria-label={`Copy ${source.label} source path to clipboard`}
                     onClick={() => {
                       navigator.clipboard.writeText(detail.sourcePath!);
                       pushToast({ title: "Copied path to workspace" });
@@ -1116,6 +1123,7 @@ export function CompanySkills() {
 
   return (
     <>
+      <h1 className="sr-only">Company Skills</h1>
       <Dialog open={deleteOpen} onOpenChange={closeDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -1321,7 +1329,7 @@ export function CompanySkills() {
           )}
         </aside>
 
-        <div className="min-w-0 pl-6">
+        <div className="min-w-0 pl-6 pr-6">
           <SkillPane
             loading={skillsQuery.isLoading || detailQuery.isLoading}
             detail={activeDetail}

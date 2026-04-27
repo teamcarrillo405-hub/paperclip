@@ -86,7 +86,7 @@ export function NewAgent() {
     enabled: Boolean(selectedCompanyId),
   });
 
-  const { data: companySkills } = useQuery({
+  const { data: companySkills, isError: companySkillsError } = useQuery({
     queryKey: queryKeys.companySkills.list(selectedCompanyId ?? ""),
     queryFn: () => companySkillsApi.list(selectedCompanyId!),
     enabled: Boolean(selectedCompanyId),
@@ -196,7 +196,7 @@ export function NewAgent() {
   }
 
   return (
-    <form className="mx-auto max-w-2xl space-y-6" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+    <form className="mx-auto max-w-2xl space-y-6" aria-label="Create new agent" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">New Agent</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -205,30 +205,35 @@ export function NewAgent() {
       </div>
 
       <div className="border border-border rounded-lg overflow-hidden">
-        {/* Name */}
-        <div className="px-4 pt-4 pb-2">
-          <label htmlFor="new-agent-name" className="sr-only">Agent name</label>
-          <input
-            id="new-agent-name"
-            className="w-full text-lg font-semibold bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
-            placeholder="Agent name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoFocus
-          />
-        </div>
+        <fieldset className="contents">
+          <legend className="sr-only">Agent identity</legend>
+          {/* Name */}
+          <div className="px-4 pt-4 pb-2">
+            <label htmlFor="new-agent-name" className="sr-only">Agent name</label>
+            <input
+              id="new-agent-name"
+              className="w-full text-lg font-semibold bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
+              placeholder="Agent name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+              required
+              aria-required="true"
+            />
+          </div>
 
-        {/* Title */}
-        <div className="px-4 pb-2">
-          <label htmlFor="new-agent-title" className="sr-only">Agent title</label>
-          <input
-            id="new-agent-title"
-            className="w-full bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm text-muted-foreground placeholder:text-muted-foreground/40"
-            placeholder="Title (e.g. VP of Engineering)"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
+          {/* Title */}
+          <div className="px-4 pb-2">
+            <label htmlFor="new-agent-title" className="sr-only">Agent title</label>
+            <input
+              id="new-agent-title"
+              className="w-full bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm text-muted-foreground placeholder:text-muted-foreground/40"
+              placeholder="Title (e.g. VP of Engineering)"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+        </fieldset>
 
         {/* Property chips: Role + Reports To */}
         <div className="flex items-center gap-1.5 px-4 py-2 border-t border-border flex-wrap">
@@ -288,7 +293,12 @@ export function NewAgent() {
 
         {/* AI Adapter section */}
         <div className="border-t border-border px-4 py-3">
-          <h2 className="text-sm font-semibold">AI Adapter</h2>
+          <h2 className="flex items-center gap-2 text-sm font-semibold">
+            AI Adapter
+            {(adapterModelsLoading || adapterModelsFetching) && (
+              <LoaderCircle className="size-4 animate-spin text-muted-foreground" aria-hidden="true" />
+            )}
+          </h2>
         </div>
         <AgentConfigForm
           mode="create"
@@ -305,7 +315,9 @@ export function NewAgent() {
                 Optional skills from the company library. Built-in Paperclip runtime skills are added automatically.
               </p>
             </div>
-            {availableSkills.length === 0 ? (
+            {companySkillsError ? (
+              <p role="alert" className="text-xs text-destructive">Could not load company skills.</p>
+            ) : availableSkills.length === 0 ? (
               <p className="text-xs text-muted-foreground">
                 <>No company skills installed. <Link to="/company/skills" className="underline text-xs">Manage skills</Link></>
               </p>
