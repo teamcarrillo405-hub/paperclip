@@ -451,8 +451,40 @@ export function Sidebar() {
         />
       </nav>
 
-      {/* Bottom bar: density toggle + collapse button */}
+      {/* Bottom bar: user identity + density toggle + collapse button */}
       <div className="shrink-0 border-t border-border px-2 py-2 flex flex-col gap-1">
+        {isAuthenticatedMode && sessionData && (
+          <div
+            className={cn(
+              "flex items-center px-2 py-1.5 rounded-md hover:bg-accent/40 transition-colors cursor-default",
+              collapsed ? "justify-center" : "gap-2.5",
+            )}
+            title={collapsed ? (sessionData.user.name ?? sessionData.user.email ?? "") : undefined}
+          >
+            {sessionData.user.image ? (
+              <img
+                src={sessionData.user.image}
+                alt={sessionData.user.name ?? "User"}
+                className="h-6 w-6 rounded-full shrink-0 object-cover"
+              />
+            ) : (
+              <span className="h-6 w-6 rounded-full shrink-0 flex items-center justify-center bg-primary/10 text-primary text-[10px] font-semibold uppercase">
+                {(sessionData.user.name ?? sessionData.user.email ?? "?").charAt(0)}
+              </span>
+            )}
+            <div
+              className={cn(
+                "min-w-0 transition-all duration-150",
+                collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[180px]",
+              )}
+            >
+              <p className="text-[12px] font-medium truncate leading-tight">{sessionData.user.name ?? "User"}</p>
+              {sessionData.user.email && (
+                <p className="text-[10px] text-muted-foreground/70 truncate leading-tight">{sessionData.user.email}</p>
+              )}
+            </div>
+          </div>
+        )}
         <div
           className={cn(
             "flex items-center justify-between px-3 py-1 transition-all duration-150",
@@ -466,7 +498,7 @@ export function Sidebar() {
         </div>
         <button
           onClick={toggle}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar ([ key)" : "Collapse sidebar ([ key)"}
           className={cn(
             "w-full flex items-center py-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors",
             collapsed ? "justify-center" : "gap-2.5 px-3 text-[13px]",

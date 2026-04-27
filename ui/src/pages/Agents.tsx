@@ -467,7 +467,7 @@ export function Agents() {
                     }
                     trailing={
                       <div className="flex items-center gap-3">
-                        <span className="sm:hidden">
+                        <span className="sm:hidden flex items-center gap-2">
                           {liveRunByAgent.has(agent.id) ? (
                             <LiveRunIndicator
                               agentRef={agentRouteRef(agent)}
@@ -476,6 +476,11 @@ export function Agents() {
                             />
                           ) : (
                             <StatusBadge status={agent.status} />
+                          )}
+                          {costByAgentId.has(agent.id) && costByAgentId.get(agent.id)! > 0 && (
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {formatCents(costByAgentId.get(agent.id)!)}
+                            </span>
                           )}
                         </span>
                         <div className="hidden sm:flex items-center gap-3">
@@ -635,11 +640,11 @@ function OrgTreeNode({
         to={agent ? agentUrl(agent) : `/agents/${node.id}`}
         className={cn("flex items-center gap-3 px-3 py-2 hover:bg-accent/30 transition-colors w-full text-left no-underline text-inherit", agent?.pausedAt && tab !== "paused" && "opacity-50")}
       >
-        <span className="relative flex h-2 w-2 shrink-0">
+        <span className="relative flex h-2.5 w-2.5 shrink-0">
           {(node.status === "active" || node.status === "running") && (
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-50 ${agentStatusDot[node.status] ?? agentStatusDotDefault}`} />
           )}
-          <span className={`relative inline-flex h-2 w-2 rounded-full ${agentStatusDot[node.status] ?? agentStatusDotDefault}`} />
+          <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${agentStatusDot[node.status] ?? agentStatusDotDefault}`} />
         </span>
         <div className="flex-1 min-w-0">
           <span className="text-sm font-medium">{node.name}</span>
