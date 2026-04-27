@@ -139,9 +139,10 @@ export function ProfileSettings() {
           size="sm"
           variant="ghost"
           className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+          disabled={sessionQuery.isRefetching}
           onClick={() => sessionQuery.refetch()}
         >
-          Retry
+          {sessionQuery.isRefetching ? "Retrying…" : "Retry"}
         </Button>
       </div>
     );
@@ -156,7 +157,7 @@ export function ProfileSettings() {
     : "Select a company to upload an avatar into Paperclip storage.";
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl space-y-6 overflow-y-auto">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <UserRoundPen className="h-5 w-5 text-muted-foreground" aria-hidden="true" />

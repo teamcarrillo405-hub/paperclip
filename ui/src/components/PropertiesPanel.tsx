@@ -10,6 +10,7 @@ export function PropertiesPanel() {
 
   return (
     <aside
+      id="properties-panel"
       className="hidden md:flex border-l border-border bg-card flex-col shrink-0 overflow-hidden transition-[width,opacity] duration-200 ease-in-out h-full"
       style={{ width: panelVisible ? 320 : 0, opacity: panelVisible ? 1 : 0 }}
     >
