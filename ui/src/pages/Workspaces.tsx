@@ -8,7 +8,7 @@ import { issuesApi } from "../api/issues";
 import { projectsApi } from "../api/projects";
 import { ProjectWorkspacesContent } from "../components/ProjectWorkspacesContent";
 import { PageSkeleton } from "../components/PageSkeleton";
-import { AlertCircle, GitBranch } from "lucide-react";
+import { AlertCircle, GitBranch, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "../components/EmptyState";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -126,16 +126,18 @@ export function Workspaces() {
         <p className="text-sm text-destructive">Could not load workspace settings.</p>
       </div>
       <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+        disabled={experimentalSettingsQuery.isRefetching}
         onClick={() => experimentalSettingsQuery.refetch()}>
-        Retry
+        {experimentalSettingsQuery.isRefetching ? "Retrying…" : "Retry"}
       </Button>
     </div>
   );
   if (!isolatedWorkspacesEnabled) return (
-    <EmptyState icon={GitBranch} message="Isolated workspaces are not enabled for this instance." />
+    <EmptyState icon={Settings} message="Isolated workspaces are disabled for this instance. Contact your administrator to enable them in instance settings." />
   );
   if (dataLoading) return <PageSkeleton variant="list" />;
   if (error) {
+    const isDataRetrying = projectsLoading || issuesLoading || executionWorkspacesLoading;
     const refetchAll = () => {
       void refetchProjects();
       void refetchIssues();
@@ -149,8 +151,9 @@ export function Workspaces() {
           <p className="text-sm text-destructive">{error.message || "Failed to load workspaces."}</p>
         </div>
         <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+          disabled={isDataRetrying}
           onClick={refetchAll}>
-          Retry
+          {isDataRetrying ? "Retrying…" : "Retry"}
         </Button>
       </div>
     );
@@ -173,13 +176,14 @@ export function Workspaces() {
             <section key={group.project.id} className="space-y-3" aria-labelledby={headingId}>
               <div className="flex flex-wrap items-end justify-between gap-2">
                 <div className="min-w-0">
-                  <Link
-                    id={headingId}
-                    to={`/projects/${group.projectRef}/workspaces`}
-                    className="text-base font-semibold hover:underline"
-                  >
-                    {group.project.name}
-                  </Link>
+                  <h2 id={headingId} className="text-base font-semibold">
+                    <Link
+                      to={`/projects/${group.projectRef}/workspaces`}
+                      className="hover:underline"
+                    >
+                      {group.project.name}
+                    </Link>
+                  </h2>
                   {group.project.description ? (
                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                       {group.project.description}
@@ -191,7 +195,10 @@ export function Workspaces() {
                     {group.summaries.length} workspace{group.summaries.length === 1 ? "" : "s"}
                   </span>
                   {group.runningServiceCount > 0 && (
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                    <span
+                      className="text-xs text-emerald-600 dark:text-emerald-400"
+                      aria-label={`${group.runningServiceCount} running service${group.runningServiceCount === 1 ? "" : "s"}`}
+                    >
                       {group.runningServiceCount} running
                     </span>
                   )}

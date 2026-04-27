@@ -6,7 +6,7 @@ import {
   type Agent,
   type PermissionKey,
 } from "@paperclipai/shared";
-import { AlertCircle, ShieldCheck, Trash2, Users } from "lucide-react";
+import { AlertCircle, LoaderCircle, ShieldCheck, Trash2, Users } from "lucide-react";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { accessApi, type CompanyMember } from "@/api/access";
 import { agentsApi } from "@/api/agents";
@@ -308,6 +308,9 @@ export function CompanyAccess() {
           </p>
         </div>
 
+        {joinRequestsQuery.isError && (
+          <p role="alert" className="text-xs text-destructive mt-1">Could not load join requests.</p>
+        )}
         {access?.canApproveJoinRequests && pendingHumanJoinRequests.length > 0 ? (
           <div className="space-y-3 rounded-xl border border-border px-4 py-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -436,7 +439,7 @@ export function CompanyAccess() {
                 <label className="space-y-2 text-sm">
                   <span className="font-medium">Company role</span>
                   <select
-                    className="w-full rounded-md border border-border bg-background px-3 py-2"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 outline-none"
                     value={draftRole ?? ""}
                     onChange={(event) =>
                       setDraftRole((event.target.value || null) as CompanyMember["membershipRole"])
@@ -453,7 +456,7 @@ export function CompanyAccess() {
                 <label className="space-y-2 text-sm">
                   <span className="font-medium">Membership status</span>
                   <select
-                    className="w-full rounded-md border border-border bg-background px-3 py-2"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 outline-none"
                     value={draftStatus}
                     onChange={(event) =>
                       setDraftStatus(event.target.value as EditableMemberStatus)
@@ -490,40 +493,43 @@ export function CompanyAccess() {
                     </div>
                   ) : null}
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {PERMISSION_KEYS.map((permissionKey) => (
-                    <label
-                      key={permissionKey}
-                      className="flex items-start gap-3 rounded-lg border border-border px-3 py-2"
-                    >
-                      <Checkbox
-                        checked={draftGrants.has(permissionKey)}
-                        onCheckedChange={(checked) => {
-                          setDraftGrants((current) => {
-                            const next = new Set(current);
-                            if (checked) next.add(permissionKey);
-                            else next.delete(permissionKey);
-                            return next;
-                          });
-                        }}
-                      />
-                      <span className="space-y-1">
-                        <span className="block text-sm font-medium">{permissionLabels[permissionKey]}</span>
-                        <span className="block text-xs text-muted-foreground">{permissionKey}</span>
-                        {implicitGrantSet.has(permissionKey) ? (
-                          <span className="block text-xs text-muted-foreground">
-                            Included implicitly by the {draftRole ? HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[draftRole] : "selected"} role. Add an explicit grant only if it should stay after the role changes.
-                          </span>
-                        ) : null}
-                        {draftGrants.has(permissionKey) ? (
-                          <span className="block text-xs text-muted-foreground">
-                            Stored explicitly for this member.
-                          </span>
-                        ) : null}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+                <fieldset className="space-y-2 border-0 p-0 m-0">
+                  <legend className="sr-only">Explicit permission grants</legend>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {PERMISSION_KEYS.map((permissionKey) => (
+                      <label
+                        key={permissionKey}
+                        className="flex items-start gap-3 rounded-lg border border-border px-3 py-2"
+                      >
+                        <Checkbox
+                          checked={draftGrants.has(permissionKey)}
+                          onCheckedChange={(checked) => {
+                            setDraftGrants((current) => {
+                              const next = new Set(current);
+                              if (checked) next.add(permissionKey);
+                              else next.delete(permissionKey);
+                              return next;
+                            });
+                          }}
+                        />
+                        <span className="space-y-1">
+                          <span className="block text-sm font-medium">{permissionLabels[permissionKey]}</span>
+                          <span className="block text-xs text-muted-foreground" aria-hidden="true">{permissionKey}</span>
+                          {implicitGrantSet.has(permissionKey) ? (
+                            <span className="block text-xs text-muted-foreground">
+                              Included implicitly by the {draftRole ? HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[draftRole] : "selected"} role. Add an explicit grant only if it should stay after the role changes.
+                            </span>
+                          ) : null}
+                          {draftGrants.has(permissionKey) ? (
+                            <span className="block text-xs text-muted-foreground">
+                              Stored explicitly for this member.
+                            </span>
+                          ) : null}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
               </div>
             </div>
           )}
@@ -571,11 +577,14 @@ export function CompanyAccess() {
                 </div>
               </div>
 
+              {agentsQuery.isError && (
+                <p role="alert" className="text-xs text-destructive mt-1">Could not load agents.</p>
+              )}
               {assignedIssues.length > 0 ? (
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Issue reassignment</div>
                   <select
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 outline-none"
                     value={reassignmentTarget}
                     onChange={(event) => setReassignmentTarget(event.target.value)}
                   >
@@ -631,6 +640,7 @@ export function CompanyAccess() {
               }}
               disabled={archiveMemberMutation.isPending || assignedIssuesQuery.isLoading}
             >
+              {archiveMemberMutation.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
               {archiveMemberMutation.isPending ? "Removing..." : "Remove member"}
             </Button>
           </DialogFooter>
