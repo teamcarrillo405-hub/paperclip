@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, UserPlus2 } from "lucide-react";
+import { AlertCircle, LoaderCircle, UserPlus2 } from "lucide-react";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export function JoinRequestQueue() {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<"pending_approval" | "approved" | "rejected">("pending_approval");
   const [requestType, setRequestType] = useState<"all" | "human" | "agent">("all");
+  const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -54,6 +55,9 @@ export function JoinRequestQueue() {
           : "Failed to approve join request. Please try again.";
       pushToast({ title: message, tone: "error" });
     },
+    onSettled: () => {
+      setPendingRequestId(null);
+    },
   });
 
   const rejectMutation = useMutation({
@@ -68,6 +72,9 @@ export function JoinRequestQueue() {
           ? error.message
           : "Failed to reject join request. Please try again.";
       pushToast({ title: message, tone: "error" });
+    },
+    onSettled: () => {
+      setPendingRequestId(null);
     },
   });
 
@@ -107,19 +114,20 @@ export function JoinRequestQueue() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <UserPlus2 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-          <h1 className="text-lg font-semibold">Join Request Queue</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Join Request Queue</h1>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
-          Review human and agent join requests outside the mixed inbox feed. This queue uses the same approval mutations as the inline inbox cards.
+          Review pending human and agent join requests for this company. Approve to grant access; rejections are final.
         </p>
       </div>
 
       <fieldset className="rounded-xl border border-border bg-card p-4">
         <legend className="sr-only">Filter join requests</legend>
         <div className="flex flex-wrap gap-3">
-          <label className="space-y-2 text-sm">
+          <label htmlFor="jrq-status-filter" className="space-y-2 text-sm">
             <span className="font-medium">Status</span>
             <select
+              id="jrq-status-filter"
               className="rounded-md border border-border bg-background px-3 py-2"
               value={status}
               onChange={(event) =>
@@ -131,9 +139,10 @@ export function JoinRequestQueue() {
               <option value="rejected">Rejected</option>
             </select>
           </label>
-          <label className="space-y-2 text-sm">
+          <label htmlFor="jrq-type-filter" className="space-y-2 text-sm">
             <span className="font-medium">Request type</span>
             <select
+              id="jrq-type-filter"
               className="rounded-md border border-border bg-background px-3 py-2"
               value={requestType}
               onChange={(event) =>
@@ -154,80 +163,102 @@ export function JoinRequestQueue() {
             No join requests match the current filters.
           </div>
         ) : (
-          requestsQuery.data!.map((request) => {
-            const requesterName =
-              request.requestType === "human"
-                ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || "unknown"
-                : request.agentName || "unknown";
+          <ul className="space-y-4">
+            {requestsQuery.data!.map((request) => {
+              const requesterName =
+                request.requestType === "human"
+                  ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || "unknown"
+                  : request.agentName || "unknown";
 
-            return (
-              <div key={request.id} className="rounded-xl border border-border bg-card p-4">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant={request.status === "pending_approval" ? "secondary" : request.status === "approved" ? "outline" : "destructive"}>
-                        {request.status.replace("_", " ")}
-                      </Badge>
-                      <Badge variant="outline">{request.requestType}</Badge>
-                      {request.adapterType ? <Badge variant="outline">{request.adapterType}</Badge> : null}
-                    </div>
-                    <div>
-                      <div className="text-base font-medium">
-                        {request.requestType === "human"
-                          ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || "Unknown human requester"
-                          : request.agentName || "Unknown agent requester"}
+              const secondaryLine =
+                request.requestType === "human"
+                  ? request.requesterUser?.email || request.requestEmailSnapshot || request.requestingUserId
+                  : request.capabilities || request.requestIp;
+
+              return (
+                <li key={request.id} className="rounded-xl border border-border bg-card p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant={request.status === "pending_approval" ? "secondary" : request.status === "approved" ? "outline" : "destructive"}
+                          aria-label={`Status: ${request.status.replace(/_/g, " ")}`}
+                        >
+                          {request.status.replace("_", " ")}
+                        </Badge>
+                        <Badge variant="outline">{request.requestType}</Badge>
+                        {request.adapterType ? <Badge variant="outline">{request.adapterType}</Badge> : null}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {request.requestType === "human"
-                          ? request.requesterUser?.email || request.requestEmailSnapshot || request.requestingUserId
-                          : request.capabilities || request.requestIp}
+                      <div>
+                        <div className="text-base font-medium">
+                          {request.requestType === "human"
+                            ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || "Unknown human requester"
+                            : request.agentName || "Unknown agent requester"}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {secondaryLine
+                            ? secondaryLine
+                            : <span className="text-muted-foreground italic text-xs">No contact info on file</span>}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {request.status === "pending_approval" ? (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        aria-label={`Reject request from ${requesterName}`}
-                        onClick={() => rejectMutation.mutate(request.id)}
-                        disabled={rejectMutation.isPending}
-                      >
-                        Reject
-                      </Button>
-                      <Button
-                        aria-label={`Approve request from ${requesterName}`}
-                        onClick={() => approveMutation.mutate(request.id)}
-                        disabled={approveMutation.isPending}
-                      >
-                        Approve
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
-                  <div className="rounded-lg border border-border bg-background px-3 py-2">
-                    <div className="text-xs font-medium uppercase tracking-wide">Invite context</div>
-                    <div className="mt-2">
-                      {request.invite
-                        ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
-                        : "Invite metadata unavailable"}
-                    </div>
-                    {request.invite?.inviteMessage ? (
-                      <div className="mt-2 text-foreground">{request.invite.inviteMessage}</div>
+                    {request.status === "pending_approval" ? (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          aria-label={`Reject request from ${requesterName}`}
+                          onClick={() => {
+                            setPendingRequestId(request.id);
+                            rejectMutation.mutate(request.id);
+                          }}
+                          disabled={pendingRequestId === request.id}
+                        >
+                          {pendingRequestId === request.id && rejectMutation.isPending && (
+                            <LoaderCircle className="size-3 animate-spin" aria-hidden="true" />
+                          )}
+                          Reject
+                        </Button>
+                        <Button
+                          aria-label={`Approve request from ${requesterName}`}
+                          onClick={() => {
+                            setPendingRequestId(request.id);
+                            approveMutation.mutate(request.id);
+                          }}
+                          disabled={pendingRequestId === request.id}
+                        >
+                          {pendingRequestId === request.id && approveMutation.isPending && (
+                            <LoaderCircle className="size-3 animate-spin" aria-hidden="true" />
+                          )}
+                          Approve
+                        </Button>
+                      </div>
                     ) : null}
                   </div>
-                  <div className="rounded-lg border border-border bg-background px-3 py-2">
-                    <div className="text-xs font-medium uppercase tracking-wide">Request details</div>
-                    <div className="mt-2">Submitted {new Date(request.createdAt).toLocaleString()}</div>
-                    <div>Source IP {request.requestIp}</div>
-                    {request.requestType === "agent" && request.capabilities ? <div>{request.capabilities}</div> : null}
+
+                  <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
+                    <div className="rounded-lg border border-border bg-background px-3 py-2">
+                      <div className="text-xs font-medium uppercase tracking-wide">Invite context</div>
+                      <div className="mt-2">
+                        {request.invite
+                          ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
+                          : "Invite metadata unavailable"}
+                      </div>
+                      {request.invite?.inviteMessage ? (
+                        <div className="mt-2 text-foreground">{request.invite.inviteMessage}</div>
+                      ) : null}
+                    </div>
+                    <div className="rounded-lg border border-border bg-background px-3 py-2">
+                      <div className="text-xs font-medium uppercase tracking-wide">Request details</div>
+                      <div className="mt-2">Submitted {new Date(request.createdAt).toLocaleString()}</div>
+                      <div>Source IP {request.requestIp}</div>
+                      {request.requestType === "agent" && request.capabilities ? <div>{request.capabilities}</div> : null}
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
     </div>
