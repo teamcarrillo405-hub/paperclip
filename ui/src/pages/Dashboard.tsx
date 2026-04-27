@@ -89,14 +89,14 @@ export function Dashboard() {
     refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
-  const { data: activity } = useQuery({
+  const { data: activity, error: activityError } = useQuery({
     queryKey: [...queryKeys.activity(selectedCompanyId!), { limit: DASHBOARD_ACTIVITY_LIMIT }],
     queryFn: () => activityApi.list(selectedCompanyId!, { limit: DASHBOARD_ACTIVITY_LIMIT }),
     enabled: !!selectedCompanyId,
     refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
-  const { data: issues } = useQuery({
+  const { data: issues, error: issuesError } = useQuery({
     queryKey: queryKeys.issues.list(selectedCompanyId!),
     queryFn: () => issuesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -395,7 +395,7 @@ export function Dashboard() {
                     aria-pressed={chartDays === d}
                     onClick={() => setChartDays(d)}
                     className={cn(
-                      "px-2.5 py-1 text-[11px] font-medium rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                      "px-2.5 py-1 text-xs font-medium rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                       chartDays === d
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground",
@@ -407,18 +407,26 @@ export function Dashboard() {
               </div>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <ChartCard title="Run Activity" subtitle={`Last ${chartDays} days`}>
-                <RunActivityChart activity={data.runActivity} days={chartDays} />
-              </ChartCard>
-              <ChartCard title="Issues by Priority" subtitle={`Last ${chartDays} days`}>
-                <PriorityChart issues={issues ?? []} days={chartDays} />
-              </ChartCard>
-              <ChartCard title="Issues by Status" subtitle={`Last ${chartDays} days`}>
-                <IssueStatusChart issues={issues ?? []} days={chartDays} />
-              </ChartCard>
-              <ChartCard title="Success Rate" subtitle={`Last ${chartDays} days`}>
-                <SuccessRateChart activity={data.runActivity} days={chartDays} />
-              </ChartCard>
+              <section aria-label="Run Activity">
+                <ChartCard title="Run Activity" subtitle={`Last ${chartDays} days`}>
+                  <RunActivityChart activity={data.runActivity} days={chartDays} />
+                </ChartCard>
+              </section>
+              <section aria-label="Issues by Priority">
+                <ChartCard title="Issues by Priority" subtitle={`Last ${chartDays} days`}>
+                  <PriorityChart issues={issues ?? []} days={chartDays} />
+                </ChartCard>
+              </section>
+              <section aria-label="Issues by Status">
+                <ChartCard title="Issues by Status" subtitle={`Last ${chartDays} days`}>
+                  <IssueStatusChart issues={issues ?? []} days={chartDays} />
+                </ChartCard>
+              </section>
+              <section aria-label="Success Rate">
+                <ChartCard title="Success Rate" subtitle={`Last ${chartDays} days`}>
+                  <SuccessRateChart activity={data.runActivity} days={chartDays} />
+                </ChartCard>
+              </section>
             </div>
           </div>
 
@@ -437,7 +445,9 @@ export function Dashboard() {
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 Recent Activity
               </h3>
-              {recentActivity.length === 0 ? (
+              {activityError ? (
+                <p role="alert" className="text-xs text-destructive">Could not load activity.</p>
+              ) : recentActivity.length === 0 ? (
                 <div className="rounded-lg border border-border p-4">
                   <p className="text-sm text-muted-foreground">No recent activity.</p>
                   <Link to="/inbox" className="text-xs text-primary hover:underline mt-1 block">View inbox</Link>
@@ -464,7 +474,9 @@ export function Dashboard() {
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 Recent Tasks
               </h3>
-              {recentIssues.length === 0 ? (
+              {issuesError ? (
+                <p role="alert" className="text-xs text-destructive">Could not load activity.</p>
+              ) : recentIssues.length === 0 ? (
                 <div className="rounded-lg border border-border p-4">
                   <p className="text-sm text-muted-foreground">No tasks yet.</p>
                   <Link to="/projects" className="text-xs text-primary hover:underline mt-1 block">View projects</Link>
@@ -500,7 +512,7 @@ export function Dashboard() {
                                 ? <span className="hidden sm:inline-flex"><Identity name={name} size="sm" /></span>
                                 : null;
                             })()}
-                            <span className="text-xs text-muted-foreground sm:hidden">&middot;</span>
+                            <span className="text-xs text-muted-foreground sm:hidden" aria-hidden="true">·</span>
                             <span className="text-xs text-muted-foreground shrink-0 sm:order-last">
                               {timeAgo(issue.updatedAt)}
                             </span>

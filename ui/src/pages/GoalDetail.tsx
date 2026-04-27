@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Link } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { goalsApi } from "../api/goals";
@@ -138,17 +138,25 @@ export function GoalDetail() {
     ]);
   }, [setBreadcrumbs, goal, goalId]);
 
+  const openPanelRef = useRef(openPanel);
+  const closePanelRef = useRef(closePanel);
+  useEffect(() => { openPanelRef.current = openPanel; }, [openPanel]);
+  useEffect(() => { closePanelRef.current = closePanel; }, [closePanel]);
+
+  const updateGoalMutateRef = useRef(updateGoal.mutate);
+  useEffect(() => { updateGoalMutateRef.current = updateGoal.mutate; }, [updateGoal.mutate]);
+
   useEffect(() => {
     if (goal) {
-      openPanel(
+      openPanelRef.current(
         <GoalProperties
           goal={goal}
-          onUpdate={(data) => updateGoal.mutate(data)}
+          onUpdate={(data) => updateGoalMutateRef.current(data)}
         />
       );
     }
-    return () => closePanel();
-  }, [goal]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => closePanelRef.current();
+  }, [goal]);
 
   if (isLoading) return <PageSkeleton variant="detail" />;
   if (error) return (
@@ -280,9 +288,9 @@ export function GoalDetail() {
 
         <TabsContent value="projects" className="mt-4">
           {linkedProjects.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-center">
+            <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border p-6 text-center">
               <p className="text-sm text-muted-foreground">No linked projects yet.</p>
-              <Link to="/projects" className="text-xs text-primary hover:underline">Browse projects</Link>
+              <Button variant="outline" size="sm" asChild><Link to="/projects">Browse projects</Link></Button>
             </div>
           ) : (
             <div className="rounded-lg border border-border overflow-hidden">

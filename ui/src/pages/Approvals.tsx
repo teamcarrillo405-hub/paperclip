@@ -9,7 +9,7 @@ import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
 import { PageTabBar } from "../components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
-import { ShieldCheck, AlertCircle, LoaderCircle } from "lucide-react";
+import { ShieldCheck, AlertCircle, LoaderCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApprovalCard } from "../components/ApprovalCard";
 import { EmptyState } from "../components/EmptyState";
@@ -372,7 +372,7 @@ export function Approvals() {
 
       {error && (
         <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1 min-w-0">
             <p className="text-sm text-destructive">{error.message || "Failed to load approvals."}</p>
           </div>
@@ -396,10 +396,10 @@ export function Approvals() {
           <button
             type="button"
             onClick={() => setActionError(null)}
-            className="text-destructive/70 hover:text-destructive text-xs shrink-0"
+            className="text-destructive/70 hover:text-destructive shrink-0"
             aria-label="Dismiss error"
           >
-            ×
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       )}
