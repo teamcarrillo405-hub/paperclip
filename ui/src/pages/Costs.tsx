@@ -68,6 +68,7 @@ function BillerTabLabel({ biller, rows }: { biller: string; rows: CostByBiller[]
   );
 }
 
+// FIX 1: added `rounded-md` to outer div
 function MetricTile({
   label,
   value,
@@ -80,7 +81,7 @@ function MetricTile({
   icon: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="border border-border p-4">
+    <div className="rounded-md border border-border p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
@@ -588,41 +589,58 @@ export function Costs() {
             </div>
           ) : null}
 
+          {/* FIX 2: skeleton placeholders during load for the 4 top-level MetricTiles */}
           <div className="grid gap-3 lg:grid-cols-4">
-            <MetricTile
-              label="Inference spend"
-              value={formatCents(spendData?.summary.spendCents ?? 0)}
-              subtitle={`${formatTokens(inferenceTokenTotal)} tokens across request-scoped events`}
-              icon={DollarSign}
-            />
-            <MetricTile
-              label="Budget"
-              value={activeBudgetIncidents.length > 0 ? String(activeBudgetIncidents.length) : (
-                spendData?.summary.budgetCents && spendData.summary.budgetCents > 0
-                  ? `${spendData.summary.utilizationPercent}%`
-                  : "Open"
-              )}
-              subtitle={
-                activeBudgetIncidents.length > 0
-                  ? `${budgetData?.pausedAgentCount ?? 0} agents paused · ${budgetData?.pausedProjectCount ?? 0} projects paused`
-                  : spendData?.summary.budgetCents && spendData.summary.budgetCents > 0
-                    ? `${formatCents(spendData.summary.spendCents)} of ${formatCents(spendData.summary.budgetCents)}`
-                    : "No monthly cap configured"
-              }
-              icon={Coins}
-            />
-            <MetricTile
-              label="Finance net"
-              value={formatCents(financeData?.summary.netCents ?? 0)}
-              subtitle={`${formatCents(financeData?.summary.debitCents ?? 0)} debits · ${formatCents(financeData?.summary.creditCents ?? 0)} credits`}
-              icon={ReceiptText}
-            />
-            <MetricTile
-              label="Finance events"
-              value={String(financeData?.summary.eventCount ?? 0)}
-              subtitle={`${formatCents(financeData?.summary.estimatedDebitCents ?? 0)} estimated in range`}
-              icon={ArrowUpRight}
-            />
+            {(spendLoading || financeLoading) ? (
+              <div className="h-20 rounded-md bg-muted animate-pulse" />
+            ) : (
+              <MetricTile
+                label="Inference spend"
+                value={formatCents(spendData?.summary.spendCents ?? 0)}
+                subtitle={`${formatTokens(inferenceTokenTotal)} tokens across request-scoped events`}
+                icon={DollarSign}
+              />
+            )}
+            {(spendLoading || financeLoading) ? (
+              <div className="h-20 rounded-md bg-muted animate-pulse" />
+            ) : (
+              <MetricTile
+                label="Budget"
+                value={activeBudgetIncidents.length > 0 ? String(activeBudgetIncidents.length) : (
+                  spendData?.summary.budgetCents && spendData.summary.budgetCents > 0
+                    ? `${spendData.summary.utilizationPercent}%`
+                    : "Open"
+                )}
+                subtitle={
+                  activeBudgetIncidents.length > 0
+                    ? `${budgetData?.pausedAgentCount ?? 0} agents paused · ${budgetData?.pausedProjectCount ?? 0} projects paused`
+                    : spendData?.summary.budgetCents && spendData.summary.budgetCents > 0
+                      ? `${formatCents(spendData.summary.spendCents)} of ${formatCents(spendData.summary.budgetCents)}`
+                      : "No monthly cap configured"
+                }
+                icon={Coins}
+              />
+            )}
+            {(spendLoading || financeLoading) ? (
+              <div className="h-20 rounded-md bg-muted animate-pulse" />
+            ) : (
+              <MetricTile
+                label="Finance net"
+                value={formatCents(financeData?.summary.netCents ?? 0)}
+                subtitle={`${formatCents(financeData?.summary.debitCents ?? 0)} debits · ${formatCents(financeData?.summary.creditCents ?? 0)} credits`}
+                icon={ReceiptText}
+              />
+            )}
+            {(spendLoading || financeLoading) ? (
+              <div className="h-20 rounded-md bg-muted animate-pulse" />
+            ) : (
+              <MetricTile
+                label="Finance events"
+                value={String(financeData?.summary.eventCount ?? 0)}
+                subtitle={`${formatCents(financeData?.summary.estimatedDebitCents ?? 0)} estimated in range`}
+                icon={ArrowUpRight}
+              />
+            )}
           </div>
       </div>
 
@@ -758,14 +776,17 @@ export function Costs() {
                         const hasBreakdown = modelRows.length > 0;
                         return (
                           <div key={row.agentId} className="border border-border px-4 py-3">
-                            <div
-                              className={cn("flex items-start justify-between gap-3", hasBreakdown ? "cursor-pointer select-none" : "")}
+                            {/* FIX 3: replaced div[role=button] with native <button> */}
+                            <button
+                              type="button"
+                              className={cn(
+                                "flex w-full items-start justify-between gap-3 text-left",
+                                hasBreakdown ? "cursor-pointer select-none" : "cursor-default",
+                              )}
                               onClick={() => hasBreakdown && toggleAgent(row.agentId)}
-                              role={hasBreakdown ? "button" : undefined}
-                              tabIndex={hasBreakdown ? 0 : undefined}
+                              disabled={!hasBreakdown}
                               aria-expanded={hasBreakdown ? isExpanded : undefined}
                               aria-label={hasBreakdown ? `Expand ${row.agentName ?? row.agentId} cost breakdown` : undefined}
-                              onKeyDown={hasBreakdown ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleAgent(row.agentId); } } : undefined}
                             >
                               <div className="flex min-w-0 items-center gap-2">
                                 {hasBreakdown ? (
@@ -793,7 +814,7 @@ export function Costs() {
                                   </div>
                                 ) : null}
                               </div>
-                            </div>
+                            </button>
 
                             {isExpanded && modelRows.length > 0 ? (
                               <div className="mt-3 space-y-2 border-l border-border pl-4">
