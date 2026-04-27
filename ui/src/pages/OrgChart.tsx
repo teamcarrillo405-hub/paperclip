@@ -105,6 +105,7 @@ function layoutForest(roots: OrgNode[]): LayoutNode[] {
   }
 
   // Compute bounds and return
+  void totalW; void gaps;
   return result;
 }
 
@@ -541,6 +542,10 @@ export function OrgChart() {
           >
             <Maximize2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
           </button>
+          {/* Zoom level aria-live announcement for screen readers */}
+          <span className="sr-only" aria-live="polite" aria-atomic="true">
+            Zoom: {Math.round(zoom * 100)}%
+          </span>
         </div>
 
         {/* SVG layer for edges */}
@@ -642,7 +647,10 @@ export function OrgChart() {
                       </span>
                     )}
                     {agent && agent.capabilities && (
-                      <span className="text-xs text-muted-foreground/80 leading-tight mt-1 line-clamp-2">
+                      <span
+                        title={agent.capabilities}
+                        className="text-xs text-muted-foreground/80 leading-tight mt-1 line-clamp-2 overflow-hidden w-full"
+                      >
                         {agent.capabilities}
                       </span>
                     )}

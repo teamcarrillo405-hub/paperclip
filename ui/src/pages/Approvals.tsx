@@ -9,7 +9,7 @@ import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
 import { PageTabBar } from "../components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
-import { ShieldCheck, AlertCircle } from "lucide-react";
+import { ShieldCheck, AlertCircle, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApprovalCard } from "../components/ApprovalCard";
 import { PageSkeleton } from "../components/PageSkeleton";
@@ -305,51 +305,65 @@ export function Approvals() {
             <button
               type="button"
               disabled={isBulkOperating}
+              aria-busy={isBulkOperating}
               onClick={handleBulkApprove}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium border border-green-700/40 text-green-700 dark:text-green-400",
+                "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-green-700/40 text-green-700 dark:text-green-400",
                 "bg-green-700/5 hover:bg-green-700/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
-              {isBulkOperating ? "Working..." : selectedIds.size > 0 ? `Approve (${selectedIds.size})` : "Approve All"}
+              {isBulkOperating ? (
+                <>
+                  <LoaderCircle className="h-3 w-3 animate-spin" aria-hidden="true" />
+                  Working...
+                </>
+              ) : selectedIds.size > 0 ? `Approve (${selectedIds.size})` : "Approve All"}
             </button>
             <button
               type="button"
               disabled={isBulkOperating}
+              aria-busy={isBulkOperating}
               onClick={handleBulkReject}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium border border-destructive/40 text-destructive",
+                "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-destructive/40 text-destructive",
                 "bg-destructive/5 hover:bg-destructive/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
-              {isBulkOperating ? "Working..." : selectedIds.size > 0 ? `Reject (${selectedIds.size})` : "Reject All"}
+              {isBulkOperating ? (
+                <>
+                  <LoaderCircle className="h-3 w-3 animate-spin" aria-hidden="true" />
+                  Working...
+                </>
+              ) : selectedIds.size > 0 ? `Reject (${selectedIds.size})` : "Reject All"}
             </button>
           </div>
         )}
       </div>
 
-      {/* Keyboard shortcut legend */}
-      <div className="flex items-center gap-3 flex-wrap">
-        {[
-          { keys: ["J", "K"], label: "navigate" },
-          { keys: ["A"], label: "approve" },
-          { keys: ["R"], label: "reject" },
-        ].map(({ keys, label }) => (
-          <span key={label} className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
-            <span className="flex items-center gap-0.5">
-              {keys.map((k) => (
-                <kbd
-                  key={k}
-                  className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-border bg-muted px-1 text-[10px] font-mono font-semibold text-foreground/70 shadow-sm"
-                >
-                  {k}
-                </kbd>
-              ))}
+      {/* Keyboard shortcut legend — only shown on Pending tab where shortcuts apply */}
+      {statusFilter === "pending" && (
+        <div className="flex items-center gap-3 flex-wrap">
+          {[
+            { keys: ["J", "K"], label: "navigate" },
+            { keys: ["A"], label: "approve" },
+            { keys: ["R"], label: "reject" },
+          ].map(({ keys, label }) => (
+            <span key={label} className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
+              <span className="flex items-center gap-0.5">
+                {keys.map((k) => (
+                  <kbd
+                    key={k}
+                    className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-border bg-muted px-1 text-[10px] font-mono font-semibold text-foreground/70 shadow-sm"
+                  >
+                    {k}
+                  </kbd>
+                ))}
+              </span>
+              <span>{label}</span>
             </span>
-            <span>{label}</span>
-          </span>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {error && (
         <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
