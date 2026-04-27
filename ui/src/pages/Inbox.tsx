@@ -348,7 +348,7 @@ export function FailedRunInboxRow({
               type="button"
               onClick={onDismiss}
               className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
-              aria-label="Dismiss"
+              aria-label={linkedAgentName ? `Dismiss failed run — ${linkedAgentName}` : "Dismiss failed run"}
             >
               <X className="h-4 w-4" />
             </button>
@@ -372,7 +372,7 @@ export function FailedRunInboxRow({
             type="button"
             onClick={onDismiss}
             className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Dismiss"
+              aria-label={linkedAgentName ? `Dismiss failed run — ${linkedAgentName}` : "Dismiss failed run"}
           >
             <X className="h-4 w-4" />
           </button>
@@ -2001,8 +2001,8 @@ export function Inbox() {
                   <button
                     key={value}
                     type="button"
-                    role="button"
-                    aria-pressed={groupBy === value}
+                    role="radio"
+                    aria-checked={groupBy === value}
                     className={cn(
                       "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
                       groupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
@@ -2010,7 +2010,7 @@ export function Inbox() {
                     onClick={() => updateGroupBy(value)}
                   >
                     <span>{label}</span>
-                    {groupBy === value ? <Check className="h-3.5 w-3.5" /> : null}
+                    {groupBy === value ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : null}
                   </button>
                 ))}
               </div>
@@ -2546,7 +2546,7 @@ export function Inbox() {
                     type="button"
                     onClick={() => dismissAlert("alert:agent-errors")}
                     className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
-                    aria-label="Dismiss"
+                    aria-label="Dismiss agent errors alert"
                   >
                     <X aria-hidden="true" className="h-3.5 w-3.5" />
                   </button>
@@ -2569,7 +2569,7 @@ export function Inbox() {
                     type="button"
                     onClick={() => dismissAlert("alert:budget")}
                     className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
-                    aria-label="Dismiss"
+                    aria-label="Dismiss budget alert"
                   >
                     <X aria-hidden="true" className="h-3.5 w-3.5" />
                   </button>

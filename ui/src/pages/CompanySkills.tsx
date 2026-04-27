@@ -507,6 +507,7 @@ function SkillPane({
   detail,
   file,
   fileLoading,
+  fileError,
   updateStatus,
   updateStatusLoading,
   viewMode,
@@ -528,6 +529,7 @@ function SkillPane({
   detail: CompanySkillDetail | null | undefined;
   file: CompanySkillFileDetail | null | undefined;
   fileLoading: boolean;
+  fileError?: Error | null;
   updateStatus: CompanySkillUpdateStatus | null | undefined;
   updateStatusLoading: boolean;
   viewMode: "preview" | "code";
@@ -756,6 +758,10 @@ function SkillPane({
       <div id="skill-edit-panel" className="min-h-[560px] px-5 py-5">
         {fileLoading ? (
           <PageSkeleton variant="detail" />
+        ) : fileError ? (
+          <p role="alert" className="text-sm text-destructive p-4">
+            {fileError.message ?? "Failed to load file."}
+          </p>
         ) : !file ? (
           <div className="text-sm text-muted-foreground">Select a file to inspect.</div>
         ) : editMode && file.editable ? (
@@ -814,7 +820,7 @@ export function CompanySkills() {
   useEffect(() => {
     setBreadcrumbs([
       { label: "Skills", href: "/skills" },
-      ...(routeSkillId ? [{ label: "Detail" }] : []),
+      ...(routeSkillId ? [{ label: displayedDetail?.name ?? "Detail" }] : []),
     ]);
   }, [routeSkillId, setBreadcrumbs]);
 
@@ -1252,6 +1258,7 @@ export function CompanySkills() {
                 value={source}
                 onChange={(event) => setSource(event.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddSkillSource(); } }}
+                disabled={importSkill.isPending}
                 placeholder="Paste path, GitHub URL, or skills.sh command"
                 aria-label="Import skill source"
                 className="w-full bg-transparent text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring placeholder:text-muted-foreground"
@@ -1320,6 +1327,7 @@ export function CompanySkills() {
             detail={activeDetail}
             file={activeFile}
             fileLoading={fileQuery.isLoading && !activeFile}
+            fileError={fileQuery.error instanceof Error ? fileQuery.error : null}
             updateStatus={updateStatusQuery.data}
             updateStatusLoading={updateStatusQuery.isLoading}
             viewMode={viewMode}

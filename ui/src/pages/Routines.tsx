@@ -219,9 +219,9 @@ function RoutineListRow({
   return (
     <Link
       to={href}
-      aria-busy={runningRoutineId === routine.id}
       className="group flex flex-col gap-3 border-b border-border px-3 py-3 transition-colors hover:bg-accent/50 last:border-b-0 sm:flex-row sm:items-center no-underline text-inherit"
     >
+      {runningRoutineId === routine.id && <span className="sr-only">Running</span>}
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-medium">{routine.title}</span>
@@ -602,7 +602,7 @@ export function Routines() {
           </p>
         </div>
         <Button onClick={() => setComposerOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
           Create routine
         </Button>
       </div>
@@ -894,7 +894,7 @@ export function Routines() {
                     <p className="text-sm font-medium">Advanced delivery settings</p>
                     <p className="text-sm text-muted-foreground">Keep policy controls secondary to the work definition.</p>
                   </div>
-                  {advancedOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                  {advancedOpen ? <ChevronDown aria-hidden="true" className="h-4 w-4 text-muted-foreground" /> : <ChevronRight aria-hidden="true" className="h-4 w-4 text-muted-foreground" />}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -954,7 +954,7 @@ export function Routines() {
                   !draft.title.trim()
                 }
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
                 {createRoutine.isPending ? "Creating..." : "Create routine"}
               </Button>
               {createRoutine.isError ? (
