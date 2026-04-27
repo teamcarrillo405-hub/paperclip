@@ -9,9 +9,10 @@ interface MetricCardProps {
   description?: ReactNode;
   to?: string;
   onClick?: () => void;
+  "aria-label"?: string;
 }
 
-export function MetricCard({ icon: Icon, value, label, description, to, onClick }: MetricCardProps) {
+export function MetricCard({ icon: Icon, value, label, description, to, onClick, "aria-label": ariaLabel }: MetricCardProps) {
   const isClickable = !!(to || onClick);
 
   const inner = (
@@ -35,7 +36,7 @@ export function MetricCard({ icon: Icon, value, label, description, to, onClick 
 
   if (to) {
     return (
-      <Link to={to} className="no-underline text-inherit h-full" onClick={onClick}>
+      <Link to={to} className="no-underline text-inherit h-full" onClick={onClick} aria-label={ariaLabel}>
         {inner}
       </Link>
     );

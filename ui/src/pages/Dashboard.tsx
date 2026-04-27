@@ -355,6 +355,7 @@ export function Dashboard() {
               value={data.agents.active + data.agents.running + data.agents.paused + data.agents.error}
               label="Agents Enabled"
               to="/agents"
+              aria-label={`View all agents — ${data.agents.active + data.agents.running + data.agents.paused + data.agents.error} total`}
               description={
                 <span>
                   {data.agents.running} running{", "}
@@ -368,6 +369,7 @@ export function Dashboard() {
               value={data.tasks.inProgress}
               label="Tasks In Progress"
               to="/issues"
+              aria-label={`View all tasks — ${data.tasks.inProgress} in progress`}
               description={
                 <span>
                   {data.tasks.open} open{", "}
@@ -380,6 +382,7 @@ export function Dashboard() {
               value={formatCents(data.costs.monthSpendCents)}
               label="Month Spend"
               to="/costs"
+              aria-label={`View costs — ${formatCents(data.costs.monthSpendCents)} spent this month`}
               description={
                 <span>
                   {data.costs.monthBudgetCents > 0
@@ -393,6 +396,7 @@ export function Dashboard() {
               value={data.pendingApprovals + data.budgets.pendingApprovals}
               label="Pending Approvals"
               to="/approvals"
+              aria-label={`View approvals — ${data.pendingApprovals + data.budgets.pendingApprovals} pending`}
               description={
                 <span>
                   {data.budgets.pendingApprovals > 0
@@ -434,21 +438,25 @@ export function Dashboard() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <section aria-label="Run activity chart">
                 <ChartCard title="Run Activity" subtitle={`Last ${chartDays} days`}>
+                  <span className="sr-only">Activity chart showing agent run counts over the last {chartDays} days.</span>
                   <RunActivityChart activity={data.runActivity} days={chartDays} />
                 </ChartCard>
               </section>
               <section aria-label="Issues by priority chart">
                 <ChartCard title="Issues by Priority" subtitle={`Last ${chartDays} days`}>
+                  <span className="sr-only">Bar chart showing issue counts grouped by priority over the last {chartDays} days.</span>
                   <PriorityChart issues={issues ?? []} days={chartDays} />
                 </ChartCard>
               </section>
               <section aria-label="Issues by status chart">
                 <ChartCard title="Issues by Status" subtitle={`Last ${chartDays} days`}>
+                  <span className="sr-only">Chart showing issue distribution by status over the last {chartDays} days.</span>
                   <IssueStatusChart issues={issues ?? []} days={chartDays} />
                 </ChartCard>
               </section>
               <section aria-label="Success rate chart">
                 <ChartCard title="Success Rate" subtitle={`Last ${chartDays} days`}>
+                  <span className="sr-only">Chart showing the agent run success rate over the last {chartDays} days.</span>
                   <SuccessRateChart activity={data.runActivity} days={chartDays} />
                 </ChartCard>
               </section>

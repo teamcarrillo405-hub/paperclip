@@ -82,6 +82,7 @@ export function Agents() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<{ col: SortCol; dir: SortDir } | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const bulkToolbarRef = useRef<HTMLDivElement>(null);
 
   const { data: agents, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
@@ -181,6 +182,14 @@ export function Agents() {
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);
   }, [filtersOpen]);
+
+  const hasBulkSelection = selectedIds.size > 0;
+  useEffect(() => {
+    if (hasBulkSelection && bulkToolbarRef.current) {
+      const firstBtn = bulkToolbarRef.current.querySelector<HTMLButtonElement>('button:not([disabled])');
+      firstBtn?.focus();
+    }
+  }, [hasBulkSelection]);
 
   if (!selectedCompanyId) {
     return <EmptyState icon={Bot} message="Select a company to view agents." />;
@@ -357,7 +366,7 @@ export function Agents() {
                     firstMenuItemRef.current?.focus();
                   }
                 }}
-                className="absolute right-0 top-full mt-1 z-50 w-48 border border-border bg-popover shadow-md p-1"
+                className="absolute right-0 top-full mt-1 z-50 w-48 rounded-md border border-border bg-popover shadow-md p-1"
               >
                 <button
                   ref={firstMenuItemRef}
@@ -652,6 +661,7 @@ export function Agents() {
       {someSelected && (
         <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
           <div
+            ref={bulkToolbarRef}
             role="toolbar"
             aria-label="Bulk actions"
             className="flex items-center gap-3 rounded-none border border-border bg-popover px-4 py-2.5 shadow-xl"

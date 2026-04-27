@@ -45,6 +45,7 @@ export function GoalPropertiesToggleButton({
       aria-label="Show properties"
       aria-expanded={panelVisible}
       aria-controls="properties-panel"
+      aria-hidden={panelVisible}
       tabIndex={panelVisible ? -1 : 0}
     >
       <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
