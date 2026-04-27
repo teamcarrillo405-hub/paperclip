@@ -14,7 +14,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Shield, LoaderCircle } from "lucide-react";
+import { Shield, LoaderCircle, Building2 } from "lucide-react";
+import { EmptyState } from "../components/EmptyState";
 import { cn, agentUrl } from "../lib/utils";
 import { roleLabels } from "../components/agent-config-primitives";
 import { AgentConfigForm, type CreateConfigValues } from "../components/AgentConfigForm";
@@ -86,7 +87,7 @@ export function NewAgent() {
     enabled: Boolean(selectedCompanyId),
   });
 
-  const { data: companySkills, isError: companySkillsError } = useQuery({
+  const { data: companySkills, isError: companySkillsError, refetch: refetchCompanySkills } = useQuery({
     queryKey: queryKeys.companySkills.list(selectedCompanyId ?? ""),
     queryFn: () => companySkillsApi.list(selectedCompanyId!),
     enabled: Boolean(selectedCompanyId),
@@ -193,6 +194,10 @@ export function NewAgent() {
       }
       return prev.filter((value) => value !== key);
     });
+  }
+
+  if (!selectedCompanyId) {
+    return <EmptyState icon={Building2} message="Select a company to create an agent." />;
   }
 
   return (
@@ -319,7 +324,10 @@ export function NewAgent() {
               </p>
             </div>
             {companySkillsError ? (
-              <p role="alert" className="text-xs text-destructive">Could not load company skills.</p>
+              <div className="flex items-center gap-2">
+                <p role="alert" className="text-xs text-destructive">Could not load company skills.</p>
+                <Button variant="ghost" size="sm" onClick={() => void refetchCompanySkills()}>Retry</Button>
+              </div>
             ) : availableSkills.length === 0 ? (
               <p className="text-xs text-muted-foreground">
                 <>No company skills installed. <Link to="/company/skills" className="underline text-xs">Manage skills</Link></>
@@ -366,6 +374,7 @@ export function NewAgent() {
               type="submit"
               size="sm"
               disabled={!name.trim() || createAgent.isPending}
+              title={!name.trim() ? "Enter an agent name to continue" : undefined}
             >
               {createAgent.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
               {createAgent.isPending ? "Creating…" : "Create agent"}

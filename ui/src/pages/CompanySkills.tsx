@@ -722,7 +722,7 @@ function SkillPane({
           </div>
           <div className="flex items-center gap-2">
             {file?.markdown && !editMode && (
-              <div className="flex items-center border border-border">
+              <div role="group" aria-label="View mode" className="flex items-center border border-border">
                 <button
                   type="button"
                   aria-pressed={viewMode === "preview"}
@@ -1303,7 +1303,7 @@ export function CompanySkills() {
           ) : skillsQuery.error ? (
             <div role="alert" className="px-4 py-6 space-y-2">
               <p className="text-sm text-destructive">{skillsQuery.error.message}</p>
-              <button type="button" className="text-xs text-destructive/70 hover:text-destructive underline" onClick={() => skillsQuery.refetch()}>
+              <button type="button" className="text-xs text-destructive/70 hover:text-destructive underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1" onClick={() => skillsQuery.refetch()}>
                 Retry
               </button>
             </div>
@@ -1332,7 +1332,7 @@ export function CompanySkills() {
           )}
         </aside>
 
-        <div className="min-w-0 px-5">
+        <div className="min-w-0">
           <SkillPane
             loading={skillsQuery.isLoading || detailQuery.isLoading}
             detail={activeDetail}

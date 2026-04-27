@@ -12,9 +12,10 @@ interface PageTabBarProps {
   value?: string;
   onValueChange?: (value: string) => void;
   align?: "center" | "start";
+  "aria-label"?: string;
 }
 
-export function PageTabBar({ items, value, onValueChange, align = "center" }: PageTabBarProps) {
+export function PageTabBar({ items, value, onValueChange, align = "center", "aria-label": ariaLabel }: PageTabBarProps) {
   const { isMobile } = useSidebar();
 
   if (isMobile && value !== undefined && onValueChange) {
@@ -34,7 +35,7 @@ export function PageTabBar({ items, value, onValueChange, align = "center" }: Pa
   }
 
   return (
-    <TabsList variant="line" className={align === "start" ? "justify-start" : undefined}>
+    <TabsList variant="line" className={align === "start" ? "justify-start" : undefined} aria-label={ariaLabel}>
       {items.map((item) => (
         <TabsTrigger key={item.value} value={item.value}>
           {item.label}

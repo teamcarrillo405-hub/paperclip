@@ -7,6 +7,7 @@ import {
   type PermissionKey,
 } from "@paperclipai/shared";
 import { AlertCircle, LoaderCircle, ShieldCheck, Trash2, Users } from "lucide-react";
+import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { accessApi, type CompanyMember } from "@/api/access";
 import { agentsApi } from "@/api/agents";
@@ -232,7 +233,7 @@ export function CompanyAccess() {
   }, [removingMember]);
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">Select a company to manage access.</div>;
+    return <EmptyState icon={Users} message="Select a company to manage access." />;
   }
 
   if (membersQuery.isLoading) {
@@ -283,7 +284,7 @@ export function CompanyAccess() {
     <div className="max-w-6xl space-y-8">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+          <ShieldCheck className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           <h1 className="text-2xl font-semibold tracking-tight">Company Access</h1>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
@@ -355,7 +356,7 @@ export function CompanyAccess() {
           </div>
         ) : null}
 
-        <div role="table" aria-label="Company members" className="overflow-hidden rounded-xl border border-border">
+        <div role="table" aria-label="Company members" className="overflow-x-auto overflow-hidden rounded-xl border border-border">
           <div role="rowgroup">
             <div role="row" className="grid grid-cols-[minmax(0,1.5fr)_120px_120px_minmax(0,1.2fr)_180px] gap-3 border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <div role="columnheader">User account</div>
@@ -587,6 +588,7 @@ export function CompanyAccess() {
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Issue reassignment</div>
                   <select
+                    aria-label="Reassign issues to"
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 outline-none"
                     value={reassignmentTarget}
                     onChange={(event) => setReassignmentTarget(event.target.value)}

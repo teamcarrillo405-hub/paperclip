@@ -710,7 +710,7 @@ export function Costs() {
                             : "Unlimited budget"}
                         </div>
                       </div>
-                      <div className="border border-border px-4 py-3 text-right">
+                      <div className="rounded-md border border-border px-4 py-3 text-right">
                         <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">usage</div>
                         <div className="mt-1 text-lg font-medium tabular-nums">
                           {formatTokens(inferenceTokenTotal)}
@@ -725,7 +725,7 @@ export function Costs() {
                           aria-valuenow={spendData.summary.utilizationPercent}
                           aria-valuemin={0}
                           aria-valuemax={100}
-                          aria-label="Monthly budget utilization"
+                          aria-label={`${PRESET_LABELS[preset]} budget utilization`}
                         >
                           <div
                             className={cn(
@@ -766,7 +766,7 @@ export function Costs() {
                     {(spendData?.byAgent.length ?? 0) === 0 ? (
                       <p className="text-sm text-muted-foreground">No cost events yet.</p>
                     ) : (
-                      spendData?.byAgent.map((row) => {
+                      <div className="overflow-x-auto">{spendData?.byAgent.map((row) => {
                         const modelRows = agentModelRows.get(row.agentId) ?? [];
                         const isExpanded = expandedAgents.has(row.agentId);
                         const hasBreakdown = modelRows.length > 0;
@@ -847,7 +847,7 @@ export function Costs() {
                             ) : null}
                           </div>
                         );
-                      })
+                      })}</div>
                     )}
                   </CardContent>
                 </Card>
@@ -862,7 +862,7 @@ export function Costs() {
                       {(spendData?.byProject.length ?? 0) === 0 ? (
                         <p className="text-sm text-muted-foreground">No project-attributed run costs yet.</p>
                       ) : (
-                        spendData?.byProject.map((row, index) => (
+                        <div className="overflow-x-auto">{spendData?.byProject.map((row, index) => (
                           <div
                             key={row.projectId ?? `unattributed-${index}`}
                             className="flex items-center justify-between gap-3 border border-border px-3 py-2 text-sm"
@@ -870,7 +870,7 @@ export function Costs() {
                             <span className="truncate">{row.projectName ?? row.projectId ?? "Unattributed"}</span>
                             <span className="font-medium tabular-nums">{formatCents(row.costCents)}</span>
                           </div>
-                        ))
+                        ))}</div>
                       )}
                     </CardContent>
                   </Card>
@@ -1033,7 +1033,7 @@ export function Costs() {
                 </div>
               ) : null}
               <Tabs value={effectiveProvider} onValueChange={setActiveProvider}>
-                <PageTabBar items={providerTabItems} value={effectiveProvider} />
+                <PageTabBar items={providerTabItems} value={effectiveProvider} aria-label="Provider sub-tabs" />
 
                 <TabsContent value="all" className="mt-4">
                   {providers.length === 0 ? (
@@ -1103,7 +1103,7 @@ export function Costs() {
                 </div>
               ) : null}
               <Tabs value={effectiveBiller} onValueChange={setActiveBiller}>
-                <PageTabBar items={billerTabItems} value={effectiveBiller} />
+                <PageTabBar items={billerTabItems} value={effectiveBiller} aria-label="Biller sub-tabs" />
 
                 <TabsContent value="all" className="mt-4">
                   {billers.length === 0 ? (
