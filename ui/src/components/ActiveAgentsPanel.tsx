@@ -57,7 +57,7 @@ interface ActiveAgentsPanelProps {
 }
 
 export function ActiveAgentsPanel({ companyId, isLive = false }: ActiveAgentsPanelProps) {
-  const { data: liveRuns } = useQuery({
+  const { data: liveRuns, isLoading } = useQuery({
     queryKey: [...queryKeys.liveRuns(companyId), "dashboard"],
     queryFn: () => heartbeatsApi.liveRunsForCompany(companyId, MIN_DASHBOARD_RUNS),
     refetchInterval: DASHBOARD_LIVE_RUNS_POLL_INTERVAL_MS,
@@ -117,7 +117,13 @@ export function ActiveAgentsPanel({ companyId, isLive = false }: ActiveAgentsPan
           </span>
         )}
       </div>
-      {runs.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-[320px] rounded-xl border border-border/50 bg-muted/20 animate-pulse" />
+          ))}
+        </div>
+      ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border p-4">
           <p className="text-sm text-muted-foreground">No recent agent runs.</p>
         </div>
@@ -265,6 +271,7 @@ const AgentRunCard = memo(function AgentRunCard({
               <Link
                 to={`/agents/${run.agentId}/runs/${run.id}`}
                 title="Retry run"
+                aria-label="Retry run"
                 className={cn(
                   "inline-flex h-7 w-7 items-center justify-center rounded border border-transparent text-muted-foreground transition-colors",
                   "hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
@@ -278,6 +285,7 @@ const AgentRunCard = memo(function AgentRunCard({
               <button
                 type="button"
                 title="Pause agent"
+                aria-label="Pause agent"
                 disabled={pauseMutation.isPending}
                 onClick={handlePause}
                 className={cn(
@@ -293,6 +301,7 @@ const AgentRunCard = memo(function AgentRunCard({
               <button
                 type="button"
                 title="Cancel run"
+                aria-label="Cancel run"
                 disabled={cancelMutation.isPending}
                 onClick={handleCancel}
                 className={cn(
@@ -306,6 +315,8 @@ const AgentRunCard = memo(function AgentRunCard({
             )}
             <Link
               to={`/agents/${run.agentId}/runs/${run.id}`}
+              title="View run details"
+              aria-label="View run details"
               className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-2 py-1 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
             >
               <ExternalLink className="h-2.5 w-2.5" />
@@ -342,6 +353,7 @@ const AgentRunCard = memo(function AgentRunCard({
           onClick={() => setTranscriptExpanded(true)}
           className="absolute top-2 right-2 opacity-30 group-hover/transcript:opacity-100 focus:opacity-100 focus-visible:opacity-100 transition-opacity p-1 rounded bg-background/80 text-muted-foreground hover:text-foreground"
           title="Expand transcript"
+          aria-label="Expand transcript"
         >
           <Maximize2 className="h-3 w-3" />
         </button>
