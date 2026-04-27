@@ -9,7 +9,7 @@ import { GoalTree } from "../components/GoalTree";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { Button } from "@/components/ui/button";
-import { Target, Plus } from "lucide-react";
+import { Target, Plus, AlertCircle } from "lucide-react";
 
 export function Goals() {
   const { selectedCompanyId } = useCompany();
@@ -20,7 +20,7 @@ export function Goals() {
     setBreadcrumbs([{ label: "Goals" }]);
   }, [setBreadcrumbs]);
 
-  const { data: goals, isLoading, error } = useQuery({
+  const { data: goals, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.goals.list(selectedCompanyId!),
     queryFn: () => goalsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -36,7 +36,20 @@ export function Goals() {
 
   return (
     <div className="space-y-4">
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && (
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{error.message}</p>
+          </div>
+          <button
+            className="text-xs text-destructive/70 hover:text-destructive underline shrink-0"
+            onClick={() => refetch()}
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {goals && goals.length === 0 && (
         <EmptyState
@@ -55,7 +68,11 @@ export function Goals() {
               New Goal
             </Button>
           </div>
-          <GoalTree goals={goals} goalLink={(goal) => `/goals/${goal.id}`} />
+          <GoalTree
+            goals={goals}
+            goalLink={(goal) => `/goals/${goal.id}`}
+            companyId={selectedCompanyId}
+          />
         </>
       )}
     </div>
