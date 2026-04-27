@@ -219,6 +219,7 @@ export function CompanyInvites() {
                     checked={checked}
                     onChange={() => setHumanRole(option.value)}
                     className="mt-1 h-4 w-4 border-border text-foreground"
+                    style={{ accentColor: "hsl(var(--primary))" }}
                   />
                   <span className="min-w-0 space-y-1">
                     <span className="flex flex-wrap items-center gap-2">
@@ -256,10 +257,10 @@ export function CompanyInvites() {
                 <div className="text-sm font-medium">Latest invite link</div>
                 <div aria-live="polite" aria-atomic="true" className="min-w-[52px]">
                   {latestInviteCopied ? (
-                    <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
-                      <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span className="flex items-center gap-1 text-xs text-green-600 animate-pulse">
+                      <Check aria-hidden="true" className="h-3 w-3" />
                       Copied
-                    </div>
+                    </span>
                   ) : null}
                 </div>
               </div>
@@ -374,6 +375,7 @@ export function CompanyInvites() {
                 <Button
                   type="button"
                   variant="outline"
+                  aria-busy={invitesQuery.isFetchingNextPage}
                   onClick={() => invitesQuery.fetchNextPage()}
                   disabled={invitesQuery.isFetchingNextPage}
                 >

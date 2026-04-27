@@ -2103,9 +2103,9 @@ export function Inbox() {
       )}
 
       {approvalsError && (
-        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 mb-2">
           <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-sm text-destructive">{approvalsError.message}</p>
+          <p className="text-sm text-destructive flex-1">{approvalsError instanceof Error ? approvalsError.message : "Failed to load approvals."}</p>
         </div>
       )}
       {actionError && (

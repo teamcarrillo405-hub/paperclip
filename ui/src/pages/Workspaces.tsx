@@ -122,6 +122,7 @@ export function Workspaces() {
     <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
       <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
       <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-destructive">Error</p>
         <p className="text-sm text-destructive">Could not load workspace settings.</p>
       </div>
       <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
@@ -144,6 +145,7 @@ export function Workspaces() {
       <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
         <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-destructive">Error</p>
           <p className="text-sm text-destructive">{error.message || "Failed to load workspaces."}</p>
         </div>
         <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
@@ -158,6 +160,7 @@ export function Workspaces() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
+        <p className="text-sm text-muted-foreground mt-1">Active execution environments across all projects.</p>
       </div>
 
       {groups.length === 0 ? (
@@ -183,9 +186,16 @@ export function Workspaces() {
                     </p>
                   ) : null}
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {group.summaries.length} workspace{group.summaries.length === 1 ? "" : "s"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    {group.summaries.length} workspace{group.summaries.length === 1 ? "" : "s"}
+                  </span>
+                  {group.runningServiceCount > 0 && (
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                      {group.runningServiceCount} running
+                    </span>
+                  )}
+                </div>
               </div>
               <ProjectWorkspacesContent
                 companyId={selectedCompanyId!}
