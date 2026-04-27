@@ -54,7 +54,7 @@ export function CompanyInvites() {
   const [humanRole, setHumanRole] = useState<"owner" | "admin" | "operator" | "viewer">("operator");
   const [latestInviteUrl, setLatestInviteUrl] = useState<string | null>(null);
   const [latestInviteCopied, setLatestInviteCopied] = useState(false);
-  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [revokingIds, setRevokingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!latestInviteCopied) return;
@@ -140,16 +140,16 @@ export function CompanyInvites() {
 
   const revokeMutation = useMutation({
     mutationFn: (inviteId: string) => {
-      setRevokingId(inviteId);
+      setRevokingIds((prev) => new Set(prev).add(inviteId));
       return accessApi.revokeInvite(inviteId);
     },
-    onSuccess: async () => {
-      setRevokingId(null);
+    onSuccess: async (_data, inviteId) => {
+      setRevokingIds((prev) => { const next = new Set(prev); next.delete(inviteId); return next; });
       await queryClient.invalidateQueries({ queryKey: inviteHistoryQueryKey });
       pushToast({ title: "Invite revoked", tone: "success" });
     },
-    onError: (error) => {
-      setRevokingId(null);
+    onError: (error, inviteId) => {
+      setRevokingIds((prev) => { const next = new Set(prev); next.delete(inviteId); return next; });
       pushToast({
         title: "Failed to revoke invite",
         body: error instanceof Error ? error.message : "Unknown error",
@@ -202,9 +202,9 @@ export function CompanyInvites() {
         </p>
       </div>
 
-      <section className="space-y-4 rounded-xl border border-border p-5">
+      <section className="space-y-4 rounded-xl border border-border p-5" aria-labelledby="create-invite-heading">
         <div className="space-y-1">
-          <h2 className="text-sm font-semibold">Create invite</h2>
+          <h2 id="create-invite-heading" className="text-sm font-semibold">Create invite</h2>
           <p className="text-sm text-muted-foreground">
             Generate a human invite link and choose the default access it should request.
           </p>
@@ -320,7 +320,7 @@ export function CompanyInvites() {
         ) : (
           <div className="border-t border-border">
             <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
+              <table className="min-w-full text-left text-sm" aria-label="Invite history">
                 <thead>
                   <tr className="border-b border-border">
                     <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">State</th>
@@ -366,10 +366,10 @@ export function CompanyInvites() {
                             variant="outline"
                             aria-label={`Revoke invite created ${new Date(invite.createdAt).toLocaleDateString()}`}
                             onClick={() => revokeMutation.mutate(invite.id)}
-                            disabled={revokeMutation.isPending && revokingId === invite.id}
+                            disabled={revokingIds.has(invite.id)}
                           >
-                            {revokeMutation.isPending && revokingId === invite.id ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-                            {revokeMutation.isPending && revokingId === invite.id ? "Revoking\u2026" : "Revoke"}
+                            {revokingIds.has(invite.id) ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
+                            {revokingIds.has(invite.id) ? "Revoking\u2026" : "Revoke"}
                           </Button>
                         ) : (
                           <span className="text-xs text-muted-foreground">Inactive</span>

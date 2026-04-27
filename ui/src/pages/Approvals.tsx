@@ -35,6 +35,7 @@ export function Approvals() {
   const isKeyboardNav = useRef(false);
   const [optimisticStatus, setOptimisticStatus] = useState<Record<string, "approved" | "rejected">>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [processingApprovalId, setProcessingApprovalId] = useState<string | null>(null);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -82,15 +83,18 @@ export function Approvals() {
   const approveMutation = useMutation({
     mutationFn: (id: string) => approvalsApi.approve(id),
     onMutate: (id) => {
+      setProcessingApprovalId(id);
       setOptimisticStatus((prev) => ({ ...prev, [id]: "approved" }));
     },
     onSuccess: (_approval, id) => {
+      setProcessingApprovalId(null);
       setActionError(null);
       setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
       navigate(`/approvals/${id}?resolved=approved`);
     },
     onError: (err, id) => {
+      setProcessingApprovalId(null);
       setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
       setActionError(err instanceof Error ? err.message : "Failed to approve");
     },
@@ -99,14 +103,17 @@ export function Approvals() {
   const rejectMutation = useMutation({
     mutationFn: (id: string) => approvalsApi.reject(id),
     onMutate: (id) => {
+      setProcessingApprovalId(id);
       setOptimisticStatus((prev) => ({ ...prev, [id]: "rejected" }));
     },
     onSuccess: (_data, id) => {
+      setProcessingApprovalId(null);
       setActionError(null);
       setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
     },
     onError: (err, id) => {
+      setProcessingApprovalId(null);
       setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
       setActionError(err instanceof Error ? err.message : "Failed to reject");
     },
@@ -115,11 +122,16 @@ export function Approvals() {
   const requestRevisionMutation = useMutation({
     mutationFn: ({ id, decisionNote }: { id: string; decisionNote: string }) =>
       approvalsApi.requestRevision(id, decisionNote),
-    onSuccess: () => {
+    onMutate: ({ id }) => {
+      setProcessingApprovalId(id);
+    },
+    onSuccess: (_data, { id }) => {
+      setProcessingApprovalId(null);
       setActionError(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
     },
     onError: (err) => {
+      setProcessingApprovalId(null);
       setActionError(err instanceof Error ? err.message : "Failed to request revision");
     },
   });
@@ -411,7 +423,7 @@ export function Approvals() {
 
       {filtered.length === 0 && (
         <div role="status" className="flex flex-col items-center justify-center py-16 text-center">
-          <ShieldCheck className="h-8 w-8 text-muted-foreground/50 mb-3" />
+          <ShieldCheck className="h-8 w-8 text-muted-foreground/50 mb-3" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">
             {statusFilter === "pending" ? "No pending approvals." : "No approvals yet."}
           </p>
@@ -463,9 +475,11 @@ export function Approvals() {
                   onReject={() => rejectMutation.mutate(approval.id)}
                   onRequestRevision={(decisionNote) => requestRevisionMutation.mutate({ id: approval.id, decisionNote })}
                   detailLink={`/approvals/${approval.id}`}
-                  isPending={approveMutation.isPending || rejectMutation.isPending || requestRevisionMutation.isPending}
+                  isPending={processingApprovalId === approval.id}
                   pendingAction={
-                    approveMutation.isPending ? "approve" : rejectMutation.isPending ? "reject" : null
+                    processingApprovalId === approval.id
+                      ? approveMutation.isPending ? "approve" : rejectMutation.isPending ? "reject" : null
+                      : null
                   }
                 />
               </div>

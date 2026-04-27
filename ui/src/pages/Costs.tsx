@@ -728,7 +728,7 @@ export function Costs() {
                     {spendData?.summary.budgetCents && spendData.summary.budgetCents > 0 ? (
                       <div className="space-y-2">
                         <div
-                          className="h-2 overflow-hidden bg-muted"
+                          className="h-2 overflow-hidden rounded-full bg-muted"
                           role="progressbar"
                           aria-valuenow={spendData.summary.utilizationPercent}
                           aria-valuemin={0}
@@ -737,7 +737,7 @@ export function Costs() {
                         >
                           <div
                             className={cn(
-                              "h-full transition-[width,background-color] duration-150",
+                              "h-full rounded-full transition-[width,background-color] duration-150",
                               spendData.summary.utilizationPercent > 90
                                 ? "bg-destructive"
                                 : spendData.summary.utilizationPercent > 70
@@ -779,7 +779,7 @@ export function Costs() {
                         const isExpanded = expandedAgents.has(row.agentId);
                         const hasBreakdown = modelRows.length > 0;
                         return (
-                          <div key={row.agentId} className="border border-border px-4 py-3">
+                          <div key={row.agentId} className="rounded-lg border border-border px-4 py-3">
                             {/* FIX 3: replaced div[role=button] with native <button> */}
                             <button
                               type="button"
@@ -873,7 +873,7 @@ export function Costs() {
                         <div className="overflow-x-auto">{spendData?.byProject.map((row, index) => (
                           <div
                             key={row.projectId ?? `unattributed-${index}`}
-                            className="flex items-center justify-between gap-3 border border-border px-3 py-2 text-sm"
+                            className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm"
                           >
                             <span className="truncate">{row.projectName ?? row.projectId ?? "Unattributed"}</span>
                             <span className="font-medium tabular-nums">{formatCents(row.costCents)}</span>
