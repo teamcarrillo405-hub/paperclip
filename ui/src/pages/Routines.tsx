@@ -1,7 +1,7 @@
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "@/lib/router";
-import { AlertCircle, Check, ChevronDown, ChevronRight, Layers, MoreHorizontal, Plus, Repeat } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, ChevronRight, Layers, LoaderCircle, MoreHorizontal, Plus, Repeat } from "lucide-react";
 import { cn } from "../lib/utils";
 import { routinesApi } from "../api/routines";
 import { agentsApi } from "../api/agents";
@@ -226,7 +226,7 @@ function RoutineListRow({
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-medium">{routine.title}</span>
           {(isArchived || routine.status === "paused" || isDraft) ? (
-            <span className="text-xs text-muted-foreground">
+            <span className="ml-1 rounded px-1 py-0.5 text-[10px] font-medium uppercase bg-muted text-muted-foreground">
               {isArchived ? "archived" : isDraft ? "draft" : "paused"}
             </span>
           ) : null}
@@ -245,7 +245,7 @@ function RoutineListRow({
           </span>
           <span>
             {formatLastRunTimestamp(routine.lastRun?.triggeredAt)}
-            {routine.lastRun ? ` · ${formatRoutineRunStatus(routine.lastRun.status)}` : ""}
+            {routine.lastRun ? `${formatRoutineRunStatus(routine.lastRun.status) ? ` · ${formatRoutineRunStatus(routine.lastRun.status)}` : ""}` : ""}
           </span>
         </div>
       </Link>
@@ -662,7 +662,6 @@ export function Routines() {
                       key={value}
                       role="radio"
                       aria-checked={routineViewState.groupBy === value}
-                      aria-label={label}
                       tabIndex={0}
                       className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm cursor-pointer ${
                         routineViewState.groupBy === value
@@ -944,7 +943,7 @@ export function Routines() {
                 onChange={(description) => setDraft((current) => ({ ...current, description }))}
                 placeholder="Add instructions..."
                 bordered={false}
-                contentClassName="min-h-[160px] text-sm text-muted-foreground"
+                contentClassName="min-h-40 text-sm text-muted-foreground"
                 onSubmit={() => {
                   if (!createRoutine.isPending && draft.title.trim()) {
                     createRoutine.mutate();
@@ -1031,7 +1030,9 @@ export function Routines() {
                   !draft.title.trim()
                 }
               >
-                <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
+                {createRoutine.isPending
+                  ? <LoaderCircle className="mr-2 size-4 animate-spin" aria-hidden="true" />
+                  : <Plus aria-hidden="true" className="mr-2 h-4 w-4" />}
                 {createRoutine.isPending ? "Creating..." : "Create routine"}
               </Button>
               {createRoutine.isError ? (

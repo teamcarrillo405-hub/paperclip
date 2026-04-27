@@ -92,8 +92,8 @@ function layoutTree(node: OrgNode, x: number, y: number): LayoutNode {
 function layoutForest(roots: OrgNode[]): LayoutNode[] {
   if (roots.length === 0) return [];
 
-  const totalW = roots.reduce((sum, r) => sum + subtreeWidth(r), 0);
-  const gaps = (roots.length - 1) * GAP_X;
+  const _totalW = roots.reduce((sum, r) => sum + subtreeWidth(r), 0);
+  const _gaps = (roots.length - 1) * GAP_X;
   let x = PADDING;
   const y = PADDING;
 
@@ -105,7 +105,6 @@ function layoutForest(roots: OrgNode[]): LayoutNode[] {
   }
 
   // Compute bounds and return
-  void totalW; void gaps;
   return result;
 }
 
@@ -490,6 +489,7 @@ export function OrgChart() {
         data-testid="org-chart-viewport"
         role="application"
         aria-label="Org chart — pan and zoom to explore"
+        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown"
         className="w-full flex-1 min-h-0 overflow-hidden relative bg-muted/20 border border-border rounded-lg"
         style={{
           cursor: dragging ? "grabbing" : "grab",
@@ -660,8 +660,6 @@ export function OrgChart() {
                     )}
                     {agent && agent.capabilities && (
                       <span
-                        tabIndex={0}
-                        aria-label={agent.capabilities}
                         className="text-xs text-muted-foreground/80 leading-tight mt-1 line-clamp-2 overflow-hidden w-full"
                       >
                         {agent.capabilities}
