@@ -1210,6 +1210,7 @@ export function OnboardingWizard() {
                     adapterType={adapterType}
                     recommendedAdapters={recommendedAdapters}
                     moreAdapters={moreAdapters}
+                    adapterTestPassed={adapterEnvResult !== null}
                   />
                 </div>
               )}
@@ -1264,9 +1265,17 @@ export function OnboardingWizard() {
                         const tpl = STARTER_TEMPLATES.find((t) => t.id === selectedTemplateId);
                         if (!tpl) return null;
                         return (
-                          <div className="rounded-lg border border-primary/20 bg-primary/5 px-3.5 py-3 text-xs animate-in fade-in-0 duration-150">
-                            <p className="font-semibold text-foreground mb-1">{tpl.label}</p>
-                            <p className="leading-relaxed text-muted-foreground">{tpl.description}</p>
+                          <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-xs animate-in fade-in-0 duration-150">
+                            <p className="text-[9px] font-semibold uppercase tracking-widest text-primary/70 mb-1.5">Preview — how this will appear</p>
+                            <div className="rounded border border-border/60 bg-background px-3 py-2 shadow-sm">
+                              <div className="flex items-start gap-2">
+                                <span className="mt-0.5 h-3 w-3 rounded-full border-2 border-muted-foreground/30 shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-foreground truncate">{tpl.label}</p>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{tpl.description}</p>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         );
                       })()}
@@ -1443,11 +1452,13 @@ function AgentPreviewCard({
   adapterType,
   recommendedAdapters,
   moreAdapters,
+  adapterTestPassed,
 }: {
   agentName: string;
   adapterType: string;
   recommendedAdapters: AdapterDisplayEntry[];
   moreAdapters: AdapterDisplayEntry[];
+  adapterTestPassed: boolean;
 }) {
   const allAdapters = [...recommendedAdapters, ...moreAdapters];
   const adapterDisplay = allAdapters.find((a) => a.type === adapterType);
@@ -1464,9 +1475,17 @@ function AgentPreviewCard({
         <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#2F80FF]">
           Agent Preview
         </p>
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-[#2F80FF]/15 text-[#2F80FF] border border-[#2F80FF]/25 uppercase tracking-wide">
-          Ready to deploy
-        </span>
+        {adapterTestPassed ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Ready to deploy
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+            Test environment first
+          </span>
+        )}
       </div>
 
       {/* Divider */}
