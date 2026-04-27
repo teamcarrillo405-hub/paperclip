@@ -532,6 +532,7 @@ function SkillPane({
   deletePending,
   onSave,
   savePending,
+  onFileRetry,
 }: {
   loading: boolean;
   detail: CompanySkillDetail | null | undefined;

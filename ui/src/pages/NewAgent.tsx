@@ -251,6 +251,7 @@ export function NewAgent() {
             <Popover open={roleOpen} onOpenChange={setRoleOpen}>
               <PopoverTrigger asChild>
                 <button
+                  ref={roleTriggerRef}
                   type="button"
                   aria-label={`Agent role: ${effectiveRole}`}
                   aria-expanded={roleOpen}
@@ -267,7 +268,28 @@ export function NewAgent() {
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-36 p-1" align="start">
-                <div id="role-menu" role="menu">
+                <div
+                  id="role-menu"
+                  role="menu"
+                  ref={menuRef}
+                  onKeyDown={(e) => {
+                    const items = menuRef.current?.querySelectorAll('[role="menuitem"]');
+                    if (!items) return;
+                    const arr = Array.from(items) as HTMLElement[];
+                    const idx = arr.indexOf(document.activeElement as HTMLElement);
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      arr[(idx + 1) % arr.length]?.focus();
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      arr[(idx - 1 + arr.length) % arr.length]?.focus();
+                    } else if (e.key === "Escape") {
+                      e.preventDefault();
+                      setRoleOpen(false);
+                      roleTriggerRef.current?.focus();
+                    }
+                  }}
+                >
                   {AGENT_ROLES.map((r) => (
                     <button
                       key={r}
@@ -380,6 +402,7 @@ export function NewAgent() {
               type="submit"
               size="sm"
               disabled={!name.trim() || createAgent.isPending}
+              aria-busy={createAgent.isPending}
               aria-describedby={!name.trim() ? "submit-hint" : undefined}
             >
               {createAgent.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
