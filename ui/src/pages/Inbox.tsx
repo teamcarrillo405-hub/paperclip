@@ -2147,7 +2147,8 @@ export function Inbox() {
       {actionError && (
         <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
           <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-sm text-destructive">{actionError}</p>
+          <p className="text-sm text-destructive flex-1">{actionError}</p>
+          <button type="button" aria-label="Dismiss error" onClick={() => setActionError(null)} className="ml-1 flex h-6 w-6 items-center justify-center text-destructive/70 hover:text-destructive shrink-0"><span aria-hidden="true">×</span></button>
         </div>
       )}
 

@@ -6,6 +6,8 @@ import { ApiError } from "@/api/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState } from "@/components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -120,36 +122,32 @@ export function JoinRequestQueue() {
       <fieldset className="rounded-xl border border-border bg-card p-4">
         <legend className="sr-only">Filter join requests</legend>
         <div className="flex flex-wrap gap-3">
-          <label htmlFor="jrq-status-filter" className="space-y-2 text-sm">
-            <span className="font-medium">Status</span>
-            <select
-              id="jrq-status-filter"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={status}
-              onChange={(event) =>
-                setStatus(event.target.value as "pending_approval" | "approved" | "rejected")
-              }
-            >
-              <option value="pending_approval">Pending approval</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </label>
-          <label htmlFor="jrq-type-filter" className="space-y-2 text-sm">
-            <span className="font-medium">Request type</span>
-            <select
-              id="jrq-type-filter"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={requestType}
-              onChange={(event) =>
-                setRequestType(event.target.value as "all" | "human" | "agent")
-              }
-            >
-              <option value="all">All</option>
-              <option value="human">Human</option>
-              <option value="agent">Agent</option>
-            </select>
-          </label>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="jrq-status-filter">Status</Label>
+            <Select value={status} onValueChange={(value) => setStatus(value as "pending_approval" | "approved" | "rejected")}>
+              <SelectTrigger id="jrq-status-filter" className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending_approval">Pending approval</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="jrq-type-filter">Request type</Label>
+            <Select value={requestType} onValueChange={(value) => setRequestType(value as "all" | "human" | "agent")}>
+              <SelectTrigger id="jrq-type-filter" className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="human">Human</SelectItem>
+                <SelectItem value="agent">Agent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </fieldset>
 

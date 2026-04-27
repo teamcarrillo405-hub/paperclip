@@ -496,6 +496,10 @@ export function ExecutionWorkspaceDetail() {
   }
 
   const handleTabChange = (tab: ExecutionWorkspaceTab) => {
+    if (isDirty) {
+      const confirmed = window.confirm("You have unsaved changes. Leave this tab?");
+      if (!confirmed) return;
+    }
     try {
       localStorage.setItem(`paperclip:execution-workspace-tab:${workspace.id}`, tab);
     } catch {}
