@@ -5,6 +5,7 @@ import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
@@ -46,6 +47,13 @@ export function JoinRequestQueue() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!) });
       pushToast({ title: "Join request approved", tone: "success" });
     },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to approve join request. Please try again.";
+      pushToast({ title: message, tone: "error" });
+    },
   });
 
   const rejectMutation = useMutation({
@@ -54,10 +62,17 @@ export function JoinRequestQueue() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedCompanyId!, `${status}:${requestType}`) });
       pushToast({ title: "Join request rejected", tone: "success" });
     },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to reject join request. Please try again.";
+      pushToast({ title: message, tone: "error" });
+    },
   });
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">Select a company to review join requests.</div>;
+    return <EmptyState icon={UserPlus2} message="Select a company to view join requests." />;
   }
 
   if (requestsQuery.isLoading) {
@@ -91,7 +106,7 @@ export function JoinRequestQueue() {
     <div className="max-w-6xl space-y-6">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <UserPlus2 className="h-5 w-5 text-muted-foreground" />
+          <UserPlus2 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           <h1 className="text-lg font-semibold">Join Request Queue</h1>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
@@ -99,36 +114,39 @@ export function JoinRequestQueue() {
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-3 rounded-xl border border-border bg-card p-4">
-        <label className="space-y-2 text-sm">
-          <span className="font-medium">Status</span>
-          <select
-            className="rounded-md border border-border bg-background px-3 py-2"
-            value={status}
-            onChange={(event) =>
-              setStatus(event.target.value as "pending_approval" | "approved" | "rejected")
-            }
-          >
-            <option value="pending_approval">Pending approval</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </label>
-        <label className="space-y-2 text-sm">
-          <span className="font-medium">Request type</span>
-          <select
-            className="rounded-md border border-border bg-background px-3 py-2"
-            value={requestType}
-            onChange={(event) =>
-              setRequestType(event.target.value as "all" | "human" | "agent")
-            }
-          >
-            <option value="all">All</option>
-            <option value="human">Human</option>
-            <option value="agent">Agent</option>
-          </select>
-        </label>
-      </div>
+      <fieldset className="rounded-xl border border-border bg-card p-4">
+        <legend className="sr-only">Filter join requests</legend>
+        <div className="flex flex-wrap gap-3">
+          <label className="space-y-2 text-sm">
+            <span className="font-medium">Status</span>
+            <select
+              className="rounded-md border border-border bg-background px-3 py-2"
+              value={status}
+              onChange={(event) =>
+                setStatus(event.target.value as "pending_approval" | "approved" | "rejected")
+              }
+            >
+              <option value="pending_approval">Pending approval</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="font-medium">Request type</span>
+            <select
+              className="rounded-md border border-border bg-background px-3 py-2"
+              value={requestType}
+              onChange={(event) =>
+                setRequestType(event.target.value as "all" | "human" | "agent")
+              }
+            >
+              <option value="all">All</option>
+              <option value="human">Human</option>
+              <option value="agent">Agent</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
 
       <div className="space-y-4">
         {(requestsQuery.data ?? []).length === 0 ? (
@@ -136,71 +154,80 @@ export function JoinRequestQueue() {
             No join requests match the current filters.
           </div>
         ) : (
-          requestsQuery.data!.map((request) => (
-            <div key={request.id} className="rounded-xl border border-border bg-card p-4">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={request.status === "pending_approval" ? "secondary" : request.status === "approved" ? "outline" : "destructive"}>
-                      {request.status.replace("_", " ")}
-                    </Badge>
-                    <Badge variant="outline">{request.requestType}</Badge>
-                    {request.adapterType ? <Badge variant="outline">{request.adapterType}</Badge> : null}
-                  </div>
-                  <div>
-                    <div className="text-base font-medium">
-                      {request.requestType === "human"
-                        ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || "Unknown human requester"
-                        : request.agentName || "Unknown agent requester"}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {request.requestType === "human"
-                        ? request.requesterUser?.email || request.requestEmailSnapshot || request.requestingUserId
-                        : request.capabilities || request.requestIp}
-                    </div>
-                  </div>
-                </div>
+          requestsQuery.data!.map((request) => {
+            const requesterName =
+              request.requestType === "human"
+                ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || "unknown"
+                : request.agentName || "unknown";
 
-                {request.status === "pending_approval" ? (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => rejectMutation.mutate(request.id)}
-                      disabled={rejectMutation.isPending}
-                    >
-                      Reject
-                    </Button>
-                    <Button
-                      onClick={() => approveMutation.mutate(request.id)}
-                      disabled={approveMutation.isPending}
-                    >
-                      Approve
-                    </Button>
+            return (
+              <div key={request.id} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={request.status === "pending_approval" ? "secondary" : request.status === "approved" ? "outline" : "destructive"}>
+                        {request.status.replace("_", " ")}
+                      </Badge>
+                      <Badge variant="outline">{request.requestType}</Badge>
+                      {request.adapterType ? <Badge variant="outline">{request.adapterType}</Badge> : null}
+                    </div>
+                    <div>
+                      <div className="text-base font-medium">
+                        {request.requestType === "human"
+                          ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || "Unknown human requester"
+                          : request.agentName || "Unknown agent requester"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {request.requestType === "human"
+                          ? request.requesterUser?.email || request.requestEmailSnapshot || request.requestingUserId
+                          : request.capabilities || request.requestIp}
+                      </div>
+                    </div>
                   </div>
-                ) : null}
-              </div>
 
-              <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
-                <div className="rounded-lg border border-border bg-background px-3 py-2">
-                  <div className="text-xs font-medium uppercase tracking-wide">Invite context</div>
-                  <div className="mt-2">
-                    {request.invite
-                      ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
-                      : "Invite metadata unavailable"}
-                  </div>
-                  {request.invite?.inviteMessage ? (
-                    <div className="mt-2 text-foreground">{request.invite.inviteMessage}</div>
+                  {request.status === "pending_approval" ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        aria-label={`Reject request from ${requesterName}`}
+                        onClick={() => rejectMutation.mutate(request.id)}
+                        disabled={rejectMutation.isPending}
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        aria-label={`Approve request from ${requesterName}`}
+                        onClick={() => approveMutation.mutate(request.id)}
+                        disabled={approveMutation.isPending}
+                      >
+                        Approve
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
-                <div className="rounded-lg border border-border bg-background px-3 py-2">
-                  <div className="text-xs font-medium uppercase tracking-wide">Request details</div>
-                  <div className="mt-2">Submitted {new Date(request.createdAt).toLocaleString()}</div>
-                  <div>Source IP {request.requestIp}</div>
-                  {request.requestType === "agent" && request.capabilities ? <div>{request.capabilities}</div> : null}
+
+                <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
+                  <div className="rounded-lg border border-border bg-background px-3 py-2">
+                    <div className="text-xs font-medium uppercase tracking-wide">Invite context</div>
+                    <div className="mt-2">
+                      {request.invite
+                        ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
+                        : "Invite metadata unavailable"}
+                    </div>
+                    {request.invite?.inviteMessage ? (
+                      <div className="mt-2 text-foreground">{request.invite.inviteMessage}</div>
+                    ) : null}
+                  </div>
+                  <div className="rounded-lg border border-border bg-background px-3 py-2">
+                    <div className="text-xs font-medium uppercase tracking-wide">Request details</div>
+                    <div className="mt-2">Submitted {new Date(request.createdAt).toLocaleString()}</div>
+                    <div>Source IP {request.requestIp}</div>
+                    {request.requestType === "agent" && request.capabilities ? <div>{request.capabilities}</div> : null}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
