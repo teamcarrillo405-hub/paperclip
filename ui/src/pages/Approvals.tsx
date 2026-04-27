@@ -276,7 +276,7 @@ export function Approvals() {
 
   return (
     <div className="space-y-4">
-      <h1 className="sr-only">Approvals</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Approvals</h1>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Tabs value={statusFilter} onValueChange={(v) => navigate(`/approvals/${v}`)}>
@@ -311,7 +311,7 @@ export function Approvals() {
             {pendingCount > 1 && (
               <button
                 type="button"
-                aria-label={allPendingSelected ? "Deselect all approvals" : "Select all approvals"}
+                aria-label={allPendingSelected ? "Deselect all pending approvals" : "Select all pending approvals"}
                 aria-pressed={allPendingSelected}
                 onClick={() => toggleSelectAll(pendingItems.map((a) => a.id))}
                 className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground border border-border hover:bg-accent/50 transition-colors"

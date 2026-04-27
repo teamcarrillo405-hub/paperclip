@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { CopyText } from "../components/CopyText";
 import { ExecutionWorkspaceCloseDialog } from "../components/ExecutionWorkspaceCloseDialog";
@@ -328,6 +329,7 @@ export function ExecutionWorkspaceDetail() {
   const [runtimeActionErrorMessage, setRuntimeActionErrorMessage] = useState<string | null>(null);
   const [runtimeActionMessage, setRuntimeActionMessage] = useState<string | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState<{ nextTab: ExecutionWorkspaceTab } | null>(null);
   const [hasSaved, setHasSaved] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
   const activeTab = workspaceId ? resolveExecutionWorkspaceTab(location.pathname, workspaceId) : null;
@@ -495,10 +497,10 @@ export function ExecutionWorkspaceDetail() {
     return <Navigate to={executionWorkspaceTabPath(workspaceId, cachedTab)} replace />;
   }
 
-  const handleTabChange = (tab: ExecutionWorkspaceTab) => {
-    if (isDirty) {
-      const confirmed = window.confirm("You have unsaved changes. Leave this tab?");
-      if (!confirmed) return;
+  const handleTabChange = (tab: ExecutionWorkspaceTab, force?: boolean) => {
+    if (isDirty && !force) {
+      setShowLeaveConfirm({ nextTab: tab });
+      return;
     }
     try {
       localStorage.setItem(`paperclip:execution-workspace-tab:${workspace.id}`, tab);
@@ -627,33 +629,6 @@ export function ExecutionWorkspaceDetail() {
                 </CardHeader>
 
                 <CardContent>
-
-                <div className="mb-6">
-                  <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                    <Button type="button" className="w-full sm:w-auto" disabled={!isDirty || updateWorkspace.isPending} onClick={saveChanges}>
-                      {updateWorkspace.isPending ? (
-                        <><Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />Saving...</>
-                      ) : (
-                        "Save changes"
-                      )}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full sm:w-auto"
-                      disabled={!isDirty || updateWorkspace.isPending}
-                      onClick={() => {
-                        setForm(initialState);
-                        setErrorMessage(null);
-                        setRuntimeActionErrorMessage(null);
-                        setRuntimeActionMessage(null);
-                      }}
-                    >
-                      Reset
-                    </Button>
-                    {!errorMessage && hasSaved && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
-                  </div>
-                </div>
 
                 <div className="space-y-6">
                   <div className="space-y-4">
@@ -1072,6 +1047,20 @@ export function ExecutionWorkspaceDetail() {
           </TabsContent>
         </Tabs>
       </div>
+      <Dialog open={!!showLeaveConfirm} onOpenChange={(open) => { if (!open) setShowLeaveConfirm(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsaved changes</DialogTitle>
+            <DialogDescription>You have unsaved changes. Leave this tab and discard them?</DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowLeaveConfirm(null)}>Stay</Button>
+            <Button variant="destructive" onClick={() => {
+              if (showLeaveConfirm) { setShowLeaveConfirm(null); handleTabChange(showLeaveConfirm.nextTab, true); }
+            }}>Leave</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <ExecutionWorkspaceCloseDialog
         workspaceId={workspace.id}
         workspaceName={workspace.name}

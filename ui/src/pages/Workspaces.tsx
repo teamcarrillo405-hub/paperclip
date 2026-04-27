@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { Link, Navigate } from "@/lib/router";
+import { Link, Navigate, useNavigate } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import type { ExecutionWorkspace, Issue, Project } from "@paperclipai/shared";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
@@ -77,6 +77,7 @@ function buildProjectWorkspaceGroups(input: {
 export function Workspaces() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const navigate = useNavigate();
   const experimentalSettingsQuery = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
@@ -184,13 +185,13 @@ export function Workspaces() {
           disabled={dataLoading}
           aria-label="Refresh workspaces"
         >
-          {dataLoading ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="size-4" aria-hidden="true" />}
+          {dataLoading ? <><LoaderCircle className="size-4 animate-spin" aria-hidden="true" /><span className="sr-only">Refreshing</span></> : <RefreshCw className="size-4" aria-hidden="true" />}
           Refresh
         </Button>
       </div>
 
       {groups.length === 0 ? (
-        <EmptyState icon={GitBranch} message="No workspace activity yet." />
+        <EmptyState icon={GitBranch} message="No workspace activity yet." action="Browse projects" onAction={() => navigate("/projects")} />
       ) : (
         <div className="space-y-8">
           {groups.map((group) => {
