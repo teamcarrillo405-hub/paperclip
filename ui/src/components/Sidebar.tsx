@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { cn } from "../lib/utils";
 import {
   Inbox,
   CircleDot,
@@ -187,41 +188,40 @@ export function Sidebar() {
       </div>
 
       {/* Top bar: Company menu + Search */}
-      {!collapsed && (
-        <div className="flex items-center gap-1 px-3 h-12 shrink-0">
+      <div className={cn("flex items-center h-12 shrink-0", collapsed ? "justify-center" : "gap-1 px-3")}>
+        <div
+          className={cn(
+            "transition-all duration-150 overflow-hidden",
+            collapsed ? "opacity-0 max-w-0" : "opacity-100 flex-1 min-w-0",
+          )}
+        >
           <SidebarCompanyMenu />
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground shrink-0"
-            onClick={openSearch}
-          >
-            <Search className="h-4 w-4" />
-          </Button>
         </div>
-      )}
-
-      {collapsed && (
-        <div className="flex items-center justify-center h-12 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground"
-            onClick={openSearch}
-            title="Search"
-          >
-            <Search className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground shrink-0"
+          onClick={openSearch}
+          title="Search"
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+      </div>
 
       <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide flex flex-col gap-4 px-2 py-2">
 
-        {/* Favorites section — only shown when expanded and at least one item is pinned */}
-        {favoritePaths.length > 0 && !collapsed && (
+        {/* Favorites section — shown when at least one item is pinned */}
+        {favoritePaths.length > 0 && (
           <div className="mb-1">
-            <div className="px-3 py-1.5 text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
-              Favorites
+            <div className="px-3 py-1.5">
+              <span
+                className={cn(
+                  "block text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
+                  collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
+                )}
+              >
+                Favorites
+              </span>
             </div>
             <div className="flex flex-col gap-0.5">
               {favoritePaths.map((path) => {
@@ -245,16 +245,24 @@ export function Sidebar() {
 
         {/* Workspace section: core navigation */}
         <div className="flex flex-col gap-0.5">
-          {!collapsed && (
-            <div className="px-3 py-1.5 text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
+          <div className="px-3 py-1.5">
+            {/* Divider shown only when collapsed */}
+            <div
+              className={cn(
+                "h-px w-full bg-border/50 transition-all duration-150",
+                collapsed ? "opacity-100" : "opacity-0 max-w-0 overflow-hidden",
+              )}
+            />
+            {/* Label shown only when expanded */}
+            <span
+              className={cn(
+                "block text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
+                collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
+              )}
+            >
               Workspace
-            </div>
-          )}
-          {collapsed && (
-            <div className="py-1">
-              <div className="h-px w-full bg-border/50" />
-            </div>
-          )}
+            </span>
+          </div>
           {/* New Issue button */}
           <button
             onClick={() => openNewIssue()}
@@ -266,7 +274,14 @@ export function Sidebar() {
             }
           >
             <SquarePen className="h-4 w-4 shrink-0" />
-            {!collapsed && <span className="truncate">New Issue</span>}
+            <span
+              className={cn(
+                "truncate transition-all duration-150",
+                collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[200px]",
+              )}
+            >
+              New Issue
+            </span>
           </button>
           <SidebarNavItem
             to="/dashboard"
@@ -438,25 +453,34 @@ export function Sidebar() {
 
       {/* Bottom bar: density toggle + collapse button */}
       <div className="shrink-0 border-t border-border px-2 py-2 flex flex-col gap-1">
-        {!collapsed && (
-          <div className="flex items-center justify-between px-3 py-1">
-            <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
-              Density
-            </span>
-            <DensityToggle collapsed={collapsed} />
-          </div>
-        )}
+        <div
+          className={cn(
+            "flex items-center justify-between px-3 py-1 transition-all duration-150",
+            collapsed ? "opacity-0 max-h-0 overflow-hidden py-0" : "opacity-100 max-h-[40px]",
+          )}
+        >
+          <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
+            Density
+          </span>
+          <DensityToggle collapsed={collapsed} />
+        </div>
         <button
           onClick={toggle}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className={
-            collapsed
-              ? "w-full flex items-center justify-center py-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-              : "w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-          }
+          className={cn(
+            "w-full flex items-center py-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors",
+            collapsed ? "justify-center" : "gap-2.5 px-3 text-[13px]",
+          )}
         >
           <ToggleIcon className="h-4 w-4 shrink-0" />
-          {!collapsed && <span className="text-[12px] font-medium">Collapse</span>}
+          <span
+            className={cn(
+              "text-[12px] font-medium transition-all duration-150",
+              collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[200px]",
+            )}
+          >
+            Collapse
+          </span>
         </button>
       </div>
     </aside>
