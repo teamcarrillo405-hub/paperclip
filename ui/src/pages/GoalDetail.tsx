@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "@/lib/router";
+import { useParams, useNavigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { goalsApi } from "../api/goals";
 import { projectsApi } from "../api/projects";
@@ -15,10 +15,11 @@ import { StatusBadge } from "../components/StatusBadge";
 import { InlineEditor } from "../components/InlineEditor";
 import { EntityRow } from "../components/EntityRow";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { EmptyState } from "../components/EmptyState";
 import { cn, projectUrl } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, SlidersHorizontal, AlertCircle } from "lucide-react";
+import { Plus, SlidersHorizontal, AlertCircle, Target } from "lucide-react";
 import type { Goal, Project } from "@paperclipai/shared";
 
 interface GoalPropertiesToggleButtonProps {
@@ -48,6 +49,7 @@ export function GoalPropertiesToggleButton({
 
 export function GoalDetail() {
   const { goalId } = useParams<{ goalId: string }>();
+  const navigate = useNavigate();
   const { selectedCompanyId, setSelectedCompanyId } = useCompany();
   const { openNewGoal } = useDialog();
   const { openPanel, closePanel, panelVisible, setPanelVisible } = usePanel();
@@ -163,7 +165,9 @@ export function GoalDetail() {
       </Button>
     </div>
   );
-  if (!goal) return null;
+  if (!goal) return (
+    <EmptyState icon={Target} message="Goal not found." action="Back to goals" onAction={() => navigate("/goals")} />
+  );
 
   return (
     <div className="space-y-6">
@@ -223,10 +227,10 @@ export function GoalDetail() {
       <Tabs defaultValue="children">
         <TabsList>
           <TabsTrigger value="children">
-            Sub-Goals ({childGoals.length})
+            Sub-Goals <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums">{childGoals.length}</span>
           </TabsTrigger>
           <TabsTrigger value="projects">
-            Projects ({linkedProjects.length})
+            Projects <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums">{linkedProjects.length}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -237,12 +241,14 @@ export function GoalDetail() {
               variant="outline"
               onClick={() => openNewGoal({ parentId: goalId })}
             >
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              <Plus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
               Sub Goal
             </Button>
           </div>
           {childGoals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No sub-goals.</p>
+            <p className="rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
+              No sub-goals yet.
+            </p>
           ) : (
             <GoalTree goals={childGoals} goalLink={(g) => `/goals/${g.id}`} />
           )}
@@ -250,7 +256,9 @@ export function GoalDetail() {
 
         <TabsContent value="projects" className="mt-4">
           {linkedProjects.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No linked projects.</p>
+            <p className="rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
+              No linked projects yet.
+            </p>
           ) : (
             <div className="rounded-lg border border-border overflow-hidden">
               {linkedProjects.map((project) => (
