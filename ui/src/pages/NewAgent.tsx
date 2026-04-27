@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Shield } from "lucide-react";
+import { Shield, LoaderCircle } from "lucide-react";
 import { cn, agentUrl } from "../lib/utils";
 import { roleLabels } from "../components/agent-config-primitives";
 import { AgentConfigForm, type CreateConfigValues } from "../components/AgentConfigForm";
@@ -198,7 +198,7 @@ export function NewAgent() {
   return (
     <form className="mx-auto max-w-2xl space-y-6" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
       <div>
-        <h1 className="text-lg font-semibold">New Agent</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">New Agent</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Advanced agent configuration
         </p>
@@ -235,6 +235,8 @@ export function NewAgent() {
           <Popover open={roleOpen} onOpenChange={setRoleOpen}>
             <PopoverTrigger asChild>
               <button
+                type="button"
+                aria-label={`Agent role: ${effectiveRole}`}
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors",
                   isFirstAgent && "opacity-60 cursor-not-allowed"
@@ -249,6 +251,7 @@ export function NewAgent() {
               {AGENT_ROLES.map((r) => (
                 <button
                   key={r}
+                  type="button"
                   className={cn(
                     "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
                     r === role && "bg-accent"
@@ -271,7 +274,7 @@ export function NewAgent() {
 
         {/* AI Adapter section */}
         <div className="border-t border-border px-4 py-3">
-          <h2 className="text-sm font-medium">AI Adapter</h2>
+          <h2 className="text-sm font-semibold">AI Adapter</h2>
         </div>
         <AgentConfigForm
           mode="create"
@@ -283,7 +286,7 @@ export function NewAgent() {
         <div className="border-t border-border px-4 py-4">
           <div className="space-y-3">
             <div>
-              <h2 className="text-sm font-medium">Company skills</h2>
+              <h2 className="text-sm font-semibold">Company skills</h2>
               <p className="mt-1 text-xs text-muted-foreground">
                 Optional skills from the company library. Built-in Paperclip runtime skills are added automatically.
               </p>
@@ -324,10 +327,10 @@ export function NewAgent() {
             <p className="text-xs text-muted-foreground mb-2">This will be the CEO</p>
           )}
           {formError && (
-            <p className="text-xs text-destructive mb-2">{formError}</p>
+            <p role="alert" className="text-xs text-destructive mb-2">{formError}</p>
           )}
           <div className="flex items-center justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/agents")}>
+            <Button type="button" variant="outline" size="sm" onClick={() => navigate("/agents")}>
               Cancel
             </Button>
             <Button
@@ -335,6 +338,7 @@ export function NewAgent() {
               size="sm"
               disabled={!name.trim() || createAgent.isPending}
             >
+              {createAgent.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
               {createAgent.isPending ? "Creating…" : "Create agent"}
             </Button>
           </div>
