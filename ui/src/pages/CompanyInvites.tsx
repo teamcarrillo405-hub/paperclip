@@ -252,6 +252,7 @@ export function CompanyInvites() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" onClick={() => createInviteMutation.mutate()} disabled={createInviteMutation.isPending}>
+            {createInviteMutation.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
             {createInviteMutation.isPending ? "Creating…" : "Create invite"}
           </Button>
           <span className="text-sm text-muted-foreground">Invite history below keeps the audit trail.</span>

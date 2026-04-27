@@ -15,7 +15,7 @@ interface PageSkeletonProps {
 export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
   if (variant === "dashboard") {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" role="status" aria-label="Loading…" aria-busy="true">
         <Skeleton className="h-32 w-full border border-border" />
 
         <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
@@ -40,7 +40,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
 
   if (variant === "approvals") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" role="status" aria-label="Loading…" aria-busy="true">
         <div className="flex items-center justify-between">
           <Skeleton className="h-9 w-44" />
         </div>
@@ -55,7 +55,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
 
   if (variant === "costs") {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" role="status" aria-label="Loading…" aria-busy="true">
         <div className="flex flex-wrap items-center gap-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-9 w-28" />
@@ -74,7 +74,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
 
   if (variant === "inbox") {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" role="status" aria-label="Loading…" aria-busy="true">
         <div className="flex items-center justify-between">
           <Skeleton className="h-9 w-56" />
           <Skeleton className="h-8 w-40" />
@@ -98,7 +98,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
 
   if (variant === "org-chart") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" role="status" aria-label="Loading…" aria-busy="true">
         <Skeleton className="h-[calc(100vh-4rem)] w-full rounded-lg border border-border" />
       </div>
     );
@@ -106,7 +106,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
 
   if (variant === "detail") {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" role="status" aria-label="Loading…" aria-busy="true">
         <div className="space-y-3">
           <Skeleton className="h-3 w-64" />
           <div className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
 
   if (variant === "issues-list") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" role="status" aria-label="Loading…" aria-busy="true">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Skeleton className="h-9 w-64" />
           <div className="flex items-center gap-2">
@@ -161,7 +161,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" role="status" aria-label="Loading…" aria-busy="true">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Skeleton className="h-9 w-44" />
         <div className="flex items-center gap-2">

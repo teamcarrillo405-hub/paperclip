@@ -158,7 +158,7 @@ export function ProfileSettings() {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <UserRoundPen className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-          <h1 className="text-xl font-semibold">Profile</h1>
+          <h1 className="text-2xl font-semibold">Profile</h1>
         </div>
         <p className="text-sm text-muted-foreground">
           Control how your account appears in the sidebar and other board surfaces.
@@ -226,6 +226,7 @@ export function ProfileSettings() {
                     <Button
                       type="button"
                       variant="outline"
+                      aria-label="Remove profile photo"
                       onClick={() => removeAvatarMutation.mutate()}
                       disabled={isSavingProfile}
                     >
@@ -249,7 +250,8 @@ export function ProfileSettings() {
           </div>
         </div>
 
-        <h2 className="text-sm font-semibold text-foreground">Profile details</h2>
+        <section aria-labelledby="profile-details-heading">
+        <h2 id="profile-details-heading" className="text-sm font-semibold text-foreground">Profile details</h2>
 
         <form
           className="grid gap-6 md:grid-cols-2"
@@ -295,6 +297,7 @@ export function ProfileSettings() {
             </Button>
           </div>
         </form>
+        </section>
       </section>
     </div>
   );
