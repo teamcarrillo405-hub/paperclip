@@ -92,14 +92,14 @@ export function Dashboard() {
     refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
-  const { data: activity, error: activityError, refetch: refetchActivity } = useQuery({
+  const { data: activity, error: activityError, refetch: refetchActivity, isRefetching: isRefetchingActivity } = useQuery({
     queryKey: [...queryKeys.activity(selectedCompanyId!), { limit: DASHBOARD_ACTIVITY_LIMIT }],
     queryFn: () => activityApi.list(selectedCompanyId!, { limit: DASHBOARD_ACTIVITY_LIMIT }),
     enabled: !!selectedCompanyId,
     refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
   });
 
-  const { data: issues, error: issuesError, refetch: refetchIssues } = useQuery({
+  const { data: issues, error: issuesError, refetch: refetchIssues, isRefetching: isRefetchingIssues } = useQuery({
     queryKey: queryKeys.issues.list(selectedCompanyId!),
     queryFn: () => issuesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -242,21 +242,21 @@ export function Dashboard() {
   if (!selectedCompanyId) {
     if (companies.length === 0) {
       return (
-        <EmptyState
+        <div><h1 className="sr-only">Dashboard</h1><EmptyState
           icon={LayoutDashboard}
           message="Welcome to Paperclip. Set up your first company and agent to get started."
           action="Get Started"
           onAction={openOnboarding}
-        />
+        /></div>
       );
     }
     return (
-      <EmptyState icon={LayoutDashboard} message="Create or select a company to view the dashboard." />
+      <div><h1 className="sr-only">Dashboard</h1><EmptyState icon={LayoutDashboard} message="Create or select a company to view the dashboard." /></div>
     );
   }
 
   if (isLoading) {
-    return <PageSkeleton variant="dashboard" />;
+    return <PageSkeleton variant="dashboard" title="Dashboard" />;
   }
 
   const hasNoAgents = agents !== undefined && agents.length === 0;
@@ -289,7 +289,7 @@ export function Dashboard() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {selectedCompany?.name ?? "Dashboard"}
         </h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <p className="text-xs text-foreground/60 mt-0.5">
           {liveRunCount > 0 && (
             <span>{liveRunCount} agent{liveRunCount !== 1 ? "s" : ""} running{" · "}</span>
           )}
@@ -348,7 +348,7 @@ export function Dashboard() {
           ) : null}
 
           <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Overview</h2>
+            <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">Overview</h2>
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             <MetricCard
               icon={Bot}
@@ -427,7 +427,7 @@ export function Dashboard() {
                       "px-2.5 py-1 text-xs font-medium rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                       chartDays === d
                         ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                        : "text-foreground/60 hover:text-foreground hover:bg-accent/50",
                     )}
                   >
                     {d}d
@@ -475,17 +475,17 @@ export function Dashboard() {
           <div className="grid md:grid-cols-2 gap-4">
             {/* Recent Activity */}
             <div className="min-w-0">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-3">
                 Recent Activity
               </h3>
               {activityError ? (
                 <div role="alert" className="flex items-center gap-2">
                   <p className="text-xs text-destructive">Could not load activity.</p>
-                  <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" onClick={() => refetchActivity()}>Retry</Button>
+                  <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" disabled={isRefetchingActivity} aria-busy={isRefetchingActivity} onClick={() => refetchActivity()}>{isRefetchingActivity ? "Retrying…" : "Retry"}</Button>
                 </div>
               ) : recentActivity.length === 0 ? (
                 <div className="rounded-lg border border-border p-4">
-                  <p className="text-sm text-muted-foreground">No recent activity.</p>
+                  <p className="text-sm text-foreground/60">No recent activity.</p>
                   <Link to="/inbox" className="text-xs text-primary hover:underline mt-1 block">View inbox</Link>
                 </div>
               ) : (
@@ -507,17 +507,17 @@ export function Dashboard() {
 
             {/* Recent Tasks */}
             <div className="min-w-0">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-3">
                 Recent Tasks
               </h3>
               {issuesError ? (
                 <div role="alert" className="flex items-center gap-2">
                   <p className="text-xs text-destructive">Could not load tasks.</p>
-                  <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" onClick={() => refetchIssues()}>Retry</Button>
+                  <Button size="sm" variant="ghost" className="h-auto px-1 py-0 text-xs text-destructive/70 hover:text-destructive" disabled={isRefetchingIssues} aria-busy={isRefetchingIssues} onClick={() => refetchIssues()}>{isRefetchingIssues ? "Retrying…" : "Retry"}</Button>
                 </div>
               ) : recentIssues.length === 0 ? (
                 <div className="rounded-lg border border-border p-4">
-                  <p className="text-sm text-muted-foreground">No tasks yet.</p>
+                  <p className="text-sm text-foreground/60">No tasks yet.</p>
                   <Link to="/projects" className="text-xs text-primary hover:underline mt-1 block">View projects</Link>
                 </div>
               ) : (
@@ -542,7 +542,7 @@ export function Dashboard() {
                           </span>
                           <span className="flex items-center gap-2 sm:order-1 sm:shrink-0">
                             <span className="hidden sm:inline-flex"><StatusIcon status={issue.status} /></span>
-                            <span className="text-xs font-mono text-muted-foreground">
+                            <span className="text-xs font-mono text-foreground/60">
                               {issue.identifier ?? issue.id.slice(0, 8)}
                             </span>
                             {issue.assigneeAgentId && (() => {
@@ -551,8 +551,8 @@ export function Dashboard() {
                                 ? <span className="hidden sm:inline-flex"><Identity name={name} size="sm" /></span>
                                 : null;
                             })()}
-                            <span className="text-xs text-muted-foreground sm:hidden" aria-hidden="true">·</span>
-                            <span className="text-xs text-muted-foreground shrink-0 sm:order-last">
+                            <span className="text-xs text-foreground/60 sm:hidden" aria-hidden="true">·</span>
+                            <span className="text-xs text-foreground/60 shrink-0 sm:order-last">
                               {timeAgo(issue.updatedAt)}
                             </span>
                           </span>

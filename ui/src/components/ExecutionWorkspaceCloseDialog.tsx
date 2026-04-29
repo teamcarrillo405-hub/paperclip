@@ -137,7 +137,7 @@ export function ExecutionWorkspaceCloseDialog({
                         <Link to={issueUrl(issue)} className="min-w-0 break-words font-medium hover:underline">
                           {issue.identifier ?? issue.id} · {issue.title}
                         </Link>
-                        <span className="text-xs text-muted-foreground">{issue.status}</span>
+                        <span className="text-xs text-foreground/60">{issue.status}</span>
                       </div>
                     </div>
                   ))}
@@ -177,29 +177,29 @@ export function ExecutionWorkspaceCloseDialog({
                 <div className="rounded-xl border border-border bg-background px-4 py-3 text-sm">
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div>
-                      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Branch</div>
+                      <div className="text-xs uppercase tracking-[0.16em] text-foreground/60">Branch</div>
                       <div className="font-mono text-xs">{readiness.git.branchName ?? "Unknown"}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Base ref</div>
+                      <div className="text-xs uppercase tracking-[0.16em] text-foreground/60">Base ref</div>
                       <div className="font-mono text-xs">{readiness.git.baseRef ?? "Not set"}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Merged into base</div>
+                      <div className="text-xs uppercase tracking-[0.16em] text-foreground/60">Merged into base</div>
                       <div>{readiness.git.isMergedIntoBase == null ? "Unknown" : readiness.git.isMergedIntoBase ? "Yes" : "No"}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Ahead / behind</div>
+                      <div className="text-xs uppercase tracking-[0.16em] text-foreground/60">Ahead / behind</div>
                       <div>
                         {(readiness.git.aheadCount ?? 0).toString()} / {(readiness.git.behindCount ?? 0).toString()}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Dirty tracked files</div>
+                      <div className="text-xs uppercase tracking-[0.16em] text-foreground/60">Dirty tracked files</div>
                       <div>{readiness.git.dirtyEntryCount}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Untracked files</div>
+                      <div className="text-xs uppercase tracking-[0.16em] text-foreground/60">Untracked files</div>
                       <div>{readiness.git.untrackedEntryCount}</div>
                     </div>
                   </div>
@@ -217,7 +217,7 @@ export function ExecutionWorkspaceCloseDialog({
                         <Link to={issueUrl(issue)} className="min-w-0 break-words font-medium hover:underline">
                           {issue.identifier ?? issue.id} · {issue.title}
                         </Link>
-                        <span className="text-xs text-muted-foreground">{issue.status}</span>
+                        <span className="text-xs text-foreground/60">{issue.status}</span>
                       </div>
                     </div>
                   ))}
@@ -233,9 +233,9 @@ export function ExecutionWorkspaceCloseDialog({
                     <div key={service.id} className="rounded-xl border border-border bg-background px-4 py-3 text-sm">
                       <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
                         <span className="font-medium">{service.serviceName}</span>
-                        <span className="text-xs text-muted-foreground">{service.status} · {service.lifecycle}</span>
+                        <span className="text-xs text-foreground/60">{service.status} · {service.lifecycle}</span>
                       </div>
-                      <div className="mt-1 break-words text-xs text-muted-foreground">
+                      <div className="mt-1 break-words text-xs text-foreground/60">
                         {service.url ?? service.command ?? service.cwd ?? "No additional details"}
                       </div>
                     </div>
@@ -275,7 +275,7 @@ export function ExecutionWorkspaceCloseDialog({
             ) : null}
 
             {readiness.git?.repoRoot ? (
-              <div className="break-words text-xs text-muted-foreground">
+              <div className="break-words text-xs text-foreground/60">
                 Repo root: <span className="font-mono break-all">{readiness.git.repoRoot}</span>
                 {readiness.git.workspacePath ? (
                   <>
@@ -285,7 +285,7 @@ export function ExecutionWorkspaceCloseDialog({
               </div>
             ) : null}
 
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-foreground/60">
               Last checked {formatDateTime(new Date())}
             </div>
           </div>

@@ -75,7 +75,7 @@ export function ProjectWorkspacesContent({
         </div>
         {cleanupFailedSummaries.length > 0 ? (
           <div className="space-y-2">
-            <div className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground/60">
               Cleanup attention needed
             </div>
             <div className="space-y-3">

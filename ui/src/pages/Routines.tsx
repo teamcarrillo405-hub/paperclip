@@ -231,12 +231,12 @@ function RoutineListRow({
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-medium">{routine.title}</span>
           {(isArchived || routine.status === "paused" || isDraft) ? (
-            <span className="ml-1 rounded px-1 py-0.5 text-xs font-medium uppercase bg-muted text-muted-foreground">
+            <span className="ml-1 rounded px-1 py-0.5 text-xs font-medium uppercase bg-muted text-foreground/60">
               {isArchived ? "archived" : isDraft ? "draft" : "paused"}
             </span>
           ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-foreground/60">
           <span className="flex items-center gap-2">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-sm"
@@ -264,7 +264,7 @@ function RoutineListRow({
             disabled={isArchived}
             aria-label={enabled ? `Disable ${routine.title}` : `Enable ${routine.title}`}
           />
-          <span className="w-12 text-xs text-muted-foreground">
+          <span className="w-12 text-xs text-foreground/60">
             {isArchived ? "Archived" : isDraft ? "Draft" : enabled ? "On" : "Off"}
           </span>
         </div>
@@ -361,12 +361,12 @@ export function Routines() {
     queryFn: () => routinesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const { data: agents, error: agentsError, refetch: refetchAgents } = useQuery({
+  const { data: agents, error: agentsError, refetch: refetchAgents, isRefetching: isRefetchingAgents } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const { data: projects, error: projectsError, refetch: refetchProjects } = useQuery({
+  const { data: projects, error: projectsError, refetch: refetchProjects, isRefetching: isRefetchingProjects } = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -598,11 +598,11 @@ export function Routines() {
   }
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Repeat} message="Select a company to view routines." />;
+    return <div><h1 className="sr-only">Routines</h1><EmptyState icon={Repeat} message="Select a company to view routines." /></div>;
   }
 
   if (isLoading) {
-    return <PageSkeleton variant="issues-list" />;
+    return <PageSkeleton variant="issues-list" title="Routines" />;
   }
 
   return (
@@ -612,7 +612,7 @@ export function Routines() {
           <h1 className="text-2xl font-semibold tracking-tight">
             Routines
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/60">
             Recurring work definitions that materialize into auditable execution issues.
           </p>
         </div>
@@ -657,7 +657,7 @@ export function Routines() {
         <TabsContent value="routines" className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-foreground/60">
                 {(routines ?? []).length} routine{(routines ?? []).length === 1 ? "" : "s"}
               </p>
               <Input
@@ -667,6 +667,11 @@ export function Routines() {
                 className="w-48"
                 aria-label="Search routines"
               />
+              {search && (
+                <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+                  {filteredRoutines.length} routine{filteredRoutines.length === 1 ? "" : "s"} found
+                </span>
+              )}
             </div>
             <Popover>
               <PopoverTrigger asChild>
@@ -708,7 +713,7 @@ export function Routines() {
                       className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm cursor-pointer ${
                         routineViewState.groupBy === value
                           ? "bg-accent/50 text-foreground"
-                          : "text-muted-foreground hover:bg-accent/50"
+                          : "text-foreground/60 hover:bg-accent/50"
                       }`}
                       onClick={() => updateRoutineView({ groupBy: value, collapsedGroups: [] })}
                       onKeyDown={(e) => {
@@ -766,11 +771,11 @@ export function Routines() {
                         className="flex items-center gap-1.5"
                         aria-label={`${group.label}, ${group.items.length} item${group.items.length === 1 ? "" : "s"}`}
                       >
-                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
+                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-foreground/60 transition-transform [[data-state=open]>&]:rotate-90" />
                         <span className="text-sm font-semibold uppercase tracking-wide">
                           {group.label}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-foreground/60">
                           {group.items.length}
                         </span>
                       </CollapsibleTrigger>
@@ -829,7 +834,7 @@ export function Routines() {
               <DialogTitle className="text-lg font-semibold">
                 New routine
               </DialogTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-foreground/60">
                 Define the recurring work first. Default project and agent are optional for draft routines.
               </p>
             </div>
@@ -852,7 +857,7 @@ export function Routines() {
               <textarea
                 id="routine-title-input"
                 ref={titleInputRef}
-                className="w-full resize-none overflow-hidden bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/50"
+                className="w-full resize-none overflow-hidden bg-transparent text-xl font-semibold outline-none placeholder:text-foreground/40"
                 placeholder="Routine title"
                 rows={1}
                 value={draft.title}
@@ -881,12 +886,12 @@ export function Routines() {
                 }}
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground">Tip: type <code className="font-mono">{'{{'}</code> in the title to add template variables.</p>
+              <p className="text-xs text-foreground/60">Tip: type <code className="font-mono">{'{{'}</code> in the title to add template variables.</p>
             </div>
 
             <div className="px-5 pb-3">
               <div className="overflow-x-auto overscroll-x-contain">
-                <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-muted-foreground sm:min-w-max sm:flex-nowrap">
+                <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-foreground/60 sm:min-w-max sm:flex-nowrap">
                   <span>For</span>
                   <InlineEntitySelector
                     ref={assigneeSelectorRef}
@@ -912,14 +917,14 @@ export function Routines() {
                       option ? (
                         currentAssignee ? (
                           <>
-                            <AgentIcon icon={currentAssignee.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            <AgentIcon icon={currentAssignee.icon} className="h-3.5 w-3.5 shrink-0 text-foreground/60" />
                             <span className="truncate">{option.label}</span>
                           </>
                         ) : (
                           <span className="truncate">{option.label}</span>
                         )
                       ) : (
-                        <span className="text-muted-foreground">Assignee</span>
+                        <span className="text-foreground/60">Assignee</span>
                       )
                     }
                     renderOption={(option) => {
@@ -927,7 +932,7 @@ export function Routines() {
                       const assignee = agentById.get(option.id);
                       return (
                         <>
-                          {assignee ? <AgentIcon icon={assignee.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : null}
+                          {assignee ? <AgentIcon icon={assignee.icon} className="h-3.5 w-3.5 shrink-0 text-foreground/60" /> : null}
                           <span className="truncate">{option.label}</span>
                         </>
                       );
@@ -958,7 +963,7 @@ export function Routines() {
                           <span className="truncate">{option.label}</span>
                         </>
                       ) : (
-                        <span className="text-muted-foreground">Project</span>
+                        <span className="text-foreground/60">Project</span>
                       )
                     }
                     renderOption={(option) => {
@@ -980,13 +985,13 @@ export function Routines() {
               {agentsError && (
                 <div role="alert" className="flex items-center gap-2">
                   <p className="text-xs text-destructive flex-1">Could not load agents.</p>
-                  <Button size="sm" variant="ghost" onClick={() => refetchAgents()}>Retry</Button>
+                  <Button size="sm" variant="ghost" disabled={isRefetchingAgents} aria-busy={isRefetchingAgents} onClick={() => refetchAgents()}>{isRefetchingAgents ? "Retrying…" : "Retry"}</Button>
                 </div>
               )}
               {projectsError && (
                 <div role="alert" className="flex items-center gap-2">
                   <p className="text-xs text-destructive flex-1">Could not load projects.</p>
-                  <Button size="sm" variant="ghost" onClick={() => refetchProjects()}>Retry</Button>
+                  <Button size="sm" variant="ghost" disabled={isRefetchingProjects} aria-busy={isRefetchingProjects} onClick={() => refetchProjects()}>{isRefetchingProjects ? "Retrying…" : "Retry"}</Button>
                 </div>
               )}
             </div>
@@ -998,7 +1003,7 @@ export function Routines() {
                 onChange={(description) => setDraft((current) => ({ ...current, description }))}
                 placeholder="Add instructions..."
                 bordered={false}
-                contentClassName="min-h-40 text-sm text-muted-foreground"
+                contentClassName="min-h-40 text-sm text-foreground/60"
                 onSubmit={() => {
                   if (!createRoutine.isPending && draft.title.trim()) {
                     createRoutine.mutate();
@@ -1023,14 +1028,14 @@ export function Routines() {
                 <CollapsibleTrigger className="flex w-full items-center justify-between text-left">
                   <div>
                     <p className="text-sm font-medium">Advanced delivery settings</p>
-                    <p className="text-sm text-muted-foreground">Keep policy controls secondary to the work definition.</p>
+                    <p className="text-sm text-foreground/60">Keep policy controls secondary to the work definition.</p>
                   </div>
-                  {advancedOpen ? <ChevronDown aria-hidden="true" className="h-4 w-4 text-muted-foreground" /> : <ChevronRight aria-hidden="true" className="h-4 w-4 text-muted-foreground" />}
+                  {advancedOpen ? <ChevronDown aria-hidden="true" className="h-4 w-4 text-foreground/60" /> : <ChevronRight aria-hidden="true" className="h-4 w-4 text-foreground/60" />}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="concurrency-policy" className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Concurrency policy</Label>
+                      <Label htmlFor="concurrency-policy" className="text-xs font-medium uppercase tracking-widest text-foreground/60">Concurrency policy</Label>
                       <Select
                         value={draft.concurrencyPolicy}
                         onValueChange={(concurrencyPolicy) => setDraft((current) => ({ ...current, concurrencyPolicy }))}
@@ -1046,10 +1051,10 @@ export function Routines() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">{concurrencyPolicyDescriptions[draft.concurrencyPolicy]}</p>
+                      <p className="text-xs text-foreground/60">{concurrencyPolicyDescriptions[draft.concurrencyPolicy]}</p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="catch-up-policy" className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Catch-up policy</Label>
+                      <Label htmlFor="catch-up-policy" className="text-xs font-medium uppercase tracking-widest text-foreground/60">Catch-up policy</Label>
                       <Select
                         value={draft.catchUpPolicy}
                         onValueChange={(catchUpPolicy) => setDraft((current) => ({ ...current, catchUpPolicy }))}
@@ -1065,7 +1070,7 @@ export function Routines() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">{catchUpPolicyDescriptions[draft.catchUpPolicy]}</p>
+                      <p className="text-xs text-foreground/60">{catchUpPolicyDescriptions[draft.catchUpPolicy]}</p>
                     </div>
                   </div>
                 </CollapsibleContent>
@@ -1074,27 +1079,28 @@ export function Routines() {
           </div>
 
           <div className="shrink-0 flex flex-col gap-3 border-t border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-foreground/60">
               After creation, Paperclip takes you straight to trigger setup. Draft routines stay paused until you add a default agent.
             </div>
             <div className="flex flex-col gap-2 sm:items-end">
+              {createRoutine.isError ? (
+                <p role="alert" className="text-sm text-destructive">
+                  {createRoutine.error instanceof Error ? createRoutine.error.message : "Failed to create routine"}
+                </p>
+              ) : null}
               <Button
                 onClick={() => createRoutine.mutate()}
                 disabled={
                   createRoutine.isPending ||
                   !draft.title.trim()
                 }
+                aria-busy={createRoutine.isPending}
               >
                 {createRoutine.isPending
                   ? <LoaderCircle className="mr-2 size-4 animate-spin" aria-hidden="true" />
                   : <Plus aria-hidden="true" className="mr-2 h-4 w-4" />}
                 {createRoutine.isPending ? "Creating..." : "Create routine"}
               </Button>
-              {createRoutine.isError ? (
-                <p role="alert" className="text-sm text-destructive">
-                  {createRoutine.error instanceof Error ? createRoutine.error.message : "Failed to create routine"}
-                </p>
-              ) : null}
             </div>
           </div>
         </DialogContent>

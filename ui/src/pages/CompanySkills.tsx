@@ -650,7 +650,7 @@ function SkillPane({
         <div className="mt-4 space-y-3 border-t border-border pt-4 text-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Source</span>
+              <span className="text-xs uppercase tracking-[0.14em] text-foreground/60">Source</span>
               <span className="flex items-center gap-2">
                 <SourceIcon className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 {detail.sourcePath ? (
@@ -672,7 +672,7 @@ function SkillPane({
             </div>
             {detail.sourceType === "github" && (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Pin</span>
+                <span className="text-xs uppercase tracking-[0.14em] text-foreground/60">Pin</span>
                 <span className="font-mono text-xs">{currentPin ?? "untracked"}</span>
                 {updateStatus?.trackingRef && (
                   <span className="text-xs text-muted-foreground">tracking {updateStatus.trackingRef}</span>
@@ -682,6 +682,7 @@ function SkillPane({
                   size="sm"
                   onClick={onCheckUpdates}
                   disabled={checkUpdatesPending || updateStatusLoading}
+                  aria-busy={checkUpdatesPending || updateStatusLoading}
                 >
                   <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", (checkUpdatesPending || updateStatusLoading) && "animate-spin")} aria-hidden="true" />
                   Check for updates
@@ -691,6 +692,7 @@ function SkillPane({
                     size="sm"
                     onClick={onInstallUpdate}
                     disabled={installUpdatePending}
+                    aria-busy={installUpdatePending}
                   >
                     <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", installUpdatePending && "animate-spin")} aria-hidden="true" />
                     Install update{latestPin ? ` ${latestPin}` : ""}
@@ -705,16 +707,16 @@ function SkillPane({
               </div>
             )}
             <div className="flex items-center gap-2">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Key</span>
+              <span className="text-xs uppercase tracking-[0.14em] text-foreground/60">Key</span>
               <span className="font-mono text-xs">{detail.key}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Mode</span>
+              <span className="text-xs uppercase tracking-[0.14em] text-foreground/60">Mode</span>
               <span>{detail.editable ? "Editable" : "Read only"}</span>
             </div>
           </div>
           <div className="flex flex-wrap items-start gap-x-3 gap-y-1">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Used by</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-foreground/60">Used by</span>
             {usedBy.length === 0 ? (
               <span className="text-muted-foreground">No agents attached</span>
             ) : (

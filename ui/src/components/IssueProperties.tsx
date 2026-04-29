@@ -129,7 +129,7 @@ interface IssuePropertiesProps {
 function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3 py-1.5">
-      <span className="text-xs text-muted-foreground shrink-0 w-20 mt-0.5">{label}</span>
+      <span className="text-xs text-foreground/60 shrink-0 w-20 mt-0.5">{label}</span>
       <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">{children}</div>
     </div>
   );
@@ -453,7 +453,7 @@ export function IssueProperties({
     <PropertyRow label="">
       <button
         type="button"
-        className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+        className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-xs text-foreground/60 transition-colors hover:bg-accent/50 hover:text-foreground"
         onClick={() => onUpdate({ status: "in_review" })}
       >
         {stageType === "review" ? "Run review now" : "Run approval now"}
@@ -503,7 +503,7 @@ export function IssueProperties({
         </span>
       ))}
       {selectedIssueLabels.length > 3 && (
-        <span className="text-xs text-muted-foreground">+{selectedIssueLabels.length - 3}</span>
+        <span className="text-xs text-foreground/60">+{selectedIssueLabels.length - 3}</span>
       )}
     </div>
   ) : (
@@ -1045,7 +1045,7 @@ export function IssueProperties({
   const renderAddBlockedByButton = (onClick?: () => void) => (
     <button
       type="button"
-      className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+      className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-foreground/60 transition-colors hover:bg-accent/50 hover:text-foreground"
       onClick={onClick}
     >
       <Plus className="h-3 w-3" />
@@ -1198,7 +1198,7 @@ export function IssueProperties({
             {onAddSubIssue ? (
               <button
                 type="button"
-                className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+                className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-foreground/60 transition-colors hover:bg-accent/50 hover:text-foreground"
                 onClick={onAddSubIssue}
               >
                 <Plus className="h-3 w-3" />

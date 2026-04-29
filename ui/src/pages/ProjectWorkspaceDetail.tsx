@@ -193,7 +193,7 @@ function Field({
     <label className="space-y-1.5">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{label}</span>
-        {hint ? <span className="text-[11px] leading-relaxed text-muted-foreground sm:text-right">{hint}</span> : null}
+        {hint ? <span className="text-xs leading-relaxed text-foreground/60 sm:text-right">{hint}</span> : null}
       </div>
       {children}
     </label>

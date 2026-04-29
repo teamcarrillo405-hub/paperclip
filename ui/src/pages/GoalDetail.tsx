@@ -163,22 +163,25 @@ export function GoalDetail() {
     return () => closePanelRef.current();
   }, [goal]);
 
-  if (isLoading) return <PageSkeleton variant="detail" />;
+  if (isLoading) return <PageSkeleton variant="detail" title="Goal" />;
   if (error) return (
-    <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-destructive">{error.message}</p>
+    <div className="space-y-3">
+      <h1 className="sr-only">Goal — Error</h1>
+      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-destructive">{error.message}</p>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+          disabled={isRefetching}
+          onClick={() => refetch()}
+        >
+          {isRefetching ? "Retrying…" : "Retry"}
+        </Button>
       </div>
-      <Button
-        size="sm"
-        variant="ghost"
-        className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
-        disabled={isRefetching}
-        onClick={() => refetch()}
-      >
-        {isRefetching ? "Retrying…" : "Retry"}
-      </Button>
     </div>
   );
   if (!goal) {
@@ -202,7 +205,7 @@ export function GoalDetail() {
             type="button"
             aria-label="Dismiss error"
             onClick={() => setUpdateError(null)}
-            className="text-destructive/70 hover:text-destructive ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="text-destructive/70 hover:text-destructive ml-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -211,7 +214,7 @@ export function GoalDetail() {
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <p className="text-xs uppercase text-muted-foreground m-0">
+          <p className="text-xs uppercase text-foreground/60 m-0">
             <span className="sr-only">Level: </span>{goal.level}
           </p>
           <StatusBadge status={goal.status} />
@@ -232,7 +235,7 @@ export function GoalDetail() {
             disabled={updateGoal.isPending}
           />
           {updateGoal.isPending ? (
-            <LoaderCircle className="size-4 animate-spin text-muted-foreground shrink-0" aria-hidden="true" />
+            <LoaderCircle className="size-4 animate-spin text-foreground/60 shrink-0" aria-hidden="true" />
           ) : null}
         </div>
 
@@ -240,7 +243,7 @@ export function GoalDetail() {
           value={goal.description ?? ""}
           onSave={(description) => updateGoal.mutate({ description })}
           as="p"
-          className="text-sm text-muted-foreground"
+          className="text-sm text-foreground/60"
           placeholder="Add a description..."
           multiline
           disabled={updateGoal.isPending}
@@ -252,19 +255,19 @@ export function GoalDetail() {
       </div>
 
       <Tabs defaultValue="children">
-        <TabsList>
+        <TabsList aria-label="Goal navigation">
           <TabsTrigger value="children">
-            Sub-Goals <span aria-label={`${childGoals.length} sub-goal${childGoals.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums"><span aria-hidden="true">{childGoals.length}</span></span>
+            Sub-Goals <span role="img" aria-label={`${childGoals.length} sub-goal${childGoals.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums"><span aria-hidden="true">{childGoals.length}</span></span>
           </TabsTrigger>
           <TabsTrigger value="projects">
-            Projects <span aria-label={`${linkedProjects.length} project${linkedProjects.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums"><span aria-hidden="true">{linkedProjects.length}</span></span>
+            Projects <span role="img" aria-label={`${linkedProjects.length} project${linkedProjects.length === 1 ? "" : "s"}`} className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs font-mono tabular-nums"><span aria-hidden="true">{linkedProjects.length}</span></span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="children" className="mt-4 space-y-3">
           {childGoals.length === 0 ? (
             <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-border bg-muted/20 px-4 py-6 text-center">
-              <p className="text-sm text-muted-foreground">No sub-goals yet.</p>
+              <p className="text-sm text-foreground/60">No sub-goals yet.</p>
               <Button
                 size="sm"
                 variant="outline"
@@ -294,7 +297,7 @@ export function GoalDetail() {
         <TabsContent value="projects" className="mt-4">
           {linkedProjects.length === 0 ? (
             <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border p-6 text-center">
-              <p className="text-sm text-muted-foreground">No linked projects yet.</p>
+              <p className="text-sm text-foreground/60">No linked projects yet.</p>
               <Button variant="outline" size="sm" asChild><Link to="/projects">Browse projects</Link></Button>
             </div>
           ) : (

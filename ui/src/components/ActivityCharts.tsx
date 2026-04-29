@@ -55,8 +55,8 @@ export function ChartCard({ title, subtitle, children }: { title: string; subtit
   return (
     <div aria-label={title} className="border border-border rounded-lg p-4 space-y-3">
       <div>
-        <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
-        {subtitle && <span className="text-[10px] text-muted-foreground/60">{subtitle}</span>}
+        <h3 className="text-xs font-medium text-foreground/60">{title}</h3>
+        {subtitle && <span className="text-xs text-foreground/50">{subtitle}</span>}
       </div>
       {children}
     </div>
@@ -105,7 +105,7 @@ export function RunActivityChart(props: RunChartProps) {
   const maxValue = Math.max(...activity.map(v => v.total), 1);
   const hasData = activity.some(v => v.total > 0);
 
-  if (!hasData) return <p className="text-xs text-muted-foreground">No runs yet</p>;
+  if (!hasData) return <p className="text-xs text-foreground/60">No runs yet</p>;
 
   return (
     <div>
@@ -157,7 +157,7 @@ export function PriorityChart({ issues, days: numDays = 14 }: { issues: { priori
   const maxValue = Math.max(...Array.from(grouped.values()).map(v => Object.values(v).reduce((a, b) => a + b, 0)), 1);
   const hasData = Array.from(grouped.values()).some(v => Object.values(v).reduce((a, b) => a + b, 0) > 0);
 
-  if (!hasData) return <p className="text-xs text-muted-foreground">No issues</p>;
+  if (!hasData) return <p className="text-xs text-foreground/60">No issues</p>;
 
   return (
     <div>
@@ -224,7 +224,7 @@ export function IssueStatusChart({ issues, days: numDays = 14 }: { issues: { sta
   const maxValue = Math.max(...Array.from(grouped.values()).map(v => Object.values(v).reduce((a, b) => a + b, 0)), 1);
   const hasData = allStatuses.size > 0;
 
-  if (!hasData) return <p className="text-xs text-muted-foreground">No issues</p>;
+  if (!hasData) return <p className="text-xs text-foreground/60">No issues</p>;
 
   return (
     <div>
@@ -261,7 +261,7 @@ export function SuccessRateChart(props: RunChartProps) {
   const grouped = new Map(activity.map((day) => [day.date, day]));
 
   const hasData = activity.some(v => v.total > 0);
-  if (!hasData) return <p className="text-xs text-muted-foreground">No runs yet</p>;
+  if (!hasData) return <p className="text-xs text-foreground/60">No runs yet</p>;
 
   return (
     <div>

@@ -10,6 +10,8 @@ import { accessApi } from "../api/access";
 import { assetsApi } from "../api/assets";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Settings, Check, Download, Upload, LayoutTemplate } from "lucide-react";
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
 import { EmptyState } from "../components/EmptyState";
@@ -271,7 +273,7 @@ export function CompanySettings() {
   }, [setBreadcrumbs, selectedCompany?.name]);
 
   if (!selectedCompany) {
-    return <EmptyState icon={Settings} message="Select a company from the switcher to manage its settings." />;
+    return <div><h1 className="sr-only">Company Settings</h1><EmptyState icon={Settings} message="Select a company from the switcher to manage its settings." /></div>;
   }
 
   function handleSaveGeneral() {
@@ -296,44 +298,43 @@ export function CompanySettings() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-2">
-        <Settings className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+        <Settings className="h-5 w-5 text-foreground/60" aria-hidden="true" />
         <h1 className="text-2xl font-semibold tracking-tight">Company Settings</h1>
       </div>
 
       {/* General */}
-      <div className="space-y-4">
-        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          General
-        </h2>
-        <div className="space-y-3 rounded-md border border-border px-4 py-4">
-          <Field label="Company name" hint="The display name for your company.">
-            <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+      <section aria-labelledby="general-heading" className="space-y-4">
+        <h2 id="general-heading" className="text-sm font-semibold text-foreground">General</h2>
+        <div className="space-y-4 rounded-md border border-border px-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="company-name">Company name</Label>
+            <Input
+              id="company-name"
               type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
+              aria-describedby="company-name-hint"
             />
-          </Field>
-          <Field
-            label="Description"
-            hint="Optional description shown in the company profile."
-          >
-            <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+            <p id="company-name-hint" className="text-xs text-foreground/60">The display name for your company.</p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="company-description">Description</Label>
+            <Input
+              id="company-description"
               type="text"
               value={description}
               placeholder="Optional company description"
               onChange={(e) => setDescription(e.target.value)}
+              aria-describedby="company-description-hint"
             />
-          </Field>
+            <p id="company-description-hint" className="text-xs text-foreground/60">Optional description shown in the company profile.</p>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Appearance */}
-      <div className="space-y-4">
-        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Appearance
-        </h2>
+      <section aria-labelledby="appearance-heading" className="space-y-4">
+        <h2 id="appearance-heading" className="text-sm font-semibold text-foreground">Appearance</h2>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
           <div className="flex items-start gap-4">
             <div className="shrink-0">
@@ -383,13 +384,13 @@ export function CompanySettings() {
                     </span>
                   )}
                   {logoUploadMutation.isPending && (
-                    <span className="text-xs text-muted-foreground">Uploading logo...</span>
+                    <span className="text-xs text-foreground/60">Uploading logo...</span>
                   )}
                 </div>
               </Field>
               <fieldset className="border-0 p-0 m-0">
                 <legend id="brand-color-legend" className="text-sm font-medium mb-1.5">Brand color</legend>
-                <p className="text-xs text-muted-foreground mb-2">
+                <p className="text-xs text-foreground/60 mb-2">
                   Sets the hue for the company icon. Leave empty for auto-generated color.
                 </p>
                 <div className="flex items-center gap-2">
@@ -420,7 +421,7 @@ export function CompanySettings() {
                       size="sm"
                       variant="ghost"
                       onClick={() => setBrandColor("")}
-                      className="text-xs text-muted-foreground"
+                      className="text-xs text-foreground/60"
                     >
                       Clear
                     </Button>
@@ -430,15 +431,21 @@ export function CompanySettings() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Save button for General + Appearance */}
       <div className="flex items-center gap-2">
+        {generalMutation.isError && (
+          <p role="alert" className="text-xs text-destructive">
+            {generalMutation.error instanceof Error ? generalMutation.error.message : "Failed to save changes."}
+          </p>
+        )}
         {generalDirty && (
           <Button
             size="sm"
             onClick={handleSaveGeneral}
             disabled={generalMutation.isPending || !companyName.trim()}
+            aria-busy={generalMutation.isPending}
           >
             {generalMutation.isPending ? "Saving..." : "Save changes"}
           </Button>
@@ -446,10 +453,8 @@ export function CompanySettings() {
       </div>
 
       {/* Hiring */}
-      <div className="space-y-4" data-testid="company-settings-team-section">
-        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Hiring
-        </h2>
+      <section aria-labelledby="hiring-heading" className="space-y-4" data-testid="company-settings-team-section">
+        <h2 id="hiring-heading" className="text-sm font-semibold text-foreground">Hiring</h2>
         <div className="rounded-md border border-border px-4 py-3">
           <ToggleField
             label="Require board approval for new hires"
@@ -460,12 +465,10 @@ export function CompanySettings() {
             disabled={settingsMutation.isPending}
           />
         </div>
-      </div>
+      </section>
 
-      <div className="space-y-4">
-        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Feedback Sharing
-        </h2>
+      <section aria-labelledby="feedback-sharing-heading" className="space-y-4">
+        <h2 id="feedback-sharing-heading" className="text-sm font-semibold text-foreground">Feedback Sharing</h2>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
           <ToggleField
             label="Allow sharing voted AI outputs with Paperclip Labs"
@@ -474,10 +477,10 @@ export function CompanySettings() {
             onChange={(enabled) => feedbackSharingMutation.mutate(enabled)}
             disabled={feedbackSharingMutation.isPending}
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/60">
             Votes are always saved locally. This setting controls whether voted AI outputs may also be marked for sharing with Paperclip Labs.
           </p>
-          <div className="space-y-1 text-xs text-muted-foreground">
+          <div className="space-y-1 text-xs text-foreground/60">
             <div>
               Terms version: {selectedCompany.feedbackDataSharingTermsVersion ?? DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION}
             </div>
@@ -503,16 +506,14 @@ export function CompanySettings() {
             ) : null}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Invites */}
-      <div className="space-y-4" data-testid="company-settings-invites-section">
-        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Invites
-        </h2>
+      <section aria-labelledby="invites-heading" className="space-y-4" data-testid="company-settings-invites-section">
+        <h2 id="invites-heading" className="text-sm font-semibold text-foreground">Invites</h2>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-foreground/60">
               Generate an OpenClaw agent invite snippet.
             </span>
             <HintIcon text="Creates a short-lived OpenClaw agent invite and renders a copy-ready prompt." />
@@ -538,7 +539,7 @@ export function CompanySettings() {
               data-testid="company-settings-invites-snippet"
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-foreground/60">
                   OpenClaw Invite Prompt
                 </div>
                 {/* Always-mounted aria-live region so screen readers catch the transition */}
@@ -593,15 +594,13 @@ export function CompanySettings() {
             </div>
           )}
         </div>
-      </div>
+      </section>
 
       {/* Import / Export */}
-      <div className="space-y-4">
-        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Company Packages
-        </h2>
+      <section aria-labelledby="packages-heading" className="space-y-4">
+        <h2 id="packages-heading" className="text-sm font-semibold text-foreground">Company Packages</h2>
         <div className="rounded-md border border-border px-4 py-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/60">
             Access import, export, and package templates from the links below.
           </p>
           <div className="mt-3 flex items-center gap-2">
@@ -625,15 +624,13 @@ export function CompanySettings() {
             </Button>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Danger Zone */}
-      <div className="space-y-4">
-        <h2 className="text-xs font-medium text-destructive uppercase tracking-wide">
-          Danger Zone
-        </h2>
+      <section aria-labelledby="danger-zone-heading" className="space-y-4">
+        <h2 id="danger-zone-heading" className="text-sm font-semibold text-destructive">Danger Zone</h2>
         <div className="space-y-3 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/60">
             Archive this company to hide it from the sidebar. This persists in
             the database.
           </p>
@@ -665,14 +662,14 @@ export function CompanySettings() {
             )}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Archive confirmation dialog */}
       <Dialog open={archiveConfirmOpen} onOpenChange={setArchiveConfirmOpen}>
-        <DialogContent>
+        <DialogContent role="alertdialog" aria-describedby="archive-dialog-desc">
           <DialogHeader>
             <DialogTitle>Archive company</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="archive-dialog-desc">
               Archive &ldquo;{selectedCompany.name}&rdquo;? It will be hidden from the
               sidebar. This action persists in the database and cannot be undone
               from the UI.
@@ -689,6 +686,7 @@ export function CompanySettings() {
               variant="destructive"
               onClick={handleArchiveConfirm}
               disabled={archiveMutation.isPending}
+              aria-busy={archiveMutation.isPending}
             >
               {archiveMutation.isPending ? "Archiving..." : "Archive"}
             </Button>

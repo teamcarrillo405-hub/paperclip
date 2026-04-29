@@ -124,12 +124,14 @@ export function ProfileSettings() {
   });
 
   if (sessionQuery.isLoading) {
-    return <PageSkeleton variant="detail" />;
+    return <PageSkeleton variant="detail" title="Profile Settings" />;
   }
 
   if (sessionQuery.error || !sessionQuery.data) {
     const message = sessionQuery.error instanceof Error ? sessionQuery.error.message : "Failed to load profile.";
     return (
+      <div className="space-y-3">
+      <h1 className="sr-only">Profile — Error</h1>
       <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
         <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1 min-w-0">
@@ -144,6 +146,7 @@ export function ProfileSettings() {
         >
           {sessionQuery.isRefetching ? "Retrying…" : "Retry"}
         </Button>
+      </div>
       </div>
     );
   }
@@ -160,10 +163,10 @@ export function ProfileSettings() {
     <div className="max-w-4xl space-y-6 overflow-y-auto">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <UserRoundPen className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          <UserRoundPen className="h-5 w-5 text-foreground/60" aria-hidden="true" />
           <h1 className="text-2xl font-semibold">Profile</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground/60">
           Control how your account appears in the sidebar and other board surfaces.
         </p>
       </div>
@@ -245,9 +248,9 @@ export function ProfileSettings() {
               <div className="min-w-0 flex-1 space-y-2 pb-1">
                 <div>
                   <p className="truncate text-2xl font-semibold text-foreground" aria-hidden="true">{currentName}</p>
-                  <p className="truncate text-sm text-muted-foreground">{sessionQuery.data.user.email ?? "No email"}</p>
+                  <p className="truncate text-sm text-foreground/60">{sessionQuery.data.user.email ?? "No email"}</p>
                 </div>
-                <p id="avatar-upload-hint" className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                <p id="avatar-upload-hint" className="max-w-2xl text-sm leading-6 text-foreground/60">
                   Select the avatar to upload a new image. {uploadHint}
                 </p>
               </div>
@@ -260,6 +263,7 @@ export function ProfileSettings() {
 
         <form
           className="grid gap-6 md:grid-cols-2"
+          aria-labelledby="profile-details-heading"
           onSubmit={(event) => {
             event.preventDefault();
             updateMutation.mutate({ name: resolveProfileName(), image: image.trim() || null });
@@ -275,7 +279,7 @@ export function ProfileSettings() {
               maxLength={120}
               placeholder="Board"
             />
-            <p id="profile-name-hint" className="text-xs text-muted-foreground">
+            <p id="profile-name-hint" className="text-xs text-foreground/60">
               Shown in the sidebar account footer and comment author surfaces.
             </p>
           </div>
@@ -290,7 +294,7 @@ export function ProfileSettings() {
               aria-readonly="true"
               className="opacity-60 cursor-default"
             />
-            <p id="profile-email-hint" className="text-xs text-muted-foreground">
+            <p id="profile-email-hint" className="text-xs text-foreground/60">
               Email is managed by your auth session and is read-only here.
             </p>
           </div>

@@ -2,14 +2,17 @@ import { cn } from "../lib/utils";
 import { statusBadge, statusBadgeDefault } from "../lib/status-colors";
 
 export function StatusBadge({ status }: { status: string }) {
+  const label = status.replace(/_/g, " ");
   return (
     <span
+      role="img"
+      aria-label={`Status: ${label}`}
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap shrink-0",
         statusBadge[status] ?? statusBadgeDefault
       )}
     >
-      {status.replace(/_/g, " ")}
+      <span aria-hidden="true">{label}</span>
     </span>
   );
 }

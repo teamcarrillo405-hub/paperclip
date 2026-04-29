@@ -11,6 +11,7 @@ import { Identity } from "../components/Identity";
 import { approvalLabel, typeIcon, defaultTypeIcon, ApprovalPayloadRenderer } from "../components/ApprovalPayload";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, ChevronRight, Sparkles, AlertCircle } from "lucide-react";
 import type { ApprovalComment } from "@paperclipai/shared";
@@ -26,6 +27,7 @@ export function ApprovalDetail() {
   const [commentBody, setCommentBody] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showRawPayload, setShowRawPayload] = useState(false);
+  const [confirmDeleteAgentOpen, setConfirmDeleteAgentOpen] = useState(false);
 
   const { data: approval, isLoading } = useQuery({
     queryKey: queryKeys.approvals.detail(approvalId!),
@@ -141,8 +143,8 @@ export function ApprovalDetail() {
     onError: (err) => setError(err instanceof Error ? err.message : "Delete failed"),
   });
 
-  if (isLoading) return <PageSkeleton variant="detail" />;
-  if (!approval) return <p className="text-sm text-muted-foreground">Approval not found.</p>;
+  if (isLoading) return <PageSkeleton variant="detail" title="Approval" />;
+  if (!approval) return <div><h1 className="sr-only">Approval Not Found</h1><p className="text-sm text-foreground/60">Approval not found.</p></div>;
 
   const payload = approval.payload as Record<string, unknown>;
   const linkedAgentId = typeof payload.agentId === "string" ? payload.agentId : null;
@@ -172,6 +174,7 @@ export function ApprovalDetail() {
 
   return (
     <div className="space-y-6 max-w-3xl">
+      <h1 className="sr-only">Approval detail</h1>
       {showApprovedBanner && (
         <div className="border border-green-300 dark:border-green-700/40 bg-green-50 dark:bg-green-900/20 rounded-lg px-4 py-3 animate-in fade-in zoom-in-95 duration-300">
           <div className="flex items-start justify-between gap-3">
@@ -201,10 +204,10 @@ export function ApprovalDetail() {
       <div className="border border-border rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TypeIcon className="h-5 w-5 text-muted-foreground shrink-0" />
+            <TypeIcon className="h-5 w-5 text-foreground/60 shrink-0" />
             <div>
               <h2 className="text-lg font-semibold">{approvalLabel(approval.type, approval.payload as Record<string, unknown> | null)}</h2>
-              <p className="text-xs text-muted-foreground font-mono">{approval.id}</p>
+              <p className="text-xs text-foreground/60 font-mono">{approval.id}</p>
             </div>
           </div>
           <StatusBadge status={approval.status} />
@@ -212,7 +215,7 @@ export function ApprovalDetail() {
         <div className="text-sm space-y-1">
           {approval.requestedByAgentId && (
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-xs">Requested by</span>
+              <span className="text-foreground/60 text-xs">Requested by</span>
               <Identity
                 name={agentNameById.get(approval.requestedByAgentId) ?? approval.requestedByAgentId.slice(0, 8)}
                 size="sm"
@@ -222,7 +225,7 @@ export function ApprovalDetail() {
           <ApprovalPayloadRenderer type={approval.type} payload={payload} />
           <button
             type="button"
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mt-2"
+            className="flex items-center gap-1 text-xs text-foreground/60 hover:text-foreground transition-colors mt-2"
             onClick={() => setShowRawPayload((v) => !v)}
           >
             <ChevronRight className={`h-3 w-3 transition-transform ${showRawPayload ? "rotate-90" : ""}`} />
@@ -234,7 +237,7 @@ export function ApprovalDetail() {
             </pre>
           )}
           {approval.decisionNote && (
-            <p className="text-xs text-muted-foreground">Decision note: {approval.decisionNote}</p>
+            <p className="text-xs text-foreground/60">Decision note: {approval.decisionNote}</p>
           )}
         </div>
         {error && (
@@ -247,7 +250,7 @@ export function ApprovalDetail() {
         )}
         {linkedIssues && linkedIssues.length > 0 && (
           <div className="pt-2 border-t border-border/60">
-            <p className="text-xs text-muted-foreground mb-1.5">Linked Issues</p>
+            <p className="text-xs text-foreground/60 mb-1.5">Linked Issues</p>
             <div className="space-y-1.5">
               {linkedIssues.map((issue) => (
                 <Link
@@ -255,14 +258,14 @@ export function ApprovalDetail() {
                   to={`/issues/${issue.identifier ?? issue.id}`}
                   className="block text-xs rounded border border-border/70 px-2 py-1.5 hover:bg-accent/20"
                 >
-                  <span className="font-mono text-muted-foreground mr-2">
+                  <span className="font-mono text-foreground/60 mr-2">
                     {issue.identifier ?? issue.id.slice(0, 8)}
                   </span>
                   <span>{issue.title}</span>
                 </Link>
               ))}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-2">
+            <p className="text-xs text-foreground/60 mt-2">
               Linked issues remain open until the requesting agent follows up and closes them.
             </p>
           </div>
@@ -275,6 +278,7 @@ export function ApprovalDetail() {
                 className="bg-green-700 hover:bg-green-600 text-white"
                 onClick={() => approveMutation.mutate()}
                 disabled={approveMutation.isPending}
+                aria-busy={approveMutation.isPending}
               >
                 Approve
               </Button>
@@ -283,13 +287,14 @@ export function ApprovalDetail() {
                 size="sm"
                 onClick={() => rejectMutation.mutate()}
                 disabled={rejectMutation.isPending}
+                aria-busy={rejectMutation.isPending}
               >
                 Reject
               </Button>
             </>
           )}
           {isBudgetApproval && approval.status === "pending" && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-foreground/60">
               Resolve this budget stop from the budget controls on <Link to="/costs" className="underline underline-offset-2">/costs</Link>.
             </p>
           )}
@@ -299,6 +304,7 @@ export function ApprovalDetail() {
               variant="outline"
               onClick={() => revisionMutation.mutate()}
               disabled={revisionMutation.isPending}
+              aria-busy={revisionMutation.isPending}
             >
               Request revision
             </Button>
@@ -309,23 +315,47 @@ export function ApprovalDetail() {
               variant="outline"
               onClick={() => resubmitMutation.mutate()}
               disabled={resubmitMutation.isPending}
+              aria-busy={resubmitMutation.isPending}
             >
               Mark resubmitted
             </Button>
           )}
           {approval.status === "rejected" && approval.type === "hire_agent" && linkedAgentId && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-destructive border-destructive/40"
-              onClick={() => {
-                if (!window.confirm("Delete this disapproved agent? This cannot be undone.")) return;
-                deleteAgentMutation.mutate(linkedAgentId);
-              }}
-              disabled={deleteAgentMutation.isPending}
-            >
-              Delete disapproved agent
-            </Button>
+            <>
+              <Dialog open={confirmDeleteAgentOpen} onOpenChange={setConfirmDeleteAgentOpen}>
+                <DialogContent role="alertdialog" aria-describedby="delete-agent-desc">
+                  <DialogHeader>
+                    <DialogTitle>Delete disapproved agent?</DialogTitle>
+                    <DialogDescription id="delete-agent-desc">
+                      This disapproved agent will be permanently deleted. This cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setConfirmDeleteAgentOpen(false)}>Cancel</Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        setConfirmDeleteAgentOpen(false);
+                        deleteAgentMutation.mutate(linkedAgentId);
+                      }}
+                      disabled={deleteAgentMutation.isPending}
+                      aria-busy={deleteAgentMutation.isPending}
+                    >
+                      Delete
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-destructive border-destructive/40"
+                onClick={() => setConfirmDeleteAgentOpen(true)}
+                disabled={deleteAgentMutation.isPending}
+              >
+                Delete disapproved agent
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -346,7 +376,7 @@ export function ApprovalDetail() {
                 ) : (
                   <Identity name="Board" size="sm" />
                 )}
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-foreground/60">
                   {new Date(comment.createdAt).toLocaleString()}
                 </span>
               </div>

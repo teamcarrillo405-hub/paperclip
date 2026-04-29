@@ -91,7 +91,7 @@ function FieldLabel({
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-xs text-foreground/60">{label}</span>
       <SaveIndicator state={state} />
     </div>
   );
@@ -583,7 +583,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
               </PopoverTrigger>
               <PopoverContent className="w-56 p-1" align="start">
                 {availableGoals.length === 0 ? (
-                  <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  <div className="px-2 py-1.5 text-xs text-foreground/60">
                     All goals linked.
                   </div>
                 ) : (
@@ -638,7 +638,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
 
       <div className="space-y-1 py-4">
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-foreground/60">
             <span>Codebase</span>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -665,14 +665,14 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                       href={codebase.repoUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                      className="inline-flex min-w-0 items-center gap-1.5 text-xs text-foreground/60 hover:text-foreground hover:underline"
                     >
                       <Github className="h-3 w-3 shrink-0" />
                       <span className="break-all min-w-0">{formatRepoUrl(codebase.repoUrl)}</span>
                       <ExternalLink className="h-3 w-3 shrink-0" />
                     </a>
                   ) : (
-                    <div className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+                    <div className="inline-flex min-w-0 items-center gap-1.5 text-xs text-foreground/60">
                       <Github className="h-3 w-3 shrink-0" />
                       <span className="break-all min-w-0">{codebase.repoUrl}</span>
                     </div>
@@ -702,7 +702,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                 </div>
               ) : (
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-xs text-muted-foreground">Not set.</div>
+                  <div className="text-xs text-foreground/60">Not set.</div>
                   <Button
                     variant="outline"
                     size="xs"
@@ -723,7 +723,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
               <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Local folder</div>
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0 space-y-1">
-                  <div className="min-w-0 break-all font-mono text-xs text-muted-foreground">
+                  <div className="min-w-0 break-all font-mono text-xs text-foreground/60">
                     {codebase.effectiveLocalFolder}
                   </div>
                   {codebase.origin === "managed_checkout" && (
@@ -897,7 +897,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
             <Separator className="my-4" />
 
             <div className="py-1.5 space-y-2">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-foreground/60">
                 <span>Execution Workspaces</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -921,7 +921,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                       <span>Enable isolated issue checkouts</span>
                       <SaveIndicator state={fieldState("execution_workspace_enabled")} />
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-foreground/60">
                       Let issues choose between the project's primary checkout and an isolated execution workspace.
                     </div>
                   </div>
@@ -935,7 +935,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                         )}
                     />
                   ) : (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground/60">
                       {executionWorkspacesEnabled ? "Enabled" : "Disabled"}
                     </span>
                   )}
@@ -982,12 +982,12 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
 
                     {executionWorkspaceAdvancedOpen ? (
                       <div className="space-y-3">
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-foreground/60">
                           Host-managed implementation: <span className="text-foreground">Git worktree</span>
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-foreground/60">
                               <span>Base ref</span>
                               <SaveIndicator state={fieldState("execution_workspace_base_ref")} />
                             </label>
@@ -1011,7 +1011,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-foreground/60">
                               <span>Branch template</span>
                               <SaveIndicator state={fieldState("execution_workspace_branch_template")} />
                             </label>
@@ -1035,7 +1035,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-foreground/60">
                               <span>Worktree parent dir</span>
                               <SaveIndicator state={fieldState("execution_workspace_worktree_parent_dir")} />
                             </label>
@@ -1059,7 +1059,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-foreground/60">
                               <span>Provision command</span>
                               <SaveIndicator state={fieldState("execution_workspace_provision_command")} />
                             </label>
@@ -1083,7 +1083,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-foreground/60">
                               <span>Teardown command</span>
                               <SaveIndicator state={fieldState("execution_workspace_teardown_command")} />
                             </label>

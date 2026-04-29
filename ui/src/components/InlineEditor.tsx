@@ -250,9 +250,12 @@ export function InlineEditor({
         />
         <div className="flex min-h-4 items-center justify-end pr-1">
           <span
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
             className={cn(
-              "text-[11px] transition-opacity duration-150",
-              autosaveState === "error" ? "text-destructive" : "text-muted-foreground",
+              "text-xs transition-opacity duration-150",
+              autosaveState === "error" ? "text-destructive" : "text-foreground/60",
               autosaveState === "idle" ? "opacity-0" : "opacity-100",
             )}
           >
@@ -276,6 +279,7 @@ export function InlineEditor({
         ref={inputRef}
         value={draft}
         rows={1}
+        aria-label={placeholder}
         onChange={(e) => {
           setDraft(e.target.value);
           autoSize(e.target);
@@ -285,7 +289,7 @@ export function InlineEditor({
         }}
         onKeyDown={handleKeyDown}
         className={cn(
-          "w-full bg-transparent rounded outline-none resize-none overflow-hidden",
+          "w-full bg-transparent rounded outline-none resize-none overflow-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
           pad,
           className
         )}
@@ -299,13 +303,23 @@ export function InlineEditor({
 
   return (
     <DisplayTag
+      role={disabled ? undefined : "button"}
+      tabIndex={disabled ? undefined : 0}
       className={cn(
-        "cursor-pointer rounded hover:bg-accent/50 transition-colors overflow-hidden",
+        "rounded transition-colors overflow-hidden",
+        disabled ? "cursor-default" : "cursor-pointer hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         pad,
         !value && "text-muted-foreground italic",
         className,
       )}
       onClick={() => { if (!disabled) setEditing(true); }}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (disabled) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setEditing(true);
+        }
+      }}
     >
       {value || placeholder}
     </DisplayTag>

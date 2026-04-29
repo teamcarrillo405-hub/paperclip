@@ -171,11 +171,11 @@ export function CompanyInvites() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={MailPlus} message="Select a company to view invites." />;
+    return <div><h1 className="sr-only">Invites</h1><EmptyState icon={MailPlus} message="Select a company to view invites." /></div>;
   }
 
   if (invitesQuery.isLoading) {
-    return <PageSkeleton variant="list" />;
+    return <PageSkeleton variant="list" title="Invites" />;
   }
 
   if (invitesQuery.error) {
@@ -186,18 +186,21 @@ export function CompanyInvites() {
           ? invitesQuery.error.message
           : "Failed to load invites.";
     return (
-      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-destructive">{message}</p>
+      <div className="space-y-3">
+        <h1 className="sr-only">Company Invites — Error</h1>
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">{message}</p>
+          </div>
+          {!(invitesQuery.error instanceof ApiError && invitesQuery.error.status === 403) ? (
+            <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+              disabled={invitesQuery.isRefetching}
+              onClick={() => invitesQuery.refetch()}>
+              {invitesQuery.isRefetching ? "Retrying\u2026" : "Retry"}
+            </Button>
+          ) : null}
         </div>
-        {!(invitesQuery.error instanceof ApiError && invitesQuery.error.status === 403) ? (
-          <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
-            disabled={invitesQuery.isRefetching}
-            onClick={() => invitesQuery.refetch()}>
-            {invitesQuery.isRefetching ? "Retrying\u2026" : "Retry"}
-          </Button>
-        ) : null}
       </div>
     );
   }
@@ -206,10 +209,10 @@ export function CompanyInvites() {
     <div className="max-w-5xl space-y-8">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <MailPlus className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          <MailPlus className="h-5 w-5 text-foreground/60" aria-hidden="true" />
           <h1 className="text-2xl font-semibold">Company Invites</h1>
         </div>
-        <p className="max-w-3xl text-sm text-muted-foreground">
+        <p className="max-w-3xl text-sm text-foreground/60">
           Create human invite links for company access. New invite links are copied to your clipboard when they are generated.
         </p>
       </div>
@@ -217,7 +220,7 @@ export function CompanyInvites() {
       <section className="space-y-4 rounded-xl border border-border p-5" aria-labelledby="create-invite-heading">
         <div className="space-y-1">
           <h2 id="create-invite-heading" className="text-sm font-semibold">Create invite</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/60">
             Generate a human invite link and choose the default access it should request.
           </p>
         </div>
@@ -244,12 +247,12 @@ export function CompanyInvites() {
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium">{option.label}</span>
                       {option.value === "operator" ? (
-                        <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                        <span className="rounded-full border border-border px-2 py-0.5 text-xs text-foreground/60">
                           Default
                         </span>
                       ) : null}
                     </span>
-                    <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
+                    <span className="block max-w-2xl text-sm text-foreground/60">{option.description}</span>
                     <span className="block text-sm text-foreground">{option.gets}</span>
                   </span>
                 </label>
@@ -258,7 +261,7 @@ export function CompanyInvites() {
           </div>
         </fieldset>
 
-        <p className="rounded-lg border border-border px-4 py-3 text-sm text-muted-foreground">
+        <p className="rounded-lg border border-border px-4 py-3 text-sm text-foreground/60">
           Each invite link is single-use. The first successful use consumes the link and creates or reuses the matching join request before approval.
         </p>
 
@@ -267,7 +270,7 @@ export function CompanyInvites() {
             {createInviteMutation.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
             {createInviteMutation.isPending ? "Creating…" : "Create invite"}
           </Button>
-          <span className="text-sm text-muted-foreground">Invite history below keeps the audit trail.</span>
+          <span className="text-sm text-foreground/60">Invite history below keeps the audit trail.</span>
         </div>
 
         {latestInviteUrl ? (
@@ -284,13 +287,13 @@ export function CompanyInvites() {
                   ) : null}
                 </div>
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-foreground/60">
                 This URL includes the current Paperclip domain returned by the server.
               </div>
             </div>
             <button
               type="button"
-              aria-label={`Copy invite link: ${latestInviteUrl}`}
+              aria-label="Copy invite link to clipboard"
               onClick={async () => {
                 const copied = await copyInviteUrl(latestInviteUrl);
                 setLatestInviteCopied(copied);
@@ -316,7 +319,7 @@ export function CompanyInvites() {
         <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
           <div className="space-y-1">
             <h2 id="invite-history-heading" className="text-sm font-semibold">Invite history</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-foreground/60">
               Review invite status, role, inviter, and any linked join request.
             </p>
           </div>
@@ -332,16 +335,16 @@ export function CompanyInvites() {
         ) : (
           <div className="border-t border-border">
             <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm" aria-label="Invite history">
+              <table className="min-w-full text-left text-sm">
                 <caption className="sr-only">Invite history for this company</caption>
                 <thead>
                   <tr className="border-b border-border">
-                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">State</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">Role</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">Created</th>
-                    <th scope="col" className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
-                    <th scope="col" className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
+                    <th scope="col" className="px-5 py-3 font-semibold text-foreground/70">State</th>
+                    <th scope="col" className="px-5 py-3 font-semibold text-foreground/70">Role</th>
+                    <th scope="col" className="px-5 py-3 font-semibold text-foreground/70">Invited by</th>
+                    <th scope="col" className="px-5 py-3 font-semibold text-foreground/70">Created</th>
+                    <th scope="col" className="px-5 py-3 font-semibold text-foreground/70">Join request</th>
+                    <th scope="col" className="px-5 py-3 text-right font-semibold text-foreground/70">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -356,10 +359,10 @@ export function CompanyInvites() {
                       <td className="px-5 py-3 align-top">
                         <div>{invite.invitedByUser?.name || invite.invitedByUser?.email || "Unknown inviter"}</div>
                         {invite.invitedByUser?.email && invite.invitedByUser.name ? (
-                          <div className="text-xs text-muted-foreground">{invite.invitedByUser.email}</div>
+                          <div className="text-xs text-foreground/60">{invite.invitedByUser.email}</div>
                         ) : null}
                       </td>
-                      <td className="px-5 py-3 align-top text-muted-foreground">
+                      <td className="px-5 py-3 align-top text-foreground/60">
                         {new Date(invite.createdAt).toLocaleString()}
                       </td>
                       <td className="px-5 py-3 align-top">
@@ -368,7 +371,7 @@ export function CompanyInvites() {
                             Review request
                           </Link>
                         ) : (
-                          <span className="text-muted-foreground">—</span>
+                          <span className="text-foreground/60">—</span>
                         )}
                       </td>
                       <td className="px-5 py-3 text-right align-top">
@@ -378,6 +381,7 @@ export function CompanyInvites() {
                             size="sm"
                             variant="outline"
                             aria-label={`Revoke invite created ${new Date(invite.createdAt).toLocaleDateString()}`}
+                            aria-busy={revokingIds.has(invite.id)}
                             onClick={() => revokeMutation.mutate(invite.id)}
                             disabled={revokingIds.has(invite.id)}
                           >
@@ -385,7 +389,7 @@ export function CompanyInvites() {
                             {revokingIds.has(invite.id) ? "Revoking\u2026" : "Revoke"}
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Inactive</span>
+                          <span className="text-xs text-foreground/60">Inactive</span>
                         )}
                       </td>
                     </tr>
@@ -429,6 +433,6 @@ function inviteStatePillClass(state: "active" | "accepted" | "expired" | "revoke
       return "border-destructive/30 bg-destructive/10 text-destructive";
     case "expired":
     default:
-      return "border-border bg-muted/40 text-muted-foreground";
+      return "border-border bg-muted/40 text-foreground/60";
   }
 }

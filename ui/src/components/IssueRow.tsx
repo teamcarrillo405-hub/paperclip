@@ -84,17 +84,17 @@ export function IssueRow({
               <span className="hidden shrink-0 sm:inline-flex">
                 <StatusIcon status={issue.status} className={selectedStatusClass} />
               </span>
-              <span className="shrink-0 font-mono text-xs text-muted-foreground">
+              <span className="shrink-0 font-mono text-xs text-foreground/60">
                 {identifier}
               </span>
             </>
           )}
           {mobileMeta ? (
             <>
-              <span className="text-xs text-muted-foreground sm:hidden" aria-hidden="true">
+              <span className="text-xs text-foreground/60 sm:hidden" aria-hidden="true">
                 &middot;
               </span>
-              <span className="text-xs text-muted-foreground sm:hidden">{mobileMeta}</span>
+              <span className="text-xs text-foreground/60 sm:hidden">{mobileMeta}</span>
             </>
           ) : null}
         </span>
@@ -103,7 +103,7 @@ export function IssueRow({
         <span className="ml-auto hidden shrink-0 items-center gap-2 sm:order-3 sm:flex sm:gap-3">
           {desktopTrailing}
           {trailingMeta ? (
-            <span className="text-xs text-muted-foreground">{trailingMeta}</span>
+            <span className="text-xs text-foreground/60">{trailingMeta}</span>
           ) : null}
         </span>
       ) : null}

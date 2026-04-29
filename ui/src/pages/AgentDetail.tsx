@@ -45,6 +45,7 @@ import { formatCents, formatDate, relativeTime, formatTokens, visibleRunCostUsd 
 import { cn } from "../lib/utils";
 import { describeRunRetryState } from "../lib/runRetryState";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -319,29 +320,29 @@ export function RunInvocationCard({
 
   return (
     <div className="rounded-lg border border-border bg-background/60 p-3 space-y-2">
-      <div className="text-xs font-medium text-muted-foreground">Invocation</div>
+      <div className="text-xs font-medium text-foreground/60">Invocation</div>
       {typeof payload.adapterType === "string" && (
-        <div className="text-xs"><span className="text-muted-foreground">Adapter: </span>{payload.adapterType}</div>
+        <div className="text-xs"><span className="text-foreground/60">Adapter: </span>{payload.adapterType}</div>
       )}
       {typeof payload.cwd === "string" && (
-        <div className="text-xs break-all"><span className="text-muted-foreground">Working dir: </span><span className="font-mono">{payload.cwd}</span></div>
+        <div className="text-xs break-all"><span className="text-foreground/60">Working dir: </span><span className="font-mono">{payload.cwd}</span></div>
       )}
       {hasAdvancedDetails && (
         <Collapsible>
-          <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors group">
+          <CollapsibleTrigger className="flex items-center gap-1 text-xs text-foreground/60 hover:text-foreground transition-colors group">
             <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
             Details
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2 space-y-2">
             {commandLine && (
               <div className="text-xs break-all">
-                <span className="text-muted-foreground">Command: </span>
+                <span className="text-foreground/60">Command: </span>
                 <span className="font-mono">{commandLine}</span>
               </div>
             )}
             {Array.isArray(payload.commandNotes) && payload.commandNotes.length > 0 && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Command notes</div>
+                <div className="text-xs text-foreground/60 mb-1">Command notes</div>
                 <ul className="list-disc pl-5 space-y-1">
                   {payload.commandNotes
                     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
@@ -355,7 +356,7 @@ export function RunInvocationCard({
             )}
             {payload.prompt !== undefined && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Prompt</div>
+                <div className="text-xs text-foreground/60 mb-1">Prompt</div>
                 <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap">
                   {typeof payload.prompt === "string"
                     ? redactPathText(payload.prompt, censorUsernameInLogs)
@@ -365,7 +366,7 @@ export function RunInvocationCard({
             )}
             {payload.context !== undefined && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Context</div>
+                <div className="text-xs text-foreground/60 mb-1">Context</div>
                 <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap">
                   {JSON.stringify(redactPathValue(payload.context, censorUsernameInLogs), null, 2)}
                 </pre>
@@ -373,7 +374,7 @@ export function RunInvocationCard({
             )}
             {payload.env !== undefined && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Environment</div>
+                <div className="text-xs text-foreground/60 mb-1">Environment</div>
                 <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                   {formatEnvForDisplay(payload.env, censorUsernameInLogs)}
                 </pre>
@@ -432,7 +433,7 @@ function workspaceOperationStatusTone(status: WorkspaceOperation["status"]) {
     case "skipped":
       return "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-300";
     default:
-      return "border-border bg-muted/40 text-muted-foreground";
+      return "border-border bg-muted/40 text-foreground/60";
   }
 }
 
@@ -440,7 +441,7 @@ function WorkspaceOperationStatusBadge({ status }: { status: WorkspaceOperation[
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium capitalize",
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium capitalize",
         workspaceOperationStatusTone(status),
       )}
     >
@@ -473,21 +474,21 @@ function WorkspaceOperationLogViewer({
     <div className="space-y-2">
       <button
         type="button"
-        className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+        className="text-xs text-foreground/60 underline underline-offset-2 hover:text-foreground"
         onClick={() => setOpen((value) => !value)}
       >
         {open ? "Hide full log" : "Show full log"}
       </button>
       {open && (
         <div className="rounded-md border border-border bg-background/70 p-2">
-          {isLoading && <div className="text-xs text-muted-foreground">Loading log...</div>}
+          {isLoading && <div className="text-xs text-foreground/60">Loading log...</div>}
           {error && (
             <div className="text-xs text-destructive">
               {error instanceof Error ? error.message : "Failed to load workspace operation log"}
             </div>
           )}
           {!isLoading && !error && chunks.length === 0 && (
-            <div className="text-xs text-muted-foreground">No persisted log lines.</div>
+            <div className="text-xs text-foreground/60">No persisted log lines.</div>
           )}
           {chunks.length > 0 && (
             <div className="max-h-64 overflow-y-auto rounded bg-neutral-100 p-2 font-mono text-xs dark:bg-neutral-950">
@@ -503,7 +504,7 @@ function WorkspaceOperationLogViewer({
                         ? "text-red-600 dark:text-red-300"
                         : chunk.stream === "system"
                           ? "text-blue-600 dark:text-blue-300"
-                          : "text-muted-foreground",
+                          : "text-foreground/60",
                     )}
                   >
                     [{chunk.stream}]
@@ -530,7 +531,7 @@ function WorkspaceOperationsSection({
 
   return (
     <div className="rounded-lg border border-border bg-background/60 p-3 space-y-3">
-      <div className="text-xs font-medium text-muted-foreground">
+      <div className="text-xs font-medium text-foreground/60">
         Workspace ({operations.length})
       </div>
       <div className="space-y-3">
@@ -541,20 +542,20 @@ function WorkspaceOperationsSection({
               <div className="flex flex-wrap items-center gap-2">
                 <div className="text-sm font-medium">{workspaceOperationPhaseLabel(operation.phase)}</div>
                 <WorkspaceOperationStatusBadge status={operation.status} />
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-xs text-foreground/60">
                   {relativeTime(operation.startedAt)}
                   {operation.finishedAt && ` to ${relativeTime(operation.finishedAt)}`}
                 </div>
               </div>
               {operation.command && (
                 <div className="text-xs break-all">
-                  <span className="text-muted-foreground">Command: </span>
+                  <span className="text-foreground/60">Command: </span>
                   <span className="font-mono">{operation.command}</span>
                 </div>
               )}
               {operation.cwd && (
                 <div className="text-xs break-all">
-                  <span className="text-muted-foreground">Working dir: </span>
+                  <span className="text-foreground/60">Working dir: </span>
                   <span className="font-mono">{operation.cwd}</span>
                 </div>
               )}
@@ -565,24 +566,24 @@ function WorkspaceOperationsSection({
                 || asNonEmptyString(metadata?.cleanupAction)) && (
                 <div className="grid gap-1 text-xs sm:grid-cols-2">
                   {asNonEmptyString(metadata?.branchName) && (
-                    <div><span className="text-muted-foreground">Branch: </span><span className="font-mono">{metadata?.branchName as string}</span></div>
+                    <div><span className="text-foreground/60">Branch: </span><span className="font-mono">{metadata?.branchName as string}</span></div>
                   )}
                   {asNonEmptyString(metadata?.baseRef) && (
-                    <div><span className="text-muted-foreground">Base ref: </span><span className="font-mono">{metadata?.baseRef as string}</span></div>
+                    <div><span className="text-foreground/60">Base ref: </span><span className="font-mono">{metadata?.baseRef as string}</span></div>
                   )}
                   {asNonEmptyString(metadata?.worktreePath) && (
-                    <div className="break-all"><span className="text-muted-foreground">Worktree: </span><span className="font-mono">{metadata?.worktreePath as string}</span></div>
+                    <div className="break-all"><span className="text-foreground/60">Worktree: </span><span className="font-mono">{metadata?.worktreePath as string}</span></div>
                   )}
                   {asNonEmptyString(metadata?.repoRoot) && (
-                    <div className="break-all"><span className="text-muted-foreground">Repo root: </span><span className="font-mono">{metadata?.repoRoot as string}</span></div>
+                    <div className="break-all"><span className="text-foreground/60">Repo root: </span><span className="font-mono">{metadata?.repoRoot as string}</span></div>
                   )}
                   {asNonEmptyString(metadata?.cleanupAction) && (
-                    <div><span className="text-muted-foreground">Cleanup: </span><span className="font-mono">{metadata?.cleanupAction as string}</span></div>
+                    <div><span className="text-foreground/60">Cleanup: </span><span className="font-mono">{metadata?.cleanupAction as string}</span></div>
                   )}
                 </div>
               )}
               {typeof metadata?.created === "boolean" && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-foreground/60">
                   {metadata.created ? "Created by this run" : "Reused existing workspace"}
                 </div>
               )}
@@ -596,7 +597,7 @@ function WorkspaceOperationsSection({
               )}
               {operation.stdoutExcerpt && operation.stdoutExcerpt.trim() && (
                 <div>
-                  <div className="mb-1 text-xs text-muted-foreground">stdout excerpt</div>
+                  <div className="mb-1 text-xs text-foreground/60">stdout excerpt</div>
                   <pre className="rounded-md bg-neutral-100 p-2 text-xs whitespace-pre-wrap break-all dark:bg-neutral-950">
                     {redactPathText(operation.stdoutExcerpt, censorUsernameInLogs)}
                   </pre>
@@ -896,19 +897,27 @@ export function AgentDetail() {
     }, [configDirty]),
   );
 
-  if (isLoading) return <PageSkeleton variant="detail" />;
+  if (isLoading) return <PageSkeleton variant="detail" title="Agent" />;
   if (error) return (
-    <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 flex items-start gap-3 m-4">
-      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-      <div className="flex-1 min-w-0 space-y-2">
-        <p className="text-sm text-destructive">{error.message || "Failed to load agent."}</p>
-        <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isRefetching}>
-          {isRefetching ? "Retrying…" : "Retry"}
-        </Button>
+    <div className="m-4 space-y-0">
+      <h1 className="sr-only">Agent — Error</h1>
+      <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 flex items-start gap-3">
+        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0 space-y-2">
+          <p className="text-sm text-destructive">{error.message || "Failed to load agent."}</p>
+          <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isRefetching}>
+            {isRefetching ? "Retrying…" : "Retry"}
+          </Button>
+        </div>
       </div>
     </div>
   );
-  if (!agent) return null;
+  if (!agent) return (
+    <div>
+      <h1 className="sr-only">Agent Not Found</h1>
+      <p className="text-sm text-foreground/60">Agent not found.</p>
+    </div>
+  );
   if (!urlRunId && !urlTab) {
     return <Navigate to={`/agents/${canonicalAgentRef}/dashboard`} replace />;
   }
@@ -929,8 +938,8 @@ export function AgentDetail() {
             </button>
           </AgentIconPicker>
           <div className="min-w-0">
-            <h2 className="text-2xl font-bold truncate">{agent.name}</h2>
-            <p className="text-sm text-muted-foreground truncate">
+            <h1 className="text-2xl font-bold truncate">{agent.name}</h1>
+            <p className="text-sm text-foreground/60 truncate">
               {roleLabels[agent.role] ?? agent.role}
               {agent.title ? ` - ${agent.title}` : ""}
             </p>
@@ -967,7 +976,7 @@ export function AgentDetail() {
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
               </span>
-              <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">Live</span>
+              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Live</span>
             </Link>
           )}
 
@@ -1173,7 +1182,7 @@ export function AgentDetail() {
 function SummaryRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className="text-foreground/60 text-xs">{label}</span>
       <div className="flex items-center gap-1">{children}</div>
     </div>
   );
@@ -1227,7 +1236,7 @@ function LatestRunCard({ runs, agentId }: { runs: HeartbeatRun[]; agentId: strin
         </h3>
         <Link
           to={`/agents/${agentId}/runs/${run.id}`}
-          className="shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors no-underline"
+          className="shrink-0 text-xs text-foreground/60 hover:text-foreground transition-colors no-underline"
         >
           View details &rarr;
         </Link>
@@ -1243,17 +1252,17 @@ function LatestRunCard({ runs, agentId }: { runs: HeartbeatRun[]; agentId: strin
         <div className="flex items-center gap-2">
           <StatusIcon className={cn("h-3.5 w-3.5", statusInfo.color, run.status === "running" && "animate-spin")} />
           <StatusBadge status={run.status} />
-          <span className="font-mono text-xs text-muted-foreground">{run.id.slice(0, 8)}</span>
+          <span className="font-mono text-xs text-foreground/60">{run.id.slice(0, 8)}</span>
           <span className={cn(
-            "inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+            "inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium",
             run.invocationSource === "timer" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
               : run.invocationSource === "assignment" ? "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"
               : run.invocationSource === "on_demand" ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300"
-              : "bg-muted text-muted-foreground"
+              : "bg-muted text-foreground/60"
           )}>
             {sourceLabels[run.invocationSource] ?? run.invocationSource}
           </span>
-          <span className="ml-auto text-xs text-muted-foreground">{relativeTime(run.createdAt)}</span>
+          <span className="ml-auto text-xs text-foreground/60">{relativeTime(run.createdAt)}</span>
         </div>
 
         {summary && (
@@ -1310,13 +1319,13 @@ function AgentOverview({
           <h3 className="text-sm font-medium">Recent Issues</h3>
           <Link
             to={`/issues?participantAgentId=${agentId}`}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs text-foreground/60 hover:text-foreground transition-colors"
           >
             See All &rarr;
           </Link>
         </div>
         {assignedIssues.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No recent issues.</p>
+          <p className="text-sm text-foreground/60">No recent issues.</p>
         ) : (
           <div className="border border-border rounded-lg">
             {assignedIssues.slice(0, 10).map((issue) => (
@@ -1329,7 +1338,7 @@ function AgentOverview({
               />
             ))}
             {assignedIssues.length > 10 && (
-              <div className="px-3 py-2 text-xs text-muted-foreground text-center border-t border-border">
+              <div className="px-3 py-2 text-xs text-foreground/60 text-center border-t border-border">
                 +{assignedIssues.length - 10} more issues
               </div>
             )}
@@ -1368,19 +1377,19 @@ function CostsSection({
         <div className="border border-border rounded-lg p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 tabular-nums">
             <div>
-              <span className="text-xs text-muted-foreground block">Input tokens</span>
+              <span className="text-xs text-foreground/60 block">Input tokens</span>
               <span className="text-lg font-semibold">{formatTokens(runtimeState.totalInputTokens)}</span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Output tokens</span>
+              <span className="text-xs text-foreground/60 block">Output tokens</span>
               <span className="text-lg font-semibold">{formatTokens(runtimeState.totalOutputTokens)}</span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Cached tokens</span>
+              <span className="text-xs text-foreground/60 block">Cached tokens</span>
               <span className="text-lg font-semibold">{formatTokens(runtimeState.totalCachedInputTokens)}</span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Total cost</span>
+              <span className="text-xs text-foreground/60 block">Total cost</span>
               <span className="text-lg font-semibold">{formatCents(runtimeState.totalCostCents)}</span>
             </div>
           </div>
@@ -1391,11 +1400,11 @@ function CostsSection({
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border bg-accent/20">
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Date</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Run</th>
-                <th className="text-right px-3 py-2 font-medium text-muted-foreground">Input</th>
-                <th className="text-right px-3 py-2 font-medium text-muted-foreground">Output</th>
-                <th className="text-right px-3 py-2 font-medium text-muted-foreground">Cost</th>
+                <th className="text-left px-3 py-2 font-medium text-foreground/60">Date</th>
+                <th className="text-left px-3 py-2 font-medium text-foreground/60">Run</th>
+                <th className="text-right px-3 py-2 font-medium text-foreground/60">Input</th>
+                <th className="text-right px-3 py-2 font-medium text-foreground/60">Output</th>
+                <th className="text-right px-3 py-2 font-medium text-foreground/60">Cost</th>
               </tr>
             </thead>
             <tbody>
@@ -1487,22 +1496,22 @@ function AgentConfigurePage({
           onClick={() => setRevisionsOpen((v) => !v)}
         >
           {revisionsOpen
-            ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+            ? <ChevronDown className="h-3.5 w-3.5 text-foreground/60" />
+            : <ChevronRight className="h-3.5 w-3.5 text-foreground/60" />
           }
           Configuration Revisions
-          <span className="text-xs font-normal text-muted-foreground">{configRevisions?.length ?? 0}</span>
+          <span className="text-xs font-normal text-foreground/60">{configRevisions?.length ?? 0}</span>
         </button>
         {revisionsOpen && (
           <div className="mt-3">
             {(configRevisions ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No configuration revisions yet.</p>
+              <p className="text-sm text-foreground/60">No configuration revisions yet.</p>
             ) : (
               <div className="space-y-2">
                 {(configRevisions ?? []).slice(0, 10).map((revision) => (
                   <div key={revision.id} className="border border-border/70 rounded-md p-3 space-y-2">
                     <div className="flex items-center justify-between gap-3">
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-foreground/60">
                         <span className="font-mono">{revision.id.slice(0, 8)}</span>
                         <span className="mx-1">·</span>
                         <span>{formatDate(revision.createdAt)}</span>
@@ -1519,7 +1528,7 @@ function AgentConfigurePage({
                         Restore
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-foreground/60">
                       Changed:{" "}
                       {revision.changedKeys.length > 0 ? revision.changedKeys.join(", ") : "no tracked changes"}
                     </p>
@@ -1642,7 +1651,7 @@ function ConfigurationTab({
           <div className="flex items-center justify-between gap-4 text-sm">
             <div className="space-y-1">
               <div>Can create new agents</div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground/60">
                 Lets this agent create or hire agents and implicitly assign tasks.
               </p>
             </div>
@@ -1660,7 +1669,7 @@ function ConfigurationTab({
           <div className="flex items-center justify-between gap-4 text-sm">
             <div className="space-y-1">
               <div>Can assign tasks</div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground/60">
                 {taskAssignHint}
               </p>
             </div>
@@ -1713,6 +1722,7 @@ function PromptsTab({
   const [showNewFileInput, setShowNewFileInput] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<string[]>([]);
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
+  const [confirmDeleteFileOpen, setConfirmDeleteFileOpen] = useState(false);
   const [filePanelWidth, setFilePanelWidth] = useState(260);
   const [instructionPaneWidth, setInstructionPaneWidth] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -2012,7 +2022,7 @@ function PromptsTab({
   if (!isLocal) {
     return (
       <div className="max-w-3xl">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground/60">
           Instructions bundles are only available for local adapters.
         </p>
       </div>
@@ -2036,7 +2046,7 @@ function PromptsTab({
       )}
 
       <Collapsible defaultOpen={currentMode === "external"}>
-        <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors group">
+        <CollapsibleTrigger className="flex items-center gap-1 text-xs text-foreground/60 hover:text-foreground transition-colors group">
           <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
           Advanced
         </CollapsibleTrigger>
@@ -2044,11 +2054,11 @@ function PromptsTab({
           <TooltipProvider>
             <div className="grid gap-x-6 gap-y-4 md:grid-cols-[auto_minmax(0,1fr)_minmax(12rem,0.65fr)]">
               <label className="space-y-1.5 min-w-0">
-                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                <span className="text-xs font-medium text-foreground/60 flex items-center gap-1">
                   Mode
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+                      <HelpCircle className="h-3 w-3 text-foreground/60 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
                       Managed: Paperclip stores and serves the instructions bundle. External: you provide a path on disk where the instructions live.
@@ -2099,11 +2109,11 @@ function PromptsTab({
                 </div>
               </label>
               <label className="space-y-1.5 min-w-0">
-                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                <span className="text-xs font-medium text-foreground/60 flex items-center gap-1">
                   Root path
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+                      <HelpCircle className="h-3 w-3 text-foreground/60 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
                       The absolute directory on disk where the instructions bundle lives. In managed mode this is set by Paperclip automatically.
@@ -2111,7 +2121,7 @@ function PromptsTab({
                   </Tooltip>
                 </span>
                 {currentMode === "managed" ? (
-                  <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground pt-1.5">
+                  <div className="flex items-center gap-1.5 font-mono text-xs text-foreground/60 pt-1.5">
                     <span className="min-w-0 truncate" title={currentRootPath || undefined}>{currentRootPath || "(managed)"}</span>
                     {currentRootPath && (
                       <CopyText text={currentRootPath} className="shrink-0">
@@ -2148,11 +2158,11 @@ function PromptsTab({
                 )}
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                <span className="text-xs font-medium text-foreground/60 flex items-center gap-1">
                   Entry file
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+                      <HelpCircle className="h-3 w-3 text-foreground/60 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
                       The main file the agent reads first when loading instructions. Defaults to AGENTS.md.
@@ -2304,7 +2314,7 @@ function PromptsTab({
                 return (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="ml-3 shrink-0 rounded border border-amber-500/40 bg-amber-500/10 text-amber-200 px-1.5 py-0.5 text-[10px] uppercase tracking-wide cursor-help">
+                      <span className="ml-3 shrink-0 rounded border border-amber-500/40 bg-amber-500/10 text-amber-200 px-1.5 py-0.5 text-xs uppercase tracking-wide cursor-help">
                         virtual file
                       </span>
                     </TooltipTrigger>
@@ -2315,7 +2325,7 @@ function PromptsTab({
                 );
               }
               return (
-                <span className="ml-3 shrink-0 rounded border border-border text-muted-foreground px-1.5 py-0.5 text-[10px] uppercase tracking-wide">
+                <span className="ml-3 shrink-0 rounded border border-border text-foreground/60 px-1.5 py-0.5 text-xs uppercase tracking-wide">
                   {file.isEntryFile ? "entry" : `${file.size}b`}
                 </span>
               );
@@ -2347,7 +2357,7 @@ function PromptsTab({
               )}
               <div className="min-w-0">
                 <h4 className="text-sm font-medium font-mono truncate">{selectedOrEntryFile}</h4>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-foreground/60">
                   {selectedFileExists
                     ? selectedFileSummary?.deprecated
                       ? "Deprecated virtual file"
@@ -2363,30 +2373,52 @@ function PromptsTab({
                   ariaLabel="Copy instructions file as markdown"
                   title="Copy as markdown"
                   copiedLabel="Copied"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-foreground/60 hover:bg-accent hover:text-foreground"
                 >
                   <Copy className="h-3.5 w-3.5" />
                 </CopyText>
               )}
               {selectedFileExists && !selectedFileSummary?.deprecated && selectedOrEntryFile !== currentEntryFile && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    if (confirm(`Delete ${selectedOrEntryFile}?`)) {
-                      deleteFile.mutate(selectedOrEntryFile, {
-                        onSuccess: () => {
-                          setSelectedFile(currentEntryFile);
-                          setDraft(null);
-                        },
-                      });
-                    }
-                  }}
-                  disabled={deleteFile.isPending}
-                >
-                  Delete
-                </Button>
+                <>
+                  <Dialog open={confirmDeleteFileOpen} onOpenChange={setConfirmDeleteFileOpen}>
+                    <DialogContent role="alertdialog" aria-describedby="delete-file-desc">
+                      <DialogHeader>
+                        <DialogTitle>Delete file?</DialogTitle>
+                        <DialogDescription id="delete-file-desc">
+                          "{selectedOrEntryFile}" will be permanently deleted. This cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setConfirmDeleteFileOpen(false)}>Cancel</Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => {
+                            setConfirmDeleteFileOpen(false);
+                            deleteFile.mutate(selectedOrEntryFile, {
+                              onSuccess: () => {
+                                setSelectedFile(currentEntryFile);
+                                setDraft(null);
+                              },
+                            });
+                          }}
+                          disabled={deleteFile.isPending}
+                          aria-busy={deleteFile.isPending}
+                        >
+                          Delete
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setConfirmDeleteFileOpen(true)}
+                    disabled={deleteFile.isPending}
+                  >
+                    Delete
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -2682,7 +2714,7 @@ function AgentSkillsTab({
           View company skills library
         </Link>
         {saveStatusLabel ? (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-foreground/60">
             {syncSkills.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
             <span>{saveStatusLabel}</span>
           </div>
@@ -2698,7 +2730,7 @@ function AgentSkillsTab({
       ) : null}
 
       {unsupportedSkillMessage ? (
-        <div className="rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-border px-4 py-3 text-sm text-foreground/60">
           {unsupportedSkillMessage}
         </div>
       ) : null}
@@ -2724,25 +2756,25 @@ function AgentSkillsTab({
                     {skill.linkTo ? (
                       <Link
                         to={skill.linkTo}
-                        className="shrink-0 text-xs text-muted-foreground no-underline hover:text-foreground"
+                        className="shrink-0 text-xs text-foreground/60 no-underline hover:text-foreground"
                       >
                         View
                       </Link>
                     ) : null}
                   </div>
                   {skill.description && (
-                    <MarkdownBody className="mt-1 text-xs text-muted-foreground prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                    <MarkdownBody className="mt-1 text-xs text-foreground/60 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                       {skill.description}
                     </MarkdownBody>
                   )}
                   {skill.readOnly && skill.originLabel && (
-                    <p className="mt-1 text-xs text-muted-foreground">{skill.originLabel}</p>
+                    <p className="mt-1 text-xs text-foreground/60">{skill.originLabel}</p>
                   )}
                   {skill.readOnly && skill.locationLabel && (
-                    <p className="mt-1 text-xs text-muted-foreground">Location: {skill.locationLabel}</p>
+                    <p className="mt-1 text-xs text-foreground/60">Location: {skill.locationLabel}</p>
                   )}
                   {skill.detail && (
-                    <p className="mt-1 text-xs text-muted-foreground">{skill.detail}</p>
+                    <p className="mt-1 text-xs text-foreground/60">{skill.detail}</p>
                   )}
                 </div>
               );
@@ -2802,7 +2834,7 @@ function AgentSkillsTab({
             if (optionalSkillRows.length === 0 && requiredSkillRows.length === 0 && unmanagedSkillRows.length === 0) {
               return (
                 <section className="border-y border-border">
-                  <div className="px-3 py-6 text-sm text-muted-foreground">
+                  <div className="px-3 py-6 text-sm text-foreground/60">
                     Import skills into the company library first, then attach them here.
                   </div>
                 </section>
@@ -2820,7 +2852,7 @@ function AgentSkillsTab({
                 {requiredSkillRows.length > 0 && (
                   <section className="border-y border-border">
                     <div className="border-b border-border bg-muted/40 px-3 py-2">
-                      <span className="text-xs font-medium text-muted-foreground">
+                      <span className="text-xs font-medium text-foreground/60">
                         Required by Paperclip
                       </span>
                     </div>
@@ -2837,10 +2869,10 @@ function AgentSkillsTab({
                       onClick={() => setUnmanagedOpen((v) => !v)}
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setUnmanagedOpen((v) => !v); } }}
                     >
-                      <span className="text-xs font-medium text-muted-foreground">
+                      <span className="text-xs font-medium text-foreground/60">
                         ({unmanagedSkillRows.length}) User-installed skills, not managed by Paperclip
                       </span>
-                      {unmanagedOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+                      {unmanagedOpen ? <ChevronDown className="h-3.5 w-3.5 text-foreground/60" /> : <ChevronRight className="h-3.5 w-3.5 text-foreground/60" />}
                     </div>
                     {unmanagedOpen && unmanagedSkillRows.map(renderSkillRow)}
                   </section>
@@ -2861,15 +2893,15 @@ function AgentSkillsTab({
           <section className="border-t border-border pt-4">
             <div className="grid gap-2 text-sm sm:grid-cols-2">
               <div className="flex items-center justify-between gap-3 border-b border-border/60 py-2">
-                <span className="text-muted-foreground">Adapter</span>
+                <span className="text-foreground/60">Adapter</span>
                 <span className="font-medium">{adapterLabels[agent.adapterType] ?? agent.adapterType}</span>
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-border/60 py-2">
-                <span className="text-muted-foreground">Skills applied</span>
+                <span className="text-foreground/60">Skills applied</span>
                 <span>{skillApplicationLabel}</span>
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-border/60 py-2">
-                <span className="text-muted-foreground">Selected skills</span>
+                <span className="text-foreground/60">Selected skills</span>
                 <span>{skillDraft.length}</span>
               </div>
             </div>
@@ -2906,29 +2938,29 @@ function RunListItem({ run, isSelected, agentId }: { run: HeartbeatRun; isSelect
     >
       <div className="flex items-center gap-2">
         <StatusIcon className={cn("h-3.5 w-3.5 shrink-0", statusInfo.color, run.status === "running" && "animate-spin")} />
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="font-mono text-xs text-foreground/60">
           {run.id.slice(0, 8)}
         </span>
         <span className={cn(
-          "inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium shrink-0",
+          "inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium shrink-0",
           run.invocationSource === "timer" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
             : run.invocationSource === "assignment" ? "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"
             : run.invocationSource === "on_demand" ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300"
-            : "bg-muted text-muted-foreground"
+            : "bg-muted text-foreground/60"
         )}>
           {sourceLabels[run.invocationSource] ?? run.invocationSource}
         </span>
-        <span className="ml-auto text-[11px] text-muted-foreground shrink-0">
+        <span className="ml-auto text-xs text-foreground/60 shrink-0">
           {relativeTime(run.createdAt)}
         </span>
       </div>
       {summary && (
-        <span className="text-xs text-muted-foreground truncate pl-5.5">
+        <span className="text-xs text-foreground/60 truncate pl-5.5">
           {summary.slice(0, 60)}
         </span>
       )}
       {(metrics.totalTokens > 0 || metrics.cost > 0) && (
-        <div className="flex items-center gap-2 pl-5.5 text-[11px] text-muted-foreground tabular-nums">
+        <div className="flex items-center gap-2 pl-5.5 text-xs text-foreground/60 tabular-nums">
           {metrics.totalTokens > 0 && <span>{formatTokens(metrics.totalTokens)} tok</span>}
           {metrics.cost > 0 && <span>${metrics.cost.toFixed(3)}</span>}
         </div>
@@ -2957,7 +2989,7 @@ function RunsTab({
   const { isMobile } = useSidebar();
 
   if (runs.length === 0) {
-    return <p className="text-sm text-muted-foreground">No runs yet.</p>;
+    return <p className="text-sm text-foreground/60">No runs yet.</p>;
   }
 
   // Sort by created descending
@@ -2976,7 +3008,7 @@ function RunsTab({
         <div className="space-y-3 min-w-0 overflow-x-hidden">
           <Link
             to={`/agents/${agentRouteId}/runs`}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline"
+            className="flex items-center gap-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors no-underline"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to runs
@@ -3033,6 +3065,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
   const metrics = runMetrics(run);
   const [sessionOpen, setSessionOpen] = useState(false);
   const [claudeLoginResult, setClaudeLoginResult] = useState<ClaudeLoginResult | null>(null);
+  const [confirmClearSessionsOpen, setConfirmClearSessionsOpen] = useState(false);
 
   useEffect(() => {
     setClaudeLoginResult(null);
@@ -3224,9 +3257,9 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                 ?? asNonEmptyString(adapterConfig?.model);
               if (!adapterType && !displayProvider && !displayModel) return null;
               return (
-                <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1.5 flex-wrap">
+                <div className="text-xs text-foreground/60 font-mono flex items-center gap-1.5 flex-wrap">
                   {adapterType && (
-                    <span className="bg-muted rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">{adapterType.replace(/_/g, " ")}</span>
+                    <span className="bg-muted rounded px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide">{adapterType.replace(/_/g, " ")}</span>
                   )}
                   {displayProvider && displayModel && (
                     <span>{displayProvider}/{displayModel}</span>
@@ -3251,15 +3284,15 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               <div className="space-y-0.5">
                 <div className="text-sm font-mono">
                   {startTime}
-                  {endTime && <span className="text-muted-foreground"> &rarr; </span>}
+                  {endTime && <span className="text-foreground/60"> &rarr; </span>}
                   {endTime}
                 </div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-xs text-foreground/60">
                   {relativeTime(run.startedAt!)}
                   {run.finishedAt && <> &rarr; {relativeTime(run.finishedAt)}</>}
                 </div>
                 {displayDurationSec !== null && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-foreground/60">
                     Duration: {displayDurationSec >= 60 ? `${Math.floor(displayDurationSec / 60)}m ${displayDurationSec % 60}s` : `${displayDurationSec}s`}
                   </div>
                 )}
@@ -3268,7 +3301,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
             {run.error && (
               <div className="text-xs">
                 <span className="text-red-600 dark:text-red-400">{run.error}</span>
-                {run.errorCode && <span className="text-muted-foreground ml-1">({run.errorCode})</span>}
+                {run.errorCode && <span className="text-foreground/60 ml-1">({run.errorCode})</span>}
               </div>
             )}
             {run.errorCode === "claude_auth_required" && adapterType === "claude_local" && (
@@ -3321,7 +3354,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
             {hasNonZeroExit && (
               <div className="text-xs text-red-600 dark:text-red-400">
                 Exit code {run.exitCode}
-                {run.signal && <span className="text-muted-foreground ml-1">(signal: {run.signal})</span>}
+                {run.signal && <span className="text-foreground/60 ml-1">(signal: {run.signal})</span>}
               </div>
             )}
             {retryState && (
@@ -3329,7 +3362,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                 <div className="flex flex-wrap items-center gap-2">
                   <span
                     className={cn(
-                      "rounded-md border px-1.5 py-0.5 text-[11px] font-medium",
+                      "rounded-md border px-1.5 py-0.5 text-xs font-medium",
                       retryState.tone,
                     )}
                   >
@@ -3344,8 +3377,8 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                     </Link>
                   ) : null}
                 </div>
-                {retryState.detail ? <p className="mt-2 text-muted-foreground">{retryState.detail}</p> : null}
-                {retryState.secondary ? <p className="text-muted-foreground">{retryState.secondary}</p> : null}
+                {retryState.detail ? <p className="mt-2 text-foreground/60">{retryState.detail}</p> : null}
+                {retryState.secondary ? <p className="text-foreground/60">{retryState.secondary}</p> : null}
               </div>
             )}
           </div>
@@ -3354,19 +3387,19 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
           {hasMetrics && (
             <div className="border-t sm:border-t-0 sm:border-l border-border p-4 grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-3 content-center tabular-nums">
               <div>
-                <div className="text-xs text-muted-foreground">Input</div>
+                <div className="text-xs text-foreground/60">Input</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.input)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Output</div>
+                <div className="text-xs text-foreground/60">Output</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.output)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Cached</div>
+                <div className="text-xs text-foreground/60">Cached</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.cached)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Cost</div>
+                <div className="text-xs text-foreground/60">Cost</div>
                 <div className="text-sm font-medium font-mono">{metrics.cost > 0 ? `$${metrics.cost.toFixed(4)}` : "-"}</div>
               </div>
             </div>
@@ -3377,7 +3410,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
         {hasSession && (
           <div className="border-t border-border">
             <button
-              className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-foreground/60 hover:text-foreground transition-colors"
               onClick={() => setSessionOpen((v) => !v)}
             >
               <ChevronRight className={cn("h-3 w-3 transition-transform", sessionOpen && "rotate-90")} />
@@ -3388,37 +3421,54 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               <div className="px-4 pb-3 space-y-1 text-xs">
                 {run.sessionIdBefore && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground w-12">{sessionChanged ? "Before" : "ID"}</span>
+                    <span className="text-foreground/60 w-12">{sessionChanged ? "Before" : "ID"}</span>
                     <CopyText text={run.sessionIdBefore} className="font-mono" />
                   </div>
                 )}
                 {sessionChanged && run.sessionIdAfter && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground w-12">After</span>
+                    <span className="text-foreground/60 w-12">After</span>
                     <CopyText text={run.sessionIdAfter} className="font-mono" />
                   </div>
                 )}
                 {touchedIssueIds.length > 0 && (
                   <div className="pt-1">
+                    <Dialog open={confirmClearSessionsOpen} onOpenChange={setConfirmClearSessionsOpen}>
+                      <DialogContent role="alertdialog" aria-describedby="clear-sessions-desc">
+                        <DialogHeader>
+                          <DialogTitle>Clear sessions?</DialogTitle>
+                          <DialogDescription id="clear-sessions-desc">
+                            Clear session for {touchedIssueIds.length} issue{touchedIssueIds.length === 1 ? "" : "s"} touched by this run? This cannot be undone.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setConfirmClearSessionsOpen(false)}>Cancel</Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => {
+                              setConfirmClearSessionsOpen(false);
+                              clearSessionsForTouchedIssues.mutate();
+                            }}
+                            disabled={clearSessionsForTouchedIssues.isPending}
+                            aria-busy={clearSessionsForTouchedIssues.isPending}
+                          >
+                            Clear
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                     <button
                       type="button"
-                      className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground disabled:opacity-60"
+                      className="text-xs text-foreground/60 underline underline-offset-2 hover:text-foreground disabled:opacity-60"
                       disabled={clearSessionsForTouchedIssues.isPending}
-                      onClick={() => {
-                        const issueCount = touchedIssueIds.length;
-                        const confirmed = window.confirm(
-                          `Clear session for ${issueCount} issue${issueCount === 1 ? "" : "s"} touched by this run?`,
-                        );
-                        if (!confirmed) return;
-                        clearSessionsForTouchedIssues.mutate();
-                      }}
+                      onClick={() => setConfirmClearSessionsOpen(true)}
                     >
                       {clearSessionsForTouchedIssues.isPending
                         ? "clearing session..."
                         : "clear session for these issues"}
                     </button>
                     {clearSessionsForTouchedIssues.isError && (
-                      <p className="text-[11px] text-destructive mt-1">
+                      <p className="text-xs text-destructive mt-1">
                         {clearSessionsForTouchedIssues.error instanceof Error
                           ? clearSessionsForTouchedIssues.error.message
                           : "Failed to clear sessions"}
@@ -3435,7 +3485,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {/* Issues touched by this run */}
       {touchedIssues && touchedIssues.length > 0 && (
         <div className="space-y-2">
-          <span className="text-xs font-medium text-muted-foreground">Issues Touched ({touchedIssues.length})</span>
+          <span className="text-xs font-medium text-foreground/60">Issues Touched ({touchedIssues.length})</span>
           <div className="border border-border rounded-lg divide-y divide-border">
             {touchedIssues.map((issue) => (
               <Link
@@ -3447,7 +3497,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   <StatusBadge status={issue.status} />
                   <span className="truncate">{issue.title}</span>
                 </div>
-                <span className="font-mono text-muted-foreground shrink-0 ml-2">{issue.identifier ?? issue.issueId.slice(0, 8)}</span>
+                <span className="font-mono text-foreground/60 shrink-0 ml-2">{issue.identifier ?? issue.issueId.slice(0, 8)}</span>
               </Link>
             ))}
           </div>
@@ -3465,7 +3515,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {/* stdout excerpt when no log is available */}
       {run.stdoutExcerpt && !run.logRef && (
         <div className="space-y-1">
-          <span className="text-xs font-medium text-muted-foreground">stdout</span>
+          <span className="text-xs font-medium text-foreground/60">stdout</span>
           <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap">{run.stdoutExcerpt}</pre>
         </div>
       )}
@@ -3870,11 +3920,11 @@ function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: strin
   }, [run.id]);
 
   if (loading && logLoading) {
-    return <p className="text-xs text-muted-foreground">Loading run logs...</p>;
+    return <p className="text-xs text-foreground/60">Loading run logs...</p>;
   }
 
   if (events.length === 0 && logLines.length === 0 && !logError) {
-    return <p className="text-xs text-muted-foreground">No log events.</p>;
+    return <p className="text-xs text-foreground/60">No log events.</p>;
   }
 
   const levelColors: Record<string, string> = {
@@ -3900,7 +3950,7 @@ function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: strin
       )}
 
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">
+        <span className="text-xs font-medium text-foreground/60">
           Transcript ({transcript.length})
         </span>
         <div className="flex items-center gap-2">
@@ -3910,10 +3960,10 @@ function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: strin
                 key={mode}
                 type="button"
                 className={cn(
-                  "rounded-md px-2.5 py-1 text-[11px] font-medium capitalize transition-colors",
+                  "rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors",
                   transcriptMode === mode
                     ? "bg-accent text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
+                    : "text-foreground/60 hover:text-foreground",
                 )}
                 onClick={() => setTranscriptMode(mode)}
               >
@@ -4000,7 +4050,7 @@ function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: strin
 
       {events.length > 0 && (
         <div>
-          <div className="mb-2 text-xs font-medium text-muted-foreground">Events ({events.length})</div>
+          <div className="mb-2 text-xs font-medium text-foreground/60">Events ({events.length})</div>
           <div className="bg-neutral-100 dark:bg-neutral-950 rounded-lg p-3 font-mono text-xs space-y-0.5">
             {events.map((evt) => {
               const color = evt.color
@@ -4107,7 +4157,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
           <Button
             variant="ghost"
             size="sm"
-            className="text-muted-foreground text-xs"
+            className="text-foreground/60 text-xs"
             onClick={() => setNewToken(null)}
           >
             Dismiss
@@ -4117,11 +4167,11 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
 
       {/* Create new key */}
       <div className="border border-border rounded-lg p-4 space-y-3">
-        <h3 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+        <h3 className="text-xs font-medium text-foreground/60 flex items-center gap-2">
           <Key className="h-3.5 w-3.5" />
           Create API Key
         </h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-foreground/60">
           API keys allow this agent to authenticate calls to the Paperclip server.
         </p>
         <div className="flex items-center gap-2">
@@ -4146,15 +4196,15 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
       </div>
 
       {/* Active keys */}
-      {isLoading && <p className="text-sm text-muted-foreground">Loading keys...</p>}
+      {isLoading && <p className="text-sm text-foreground/60">Loading keys...</p>}
 
       {!isLoading && activeKeys.length === 0 && !newToken && (
-        <p className="text-sm text-muted-foreground">No active API keys.</p>
+        <p className="text-sm text-foreground/60">No active API keys.</p>
       )}
 
       {activeKeys.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-2">
+          <h3 className="text-xs font-medium text-foreground/60 mb-2">
             Active Keys
           </h3>
           <div className="border border-border rounded-lg divide-y divide-border">
@@ -4162,7 +4212,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
               <div key={key.id} className="flex items-center justify-between px-4 py-2.5">
                 <div>
                   <span className="text-sm font-medium">{key.name}</span>
-                  <span className="text-xs text-muted-foreground ml-3">
+                  <span className="text-xs text-foreground/60 ml-3">
                     Created {formatDate(key.createdAt)}
                   </span>
                 </div>
@@ -4184,7 +4234,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
       {/* Revoked keys */}
       {revokedKeys.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-2">
+          <h3 className="text-xs font-medium text-foreground/60 mb-2">
             Revoked Keys
           </h3>
           <div className="border border-border rounded-lg divide-y divide-border opacity-50">
@@ -4192,7 +4242,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
               <div key={key.id} className="flex items-center justify-between px-4 py-2.5">
                 <div>
                   <span className="text-sm line-through">{key.name}</span>
-                  <span className="text-xs text-muted-foreground ml-3">
+                  <span className="text-xs text-foreground/60 ml-3">
                     Revoked {key.revokedAt ? formatDate(key.revokedAt) : ""}
                   </span>
                 </div>

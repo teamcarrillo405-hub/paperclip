@@ -91,7 +91,9 @@ export function JoinRequestQueue() {
           ? requestsQuery.error.message
           : "Failed to load join requests.";
     return (
-      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+      <div className="space-y-3">
+        <h1 className="sr-only">Join Requests — Error</h1>
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
         <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <p className="text-sm text-destructive">{message}</p>
@@ -103,6 +105,7 @@ export function JoinRequestQueue() {
             Retry
           </Button>
         ) : null}
+        </div>
       </div>
     );
   }
@@ -114,7 +117,7 @@ export function JoinRequestQueue() {
           <UserPlus2 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           <h1 className="text-2xl font-semibold tracking-tight">Join Request Queue</h1>
         </div>
-        <p className="max-w-3xl text-sm text-muted-foreground">
+        <p className="max-w-3xl text-sm text-foreground/60">
           Review pending human and agent join requests for this company. Approve to grant access; rejections are final.
         </p>
       </div>
@@ -153,7 +156,7 @@ export function JoinRequestQueue() {
 
       <div className={cn("space-y-4", requestsQuery.isFetching && "opacity-60 transition-opacity")}>
         {(requestsQuery.data ?? []).length === 0 ? (
-          <div role="status" aria-live="polite" className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+          <div role="status" aria-live="polite" className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-foreground/60">
             No join requests match the current filters.
           </div>
         ) : (
@@ -196,7 +199,7 @@ export function JoinRequestQueue() {
                               : "Unknown agent requester"
                             : requesterName}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-foreground/60">
                           {secondaryLine
                             ? secondaryLine
                             : <span className="text-muted-foreground italic text-xs">No contact info on file</span>}
@@ -253,9 +256,9 @@ export function JoinRequestQueue() {
                     ) : null}
                   </div>
 
-                  <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
+                  <div className="mt-4 grid gap-3 text-sm text-foreground/60 md:grid-cols-2">
                     <div className="rounded-lg border border-border bg-background px-3 py-2">
-                      <h3 className="text-xs font-medium uppercase tracking-wide">Invite context</h3>
+                      <h3 className="text-xs font-semibold uppercase tracking-wide text-foreground">Invite context</h3>
                       <div className="mt-2">
                         {request.invite
                           ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
@@ -266,7 +269,7 @@ export function JoinRequestQueue() {
                       ) : null}
                     </div>
                     <div className="rounded-lg border border-border bg-background px-3 py-2">
-                      <h3 className="text-xs font-medium uppercase tracking-wide">Request details</h3>
+                      <h3 className="text-xs font-semibold uppercase tracking-wide text-foreground">Request details</h3>
                       <div className="mt-2">Submitted {new Date(request.createdAt).toLocaleString()}</div>
                       <div className="break-all"><span><span className="sr-only">Source IP: </span><span className="font-mono text-xs">{request.requestIp}</span></span></div>
                       {request.requestType === "agent" && request.capabilities ? <div>{request.capabilities}</div> : null}

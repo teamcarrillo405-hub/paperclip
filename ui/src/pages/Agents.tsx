@@ -192,11 +192,11 @@ export function Agents() {
   }, [hasBulkSelection]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Bot} message="Select a company to view agents." />;
+    return <div><h1 className="sr-only">Agents</h1><EmptyState icon={Bot} message="Select a company to view agents." /></div>;
   }
 
   if (isLoading) {
-    return <PageSkeleton variant="list" />;
+    return <PageSkeleton variant="list" title="Agents" />;
   }
 
   const filtered = filterAgents(agents ?? [], tab, showTerminated);
@@ -315,7 +315,7 @@ export function Agents() {
         </Tabs>
         <div className="flex items-center gap-2">
           <div className="relative flex items-center">
-            <Search className="pointer-events-none absolute left-2 h-3.5 w-3.5 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-2 h-3.5 w-3.5 text-foreground/60" />
             <input
               type="text"
               aria-label="Search agents"
@@ -323,7 +323,7 @@ export function Agents() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
-                "h-7 w-44 rounded-md border border-border bg-background pl-7 pr-2 text-xs text-foreground placeholder:text-muted-foreground",
+                "h-7 w-44 rounded-md border border-border bg-background pl-7 pr-2 text-xs text-foreground placeholder:text-foreground/60",
                 "focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-colors",
               )}
             />
@@ -336,7 +336,7 @@ export function Agents() {
               aria-haspopup="menu"
               className={cn(
                 "flex items-center gap-1.5 px-2 py-1.5 text-xs transition-colors border border-border",
-                filtersOpen || showTerminated ? "text-foreground bg-accent" : "text-muted-foreground hover:bg-accent/50"
+                filtersOpen || showTerminated ? "text-foreground bg-accent" : "text-foreground/60 hover:bg-accent/50"
               )}
               onClick={() => {
                 const opening = !filtersOpen;
@@ -348,7 +348,7 @@ export function Agents() {
             >
               <SlidersHorizontal className="h-3 w-3" aria-hidden="true" />
               Filters
-              {showTerminated && <span className="ml-0.5 px-1 bg-foreground/10 rounded text-[10px]">1</span>}
+              {showTerminated && <span className="ml-0.5 px-1 bg-foreground/10 rounded text-xs leading-none py-0.5">1</span>}
             </button>
             {filtersOpen && (
               <div
@@ -393,7 +393,7 @@ export function Agents() {
                 aria-pressed={effectiveView === "list"}
                 className={cn(
                   "p-1.5 transition-colors",
-                  effectiveView === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
+                  effectiveView === "list" ? "bg-accent text-foreground" : "text-foreground/60 hover:bg-accent/50"
                 )}
                 onClick={() => setView("list")}
               >
@@ -404,7 +404,7 @@ export function Agents() {
                 aria-pressed={effectiveView === "org"}
                 className={cn(
                   "p-1.5 transition-colors",
-                  effectiveView === "org" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
+                  effectiveView === "org" ? "bg-accent text-foreground" : "text-foreground/60 hover:bg-accent/50"
                 )}
                 onClick={() => setView("org")}
               >
@@ -451,7 +451,7 @@ export function Agents() {
               key={label}
               className="rounded-md border border-border/60 bg-card px-3 py-2 shadow-sm"
             >
-              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-wider text-foreground/60">
                 {label}
               </p>
               <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">{value}</p>
@@ -515,7 +515,7 @@ export function Agents() {
             <div role="columnheader" className="flex-1"><SortHeader col="name" label="Name" sort={sort} onSort={handleSort} className="flex-1" /></div>
             <div className="hidden sm:flex items-center gap-3">
               <div role="columnheader"><SortHeader col="cost" label="MTD Cost" sort={sort} onSort={handleSort} className="w-20 justify-end" /></div>
-              <span role="columnheader" className="w-28 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Adapter</span>
+              <span role="columnheader" className="w-28 text-right text-xs font-semibold uppercase tracking-wider text-foreground/60">Adapter</span>
               <div role="columnheader"><SortHeader col="lastActive" label="Last Active" sort={sort} onSort={handleSort} className="w-16 justify-end" /></div>
               <div role="columnheader"><SortHeader col="status" label="Status" sort={sort} onSort={handleSort} className="w-20 justify-end" /></div>
             </div>
@@ -571,10 +571,10 @@ export function Agents() {
                           ) : (
                             <StatusBadge status={agent.status} />
                           )}
-                          <span className="font-mono text-xs text-muted-foreground">
+                          <span className="font-mono text-xs text-foreground/60">
                             {(costByAgentId.get(agent.id) ?? 0) > 0
                               ? formatCents(costByAgentId.get(agent.id)!)
-                              : <span className="text-muted-foreground/40">&mdash;</span>}
+                              : <span className="text-foreground/30">&mdash;</span>}
                           </span>
                         </span>
                         <div className="hidden sm:flex items-center gap-3">
@@ -586,15 +586,15 @@ export function Agents() {
                               agentName={agent.name}
                             />
                           )}
-                          <span className="w-20 whitespace-nowrap text-right font-mono text-xs text-muted-foreground" title="Cost this month">
+                          <span className="w-20 whitespace-nowrap text-right font-mono text-xs text-foreground/60" title="Cost this month">
                             {costByAgentId.has(agent.id) && costByAgentId.get(agent.id)! > 0
                               ? formatCents(costByAgentId.get(agent.id)!)
-                              : <span className="text-muted-foreground/40">&mdash;</span>}
+                              : <span className="text-foreground/30">&mdash;</span>}
                           </span>
-                          <span className="w-28 whitespace-nowrap text-right font-mono text-xs text-muted-foreground">
+                          <span className="w-28 whitespace-nowrap text-right font-mono text-xs text-foreground/60">
                             {getAdapterLabel(agent.adapterType)}
                           </span>
-                          <span className="text-xs text-muted-foreground w-16 text-right">
+                          <span className="text-xs text-foreground/60 w-16 text-right">
                             {agent.lastHeartbeatAt ? relativeTime(agent.lastHeartbeatAt) : "\u2014"}
                           </span>
                           <span className="w-20 flex justify-end">
@@ -614,8 +614,8 @@ export function Agents() {
 
       {effectiveView === "list" && agents && agents.length > 0 && sortedAgents.length === 0 && (
         <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-12 text-center">
-          <Bot className="h-8 w-8 text-muted-foreground/30 mb-3" />
-          <p className="text-sm text-muted-foreground">
+          <Bot className="h-8 w-8 text-foreground/20 mb-3" />
+          <p className="text-sm text-foreground/60">
             {searchTrimmed ? "No agents match your search." : "No agents match the selected filter."}
           </p>
         </div>
@@ -633,7 +633,7 @@ export function Agents() {
 
       {effectiveView === "org" && isOrgLoading && agents && agents.length > 0 && (
         <div className="flex justify-center py-8">
-          <LoaderCircle className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
+          <LoaderCircle className="size-5 animate-spin text-foreground/60" aria-hidden="true" />
           <span className="sr-only" role="status" aria-live="polite">Loading org chart...</span>
         </div>
       )}
@@ -647,13 +647,13 @@ export function Agents() {
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
-        <p role="status" aria-live="polite" className="text-sm text-muted-foreground text-center py-8">
+        <p role="status" aria-live="polite" className="text-sm text-foreground/60 text-center py-8">
           No agents match the selected filter.
         </p>
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-sm text-foreground/60 text-center py-8">
           No organizational hierarchy defined.
         </p>
       )}
@@ -684,14 +684,14 @@ export function Agents() {
               onClick={handleBulkPause}
               disabled={pauseMutation.isPending}
               aria-busy={pauseMutation.isPending}
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+              className="text-xs text-foreground/60 transition-colors hover:text-foreground disabled:opacity-50"
             >
               Pause All
             </button>
             <button
               type="button"
               onClick={handleExportCsv}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-1.5 text-xs text-foreground/60 transition-colors hover:text-foreground"
             >
               <Download className="h-3 w-3" />
               Export CSV ({selectedIds.size})
@@ -709,7 +709,7 @@ export function Agents() {
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="text-xs text-foreground/60 transition-colors hover:text-foreground"
             >
               Deselect All
             </button>
@@ -752,7 +752,7 @@ function SortHeader({ col, label, sort, onSort, className }: {
       onClick={() => onSort(col)}
       className={cn(
         "flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer",
-        active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+        active ? "text-foreground" : "text-foreground/60 hover:text-foreground",
         className,
       )}
     >
@@ -803,7 +803,7 @@ function OrgTreeNode({
         </span>
         <div className="flex-1 min-w-0">
           <span className="text-sm font-medium">{node.name}</span>
-          <span className="text-xs text-muted-foreground ml-2">
+          <span className="text-xs text-foreground/60 ml-2">
             {roleLabels[node.role] ?? node.role}
             {agent?.title ? ` - ${agent.title}` : ""}
           </span>
@@ -832,10 +832,10 @@ function OrgTreeNode({
             )}
             {agent && (
               <>
-                <span className="w-28 whitespace-nowrap text-right font-mono text-xs text-muted-foreground">
+                <span className="w-28 whitespace-nowrap text-right font-mono text-xs text-foreground/60">
                   {getAdapterLabel(agent.adapterType)}
                 </span>
-                <span className="text-xs text-muted-foreground w-16 text-right">
+                <span className="text-xs text-foreground/60 w-16 text-right">
                   {agent.lastHeartbeatAt ? relativeTime(agent.lastHeartbeatAt) : "\u2014"}
                 </span>
               </>
@@ -879,7 +879,7 @@ function LiveRunIndicator({
         <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
       </span>
-      <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
+      <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
         Live{liveCount > 1 ? ` (${liveCount})` : ""}
       </span>
     </Link>

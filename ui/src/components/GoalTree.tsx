@@ -7,6 +7,8 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { goalsApi } from "../api/goals";
 import { queryKeys } from "../lib/queryKeys";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface GoalTreeProps {
   goals: Goal[];
@@ -40,6 +42,7 @@ function countDescendants(goalId: string, allGoals: Goal[]): { total: number; ac
 
 function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, companyId }: GoalNodeProps) {
   const [expanded, setExpanded] = useState(true);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const hasChildren = children.length > 0;
   const link = goalLink?.(goal);
   const queryClient = useQueryClient();
@@ -47,20 +50,17 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
   const deleteMutation = useMutation({
     mutationFn: () => goalsApi.remove(goal.id),
     onSuccess: () => {
+      setConfirmOpen(false);
       if (companyId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.goals.list(companyId) });
       }
     },
-    onError: () => {
-      alert(`Failed to delete goal "${goal.title}". Please try again.`);
-    },
   });
 
-  function handleDelete(e: React.MouseEvent) {
+  function handleDeleteClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!window.confirm(`Delete goal "${goal.title}"? This cannot be undone.`)) return;
-    deleteMutation.mutate();
+    setConfirmOpen(true);
   }
 
   const { total, achieved } = countDescendants(goal.id, allGoals);
@@ -89,11 +89,18 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
       ) : (
         <span className="w-4 shrink-0" />
       )}
-      <span className="text-xs text-muted-foreground capitalize shrink-0">{goal.level}</span>
+      <span className="text-xs text-foreground/60 capitalize shrink-0">{goal.level}</span>
       <span className="flex-1 truncate">{goal.title}</span>
       {showProgress && (
-        <div className="hidden sm:flex items-center gap-1.5 shrink-0" title={`${achieved}/${total} sub-goals achieved`}>
-          <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
+        <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+          <div
+            className="h-1.5 w-16 rounded-full bg-muted overflow-hidden"
+            role="progressbar"
+            aria-valuenow={progressPct!}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${achieved} of ${total} sub-goals achieved`}
+          >
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-300",
@@ -102,7 +109,7 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <span className="text-xs font-mono text-muted-foreground/70 w-7 text-right">
+          <span className="text-xs font-mono text-foreground/60 w-7 text-right" aria-hidden="true">
             {progressPct}%
           </span>
         </div>
@@ -111,8 +118,9 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
       <button
         type="button"
         className="shrink-0 ml-1 p-0.5 rounded text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover/row:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30"
-        onClick={handleDelete}
+        onClick={handleDeleteClick}
         disabled={deleteMutation.isPending}
+        aria-busy={deleteMutation.isPending}
         aria-label="Delete goal"
       >
         <Trash2 className="h-3 w-3" />
@@ -126,6 +134,27 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect, company
 
   return (
     <div>
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent role="alertdialog" aria-describedby="delete-goal-desc">
+          <DialogHeader>
+            <DialogTitle>Delete goal?</DialogTitle>
+            <DialogDescription id="delete-goal-desc">
+              "{goal.title}" will be permanently deleted. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+              aria-busy={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {link ? (
         <Link
           to={link}
@@ -172,7 +201,7 @@ export function GoalTree({ goals, goalLink, onSelect, companyId }: GoalTreeProps
 
   if (goals.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground px-3 py-4">No goals to display.</p>
+      <p className="text-sm text-foreground/70 px-3 py-4">No goals to display.</p>
     );
   }
 

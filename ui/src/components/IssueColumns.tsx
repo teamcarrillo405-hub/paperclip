@@ -114,7 +114,7 @@ export function IssueColumnPicker({
               <span className="text-sm font-medium text-foreground">
                 {issueColumnLabels[column]}
               </span>
-              <span className="text-xs leading-relaxed text-muted-foreground">
+              <span className="text-xs leading-relaxed text-foreground/60">
                 {issueColumnDescriptions[column]}
               </span>
             </span>
@@ -126,7 +126,7 @@ export function IssueColumnPicker({
           className="rounded-lg px-3 py-2 text-sm"
         >
           Reset defaults
-          <span className="ml-auto text-xs text-muted-foreground">status, id, updated</span>
+          <span className="ml-auto text-xs text-foreground/60">status, id, updated</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -154,7 +154,7 @@ export function InboxIssueMetaLeading({
         </span>
       ) : null}
       {showIdentifier ? (
-        <span className="shrink-0 font-mono text-xs text-muted-foreground">
+        <span className="shrink-0 font-mono text-xs text-foreground/60">
           {issue.identifier ?? issue.id.slice(0, 8)}
         </span>
       ) : null}
@@ -259,7 +259,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
+            <span key={column} className="min-w-0 truncate text-xs text-foreground/60">
               Unassigned
             </span>
           );
@@ -284,7 +284,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
+            <span key={column} className="min-w-0 truncate text-xs text-foreground/60">
               No project
             </span>
           );
@@ -308,7 +308,7 @@ export function InboxIssueTrailingColumns({
                   </span>
                 ))}
                 {(issue.labels ?? []).length > 2 ? (
-                  <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
+                  <span className="shrink-0 text-xs font-medium text-foreground/60">
                     +{(issue.labels ?? []).length - 2}
                   </span>
                 ) : null}
@@ -325,13 +325,13 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
+            <span key={column} className="min-w-0 truncate text-xs text-foreground/60">
               {workspaceId && onFilterWorkspace ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      className="truncate rounded-sm text-left text-xs text-muted-foreground transition-colors hover:text-foreground hover:underline"
+                      className="truncate rounded-sm text-left text-xs text-foreground/60 transition-colors hover:text-foreground hover:underline"
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -358,7 +358,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground" title={parentTitle ?? undefined}>
+            <span key={column} className="min-w-0 truncate text-xs text-foreground/60" title={parentTitle ?? undefined}>
               {parentIdentifier ? (
                 <span className="font-mono">{parentIdentifier}</span>
               ) : (
@@ -370,7 +370,7 @@ export function InboxIssueTrailingColumns({
 
         if (column === "updated") {
           return (
-            <span key={column} className="min-w-0 truncate text-right text-[11px] font-medium text-muted-foreground">
+            <span key={column} className="min-w-0 truncate text-right text-xs font-medium text-foreground/60">
               {activityText}
             </span>
           );

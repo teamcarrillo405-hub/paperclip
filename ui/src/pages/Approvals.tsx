@@ -265,11 +265,11 @@ export function Approvals() {
   }
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={ShieldCheck} message="Select a company to view approvals." />;
+    return <div><h1 className="sr-only">Approvals</h1><EmptyState icon={ShieldCheck} message="Select a company to view approvals." /></div>;
   }
 
   if (isLoading) {
-    return <PageSkeleton variant="approvals" />;
+    return <PageSkeleton variant="approvals" title="Approvals" />;
   }
 
   const allPendingSelected = pendingItems.length > 0 && pendingItems.every((a) => selectedIds.has(a.id));
@@ -283,7 +283,7 @@ export function Approvals() {
             <PageTabBar items={[
               { value: "pending", label: <>Pending{pendingCount > 0 && (
                 <span className={cn(
-                  "ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+                  "ml-1.5 rounded-full px-1.5 py-0.5 text-xs font-medium",
                   "bg-yellow-500/20 text-yellow-500"
                 )}>
                   {pendingCount}
@@ -293,13 +293,13 @@ export function Approvals() {
             ]} />
           </Tabs>
           {isConnected ? (
-            <span role="status" aria-live="polite" className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
+            <span role="status" aria-live="polite" className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse" />
               Live
             </span>
           ) : (
-            <span role="status" aria-live="polite" className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/20 bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/60">
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+            <span role="status" aria-live="polite" className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/20 bg-muted/50 px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide text-foreground/50">
+              <span className="h-1.5 w-1.5 rounded-full bg-foreground/30" />
               Offline
             </span>
           )}
@@ -314,7 +314,7 @@ export function Approvals() {
                 aria-label={allPendingSelected ? "Deselect all pending approvals" : "Select all pending approvals"}
                 aria-pressed={allPendingSelected}
                 onClick={() => toggleSelectAll(pendingItems.map((a) => a.id))}
-                className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground border border-border hover:bg-accent/50 transition-colors"
+                className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-foreground/60 border border-border hover:bg-accent/50 transition-colors"
               >
                 <span className={cn(
                   "flex h-3.5 w-3.5 items-center justify-center border border-border rounded-sm",
@@ -367,6 +367,11 @@ export function Approvals() {
             </button>
           </div>
         )}
+        {bulkProgress && (
+          <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+            {bulkProgress.done} of {bulkProgress.total} processed
+          </span>
+        )}
       </div>
 
       {/* Keyboard shortcut legend — only shown on Pending tab where shortcuts apply and items exist */}
@@ -377,12 +382,12 @@ export function Approvals() {
             { keys: ["A"], label: "approve" },
             { keys: ["R"], label: "reject" },
           ].map(({ keys, label }) => (
-            <span key={label} className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
+            <span key={label} className="flex items-center gap-1.5 text-xs text-foreground/60">
               <span className="flex items-center gap-0.5">
                 {keys.map((k) => (
                   <kbd
                     key={k}
-                    className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-border bg-muted px-1 text-[10px] font-mono font-semibold text-foreground/70 shadow-sm"
+                    className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-border bg-muted px-1 text-xs font-mono font-semibold text-foreground/70 shadow-sm"
                   >
                     {k}
                   </kbd>
@@ -430,8 +435,8 @@ export function Approvals() {
 
       {filtered.length === 0 && (
         <div role="status" className="flex flex-col items-center justify-center py-16 text-center">
-          <ShieldCheck className="h-8 w-8 text-muted-foreground/50 mb-3" aria-hidden="true" />
-          <p className="text-sm text-muted-foreground">
+          <ShieldCheck className="h-8 w-8 text-foreground/40 mb-3" aria-hidden="true" />
+          <p className="text-sm text-foreground/60">
             {statusFilter === "pending" ? "No pending approvals." : "No approvals yet."}
           </p>
         </div>
@@ -456,7 +461,7 @@ export function Approvals() {
                   {isFirstResolved && (
                     <>
                       <div className="border-t border-border my-2" role="separator" aria-label="Resolved approvals below" />
-                      <p className="text-xs text-muted-foreground px-1 py-2">Resolved</p>
+                      <p className="text-xs text-foreground/60 px-1 py-2">Resolved</p>
                     </>
                   )}
                   <div

@@ -109,11 +109,18 @@ export function Issues() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={CircleDot} message="Select a company to view issues." />;
+    return (
+      <div>
+        <h1 className="sr-only">Issues</h1>
+        <EmptyState icon={CircleDot} message="Select a company to view issues." />
+      </div>
+    );
   }
 
   return (
-    <IssuesList
+    <>
+      <h1 className="sr-only">Issues</h1>
+      <IssuesList
       issues={issues ?? []}
       isLoading={isLoading}
       error={error as Error | null}
@@ -132,5 +139,6 @@ export function Issues() {
       onUpdateIssue={(id, data) => updateIssue.mutate({ id, data })}
       searchFilters={participantAgentId || workspaceIdFilter ? { participantAgentId, workspaceId: workspaceIdFilter } : undefined}
     />
+    </>
   );
 }

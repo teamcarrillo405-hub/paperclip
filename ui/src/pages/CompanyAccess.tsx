@@ -23,6 +23,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
@@ -244,11 +252,11 @@ export function CompanyAccess() {
   }, [removingMember]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Users} message="Select a company to manage access." />;
+    return <div><h1 className="sr-only">Access</h1><EmptyState icon={Users} message="Select a company to manage access." /></div>;
   }
 
   if (membersQuery.isLoading) {
-    return <PageSkeleton variant="list" />;
+    return <PageSkeleton variant="list" title="Access" />;
   }
 
   if (membersQuery.error) {
@@ -259,7 +267,9 @@ export function CompanyAccess() {
           ? membersQuery.error.message
           : "Failed to load company members.";
     return (
-      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+      <div className="space-y-3">
+        <h1 className="sr-only">Company Access</h1>
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
         <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <p className="text-sm text-destructive">{message}</p>
@@ -267,10 +277,12 @@ export function CompanyAccess() {
         {!(membersQuery.error instanceof ApiError && membersQuery.error.status === 403) ? (
           <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
             disabled={membersQuery.isRefetching}
+            aria-busy={membersQuery.isRefetching}
             onClick={() => membersQuery.refetch()}>
             {membersQuery.isRefetching ? "Retrying…" : "Retry"}
           </Button>
         ) : null}
+        </div>
       </div>
     );
   }
@@ -296,10 +308,10 @@ export function CompanyAccess() {
     <div className="max-w-6xl space-y-8">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          <ShieldCheck className="h-5 w-5 text-foreground/60" aria-hidden="true" />
           <h1 className="text-2xl font-semibold tracking-tight">Company Access</h1>
         </div>
-        <p className="max-w-3xl text-sm text-muted-foreground">
+        <p className="max-w-3xl text-sm text-foreground/60">
           Manage company user memberships, membership status, and explicit permission grants for {selectedCompany?.name}.
         </p>
       </div>
@@ -313,10 +325,10 @@ export function CompanyAccess() {
       <section className="space-y-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-foreground/60" />
             <h2 className="text-base font-semibold">Humans</h2>
           </div>
-          <p className="max-w-3xl text-sm text-muted-foreground">
+          <p className="max-w-3xl text-sm text-foreground/60">
             Manage human company memberships, status, and grants here.
           </p>
         </div>
@@ -332,6 +344,7 @@ export function CompanyAccess() {
               variant="ghost"
               className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
               disabled={joinRequestsQuery.isRefetching}
+              aria-busy={joinRequestsQuery.isRefetching}
               onClick={() => joinRequestsQuery.refetch()}
             >
               {joinRequestsQuery.isRefetching ? "Retrying…" : "Retry"}
@@ -343,7 +356,7 @@ export function CompanyAccess() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="text-sm font-semibold">Pending human joins</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground/60">
                   Review human join requests before they become active company members.
                 </p>
               </div>
@@ -386,7 +399,7 @@ export function CompanyAccess() {
 
         <div role="table" aria-label="Company members" className="overflow-x-auto overflow-hidden rounded-xl border border-border">
           <div role="rowgroup">
-            <div role="row" className="grid grid-cols-[minmax(0,1.5fr)_120px_120px_minmax(0,1.2fr)_180px] gap-3 border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div role="row" className="grid grid-cols-[minmax(0,1.5fr)_120px_120px_minmax(0,1.2fr)_180px] gap-3 border-b border-border px-4 py-3 text-xs font-semibold uppercase tracking-wide text-foreground/60">
               <div role="columnheader">User account</div>
               <div role="columnheader">Role</div>
               <div role="columnheader">Status</div>
@@ -396,7 +409,7 @@ export function CompanyAccess() {
           </div>
           <div role="rowgroup">
           {members.length === 0 ? (
-            <div role="row" className="px-4 py-8 text-sm text-muted-foreground">
+            <div role="row" className="px-4 py-8 text-sm text-foreground/60">
               <div role="cell">No user memberships found for this company yet.</div>
             </div>
           ) : (
@@ -412,7 +425,7 @@ export function CompanyAccess() {
                 >
                   <div role="cell" className="min-w-0">
                     <div className="truncate font-medium">{memberDisplayName}</div>
-                    <div className="truncate text-xs text-muted-foreground">{member.user?.email || member.principalId}</div>
+                    <div className="truncate text-xs text-foreground/60">{member.user?.email || member.principalId}</div>
                   </div>
                   <div role="cell" className="text-sm">
                     {member.membershipRole
@@ -424,7 +437,7 @@ export function CompanyAccess() {
                       {member.status.replace("_", " ")}
                     </Badge>
                   </div>
-                  <div role="cell" className="min-w-0 text-sm text-muted-foreground">{formatGrantSummary(member)}</div>
+                  <div role="cell" className="min-w-0 text-sm text-foreground/60">{formatGrantSummary(member)}</div>
                   <div role="cell" className="space-y-1 text-right">
                     <div className="flex justify-end gap-2">
                       <Button size="sm" variant="outline" aria-label={`Edit ${memberDisplayName}`} onClick={() => setEditingMemberId(member.id)}>
@@ -443,7 +456,7 @@ export function CompanyAccess() {
                       </Button>
                     </div>
                     {removalReason ? (
-                      <span id={`remove-blocked-reason-${member.id}`} className="text-xs text-muted-foreground">{removalReason}</span>
+                      <span id={`remove-blocked-reason-${member.id}`} className="text-xs text-foreground/60">{removalReason}</span>
                     ) : null}
                   </div>
                 </div>
@@ -465,49 +478,48 @@ export function CompanyAccess() {
           {editingMember && (
             <div className="space-y-5">
               <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm">
-                  <span className="font-medium">Company role</span>
-                  <select
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 outline-none"
+                <div className="space-y-2">
+                  <Label htmlFor="edit-member-role">Company role</Label>
+                  <Select
                     value={draftRole ?? ""}
-                    onChange={(event) =>
-                      setDraftRole((event.target.value || null) as CompanyMember["membershipRole"])
-                    }
+                    onValueChange={(value) => setDraftRole((value || null) as CompanyMember["membershipRole"])}
                   >
-                    <option value="">Unset</option>
-                    {Object.entries(HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="space-y-2 text-sm">
-                  <span className="font-medium">Membership status</span>
-                  <select
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 outline-none"
-                    value={draftStatus}
-                    onChange={(event) =>
-                      setDraftStatus(event.target.value as EditableMemberStatus)
-                    }
-                  >
-                    <option value="active">Active</option>
-                    <option value="pending">Pending</option>
-                    <option value="suspended">Suspended</option>
-                  </select>
-                </label>
+                    <SelectTrigger id="edit-member-role" className="w-full">
+                      <SelectValue placeholder="Unset" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Unset</SelectItem>
+                      {Object.entries(HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-member-status">Membership status</Label>
+                  <Select value={draftStatus} onValueChange={(value) => setDraftStatus(value as EditableMemberStatus)}>
+                    <SelectTrigger id="edit-member-status" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-3">
                 <div>
                   <h3 className="text-sm font-medium">Grants</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground/60">
                     Roles provide implicit grants automatically. Explicit grants below are only for overrides and extra access that should persist even if the role changes.
                   </p>
                 </div>
                 <div className="rounded-lg border border-border px-3 py-3">
                   <div className="text-sm font-medium">Implicit grants from role</div>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-sm text-foreground/60">
                     {draftRole
                       ? `${HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[draftRole]} currently includes these permissions automatically.`
                       : "No role is selected, so this member has no implicit grants right now."}
@@ -544,14 +556,14 @@ export function CompanyAccess() {
                         />
                         <div className="space-y-1">
                           <label htmlFor={`perm-${permissionKey}`} className="block text-sm font-medium cursor-pointer">{permissionLabels[permissionKey]}</label>
-                          <span className="block text-xs text-muted-foreground" aria-hidden="true">{permissionKey}</span>
+                          <span className="block text-xs text-foreground/60" aria-hidden="true">{permissionKey}</span>
                           {implicitGrantSet.has(permissionKey) ? (
-                            <span className="block text-xs text-muted-foreground">
+                            <span className="block text-xs text-foreground/60">
                               Included implicitly by the {draftRole ? HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[draftRole] : "selected"} role. Add an explicit grant only if it should stay after the role changes.
                             </span>
                           ) : null}
                           {draftGrants.has(permissionKey) ? (
-                            <span className="block text-xs text-muted-foreground">
+                            <span className="block text-xs text-foreground/60">
                               Stored explicitly for this member.
                             </span>
                           ) : null}
@@ -578,6 +590,7 @@ export function CompanyAccess() {
                 });
               }}
               disabled={updateMemberMutation.isPending}
+              aria-busy={updateMemberMutation.isPending}
             >
               {updateMemberMutation.isPending ? "Saving…" : "Save access"}
             </Button>
@@ -597,8 +610,8 @@ export function CompanyAccess() {
             <div className="space-y-5">
               <div className="rounded-lg border border-border px-3 py-3">
                 <div className="text-sm font-medium">{memberDisplayName(removingMember)}</div>
-                <div className="text-sm text-muted-foreground">{removingMember.user?.email || removingMember.principalId}</div>
-                <div className="mt-2 text-sm text-muted-foreground">
+                <div className="text-sm text-foreground/60">{removingMember.user?.email || removingMember.principalId}</div>
+                <div className="mt-2 text-sm text-foreground/60">
                   <span aria-live="polite" aria-atomic="true">
                     {assignedIssuesQuery.isLoading
                       ? "Checking assigned issues..."
@@ -650,11 +663,11 @@ export function CompanyAccess() {
                     {assignedIssues.slice(0, 6).map((issue) => (
                       <div key={issue.id} className="border-b border-border px-3 py-2 text-sm last:border-b-0">
                         <div className="font-medium">{issue.identifier ?? issue.id.slice(0, 8)}</div>
-                        <div className="truncate text-muted-foreground">{issue.title}</div>
+                        <div className="truncate text-foreground/60">{issue.title}</div>
                       </div>
                     ))}
                     {assignedIssues.length > 6 ? (
-                      <div className="px-3 py-2 text-sm text-muted-foreground">
+                      <div className="px-3 py-2 text-sm text-foreground/60">
                         {assignedIssues.length - 6} more issue{assignedIssues.length - 6 === 1 ? "" : "s"}
                       </div>
                     ) : null}
@@ -736,11 +749,11 @@ function PendingJoinRequestCard({
         <div className="space-y-2">
           <div>
             <div className="font-medium">{title}</div>
-            <div className="text-sm text-muted-foreground">{subtitle}</div>
+            <div className="text-sm text-foreground/60">{subtitle}</div>
           </div>
-          <div className="text-sm text-muted-foreground">{context}</div>
-          <div className="text-sm text-muted-foreground">{detail}</div>
-          {detailSecondary ? <div className="text-sm text-muted-foreground">{detailSecondary}</div> : null}
+          <div className="text-sm text-foreground/60">{context}</div>
+          <div className="text-sm text-foreground/60">{detail}</div>
+          {detailSecondary ? <div className="text-sm text-foreground/60">{detailSecondary}</div> : null}
         </div>
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={onReject} disabled={disabled} aria-busy={isThisCardProcessing}>

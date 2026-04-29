@@ -85,6 +85,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatIssueActivityAction } from "@/lib/activity-format";
 import { buildIssuePropertiesPanelKey } from "../lib/issue-properties-panel-key";
 import { shouldRenderRichSubIssuesSection } from "../lib/issue-detail-subissues";
@@ -339,7 +340,8 @@ function IssueDetailLoadingState({
   const identifier = headerSeed?.identifier ?? headerSeed?.id.slice(0, 8) ?? null;
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-3xl space-y-6" role="status" aria-label="Loading…" aria-busy="true">
+      {!headerSeed && <h1 className="sr-only">Issue</h1>}
       <div className="space-y-3">
         <Skeleton className="h-3 w-40" />
 
@@ -349,23 +351,23 @@ function IssueDetailLoadingState({
               <StatusIcon status={headerSeed.status} />
               <PriorityIcon priority={headerSeed.priority} />
               {identifier ? (
-                <span className="text-sm font-mono text-muted-foreground shrink-0">{identifier}</span>
+                <span className="text-sm font-mono text-foreground/60 shrink-0">{identifier}</span>
               ) : null}
               {headerSeed.originKind === "routine_execution" && headerSeed.originId ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-violet-500/30 bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium text-violet-600 dark:text-violet-400 shrink-0">
+                <span className="inline-flex items-center gap-1 rounded-full border border-violet-500/30 bg-violet-500/10 px-2 py-0.5 text-xs font-medium text-violet-600 dark:text-violet-400 shrink-0">
                   <Repeat className="h-3 w-3" />
                   Routine
                 </span>
               ) : null}
               {headerSeed.projectId ? (
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground rounded px-1 -mx-1 py-0.5 min-w-0">
+                <span className="inline-flex items-center gap-1 text-xs text-foreground/60 rounded px-1 -mx-1 py-0.5 min-w-0">
                   <Hexagon className="h-3 w-3 shrink-0" />
                   <span className="truncate">
                     {headerSeed.projectName ?? headerSeed.projectId.slice(0, 8)}
                   </span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
+                <span className="inline-flex items-center gap-1 text-xs text-foreground/60 opacity-50 px-1 -mx-1 py-0.5">
                   <Hexagon className="h-3 w-3 shrink-0" />
                   No project
                 </span>
@@ -383,7 +385,7 @@ function IssueDetailLoadingState({
 
         {headerSeed ? (
           <>
-            <h2 className="text-xl font-bold leading-tight">{headerSeed.title}</h2>
+            <h1 className="text-xl font-bold leading-tight">{headerSeed.title}</h1>
             <div className="space-y-2">
               <Skeleton className="h-4 w-full max-w-xl" />
               <Skeleton className="h-4 w-[72%]" />
@@ -907,11 +909,11 @@ function IssueDetailActivityTab({
       )}
       {linkedRuns && linkedRuns.length > 0 && (
         <div className="mb-3 px-3 py-2 rounded-lg border border-border">
-          <div className="text-sm font-medium text-muted-foreground mb-1">Cost Summary</div>
+          <div className="text-sm font-medium text-foreground/60 mb-1">Cost Summary</div>
           {!issueCostSummary.hasCost && !issueCostSummary.hasTokens ? (
-            <div className="text-xs text-muted-foreground">No cost data yet.</div>
+            <div className="text-xs text-foreground/60">No cost data yet.</div>
           ) : (
-            <div className="flex flex-wrap gap-3 text-xs text-muted-foreground tabular-nums">
+            <div className="flex flex-wrap gap-3 text-xs text-foreground/60 tabular-nums">
               {issueCostSummary.hasCost && (
                 <span className="font-medium text-foreground">
                   ${issueCostSummary.cost.toFixed(4)}
@@ -930,11 +932,11 @@ function IssueDetailActivityTab({
         </div>
       )}
       {!activity || activity.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No activity yet.</p>
+        <p className="text-xs text-foreground/60">No activity yet.</p>
       ) : (
         <div className="space-y-1.5">
           {activity.slice(0, 20).map((evt) => (
-            <div key={evt.id} className="space-y-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs text-muted-foreground">
+            <div key={evt.id} className="space-y-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs text-foreground/60">
               <div className="flex items-center gap-1.5">
                 <ActorIdentity evt={evt} agentMap={agentMap} userProfileMap={userProfileMap} />
                 <span>{formatIssueActivityAction(evt.action, evt.details, { agentMap, userProfileMap, currentUserId })}</span>
@@ -978,6 +980,7 @@ export function IssueDetail() {
   const [optimisticComments, setOptimisticComments] = useState<OptimisticIssueComment[]>([]);
   const [locallyQueuedCommentRunIds, setLocallyQueuedCommentRunIds] = useState<Map<string, string>>(() => new Map());
   const [pendingCommentComposerFocusKey, setPendingCommentComposerFocusKey] = useState(0);
+  const [confirmHideOpen, setConfirmHideOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const lastMarkedReadIssueIdRef = useRef<string | null>(null);
   const commentComposerRef = useRef<IssueChatComposerHandle | null>(null);
@@ -2277,12 +2280,7 @@ export function IssueDetail() {
     },
     onCopy: () => copyIssueToClipboard(),
     onProperties: () => setMobilePropsOpen(true),
-    onHide: () => {
-      updateIssue.mutate(
-        { hiddenAt: new Date().toISOString() },
-        { onSuccess: () => navigate("/issues/all") },
-      );
-    },
+    onHide: () => setConfirmHideOpen(true),
   });
   inboxToolbarCallbacksRef.current = {
     onArchive: () => {
@@ -2290,12 +2288,7 @@ export function IssueDetail() {
     },
     onCopy: () => copyIssueToClipboard(),
     onProperties: () => setMobilePropsOpen(true),
-    onHide: () => {
-      updateIssue.mutate(
-        { hiddenAt: new Date().toISOString() },
-        { onSuccess: () => navigate("/issues/all") },
-      );
-    },
+    onHide: () => setConfirmHideOpen(true),
   };
 
   const backHref = sourceBreadcrumb.href ?? "/inbox";
@@ -2376,6 +2369,7 @@ export function IssueDetail() {
   if (isLoading) return <IssueDetailLoadingState headerSeed={issueHeaderSeed} />;
   if (error) return (
     <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 flex items-start gap-3 m-4">
+      <h1 className="sr-only">Issue — Error</h1>
       <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0 space-y-2">
         <p className="text-sm text-destructive">{error.message || "Failed to load issue."}</p>
@@ -2385,7 +2379,12 @@ export function IssueDetail() {
       </div>
     </div>
   );
-  if (!issue) return null;
+  if (!issue) return (
+    <div>
+      <h1 className="sr-only">Issue Not Found</h1>
+      <p className="text-sm text-foreground/60">Issue not found.</p>
+    </div>
+  );
 
   // Ancestors are returned oldest-first from the server (root at end, immediate parent at start)
   const ancestors = issue.ancestors ?? [];
@@ -2453,7 +2452,7 @@ export function IssueDetail() {
     <div className="max-w-3xl space-y-6">
       {/* Parent chain breadcrumb */}
       {ancestors.length > 0 && (
-        <nav className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
+        <nav className="flex items-center gap-1 text-xs text-foreground/60 flex-wrap">
           {[...ancestors].reverse().map((ancestor, i) => (
             <span key={ancestor.id} className="flex items-center gap-1">
               {i > 0 && <ChevronRight className="h-3 w-3 shrink-0" />}
@@ -2495,10 +2494,10 @@ export function IssueDetail() {
             priority={issue.priority}
             onChange={(priority) => updateIssue.mutate({ priority })}
           />
-          <span className="text-sm font-mono text-muted-foreground shrink-0">{issue.identifier ?? issue.id.slice(0, 8)}</span>
+          <span className="text-sm font-mono text-foreground/60 shrink-0">{issue.identifier ?? issue.id.slice(0, 8)}</span>
 
           {hasLiveRuns && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-medium text-cyan-600 dark:text-cyan-400 shrink-0">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 text-xs font-medium text-cyan-600 dark:text-cyan-400 shrink-0">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
@@ -2510,7 +2509,7 @@ export function IssueDetail() {
           {issue.originKind === "routine_execution" && issue.originId && (
             <Link
               to={`/routines/${issue.originId}`}
-              className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 border border-violet-500/30 px-2 py-0.5 text-[10px] font-medium text-violet-600 dark:text-violet-400 shrink-0 hover:bg-violet-500/20 transition-colors"
+              className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 border border-violet-500/30 px-2 py-0.5 text-xs font-medium text-violet-600 dark:text-violet-400 shrink-0 hover:bg-violet-500/20 transition-colors"
             >
               <Repeat className="h-3 w-3" />
               Routine
@@ -2520,13 +2519,13 @@ export function IssueDetail() {
           {issue.projectId ? (
             <Link
               to={`/projects/${issue.projectId}`}
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors rounded px-1 -mx-1 py-0.5 min-w-0"
+              className="inline-flex items-center gap-1 text-xs text-foreground/60 hover:text-foreground transition-colors rounded px-1 -mx-1 py-0.5 min-w-0"
             >
               <Hexagon className="h-3 w-3 shrink-0" />
               <span className="truncate">{resolvedProject?.name ?? issue.project?.name ?? issue.projectId.slice(0, 8)}</span>
             </Link>
           ) : (
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
+            <span className="inline-flex items-center gap-1 text-xs text-foreground/60 opacity-50 px-1 -mx-1 py-0.5">
               <Hexagon className="h-3 w-3 shrink-0" />
               No project
             </span>
@@ -2537,7 +2536,7 @@ export function IssueDetail() {
               {(issue.labels ?? []).slice(0, 4).map((label) => (
                 <span
                   key={label.id}
-                  className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                  className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium"
                   style={{
                     borderColor: label.color,
                     color: pickTextColorForPillBg(label.color, 0.12),
@@ -2548,7 +2547,7 @@ export function IssueDetail() {
                 </span>
               ))}
               {(issue.labels ?? []).length > 4 && (
-                <span className="text-[10px] text-muted-foreground">+{(issue.labels ?? []).length - 4}</span>
+                <span className="text-xs text-foreground/60">+{(issue.labels ?? []).length - 4}</span>
               )}
             </div>
           )}
@@ -2622,13 +2621,7 @@ export function IssueDetail() {
             <PopoverContent className="w-44 p-1" align="end">
               <button
                 className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
-                onClick={() => {
-                  updateIssue.mutate(
-                    { hiddenAt: new Date().toISOString() },
-                    { onSuccess: () => navigate("/issues/all") },
-                  );
-                  setMoreOpen(false);
-                }}
+                onClick={() => { setConfirmHideOpen(true); setMoreOpen(false); }}
               >
                 <EyeOff className="h-3 w-3" />
                 Hide this Issue
@@ -2641,7 +2634,7 @@ export function IssueDetail() {
         <InlineEditor
           value={issue.title}
           onSave={(title) => updateIssue.mutateAsync({ title })}
-          as="h2"
+          as="h1"
           className="text-xl font-bold"
         />
 
@@ -2707,7 +2700,7 @@ export function IssueDetail() {
       {showRichSubIssuesSection ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Sub-issues</h3>
+            <h3 className="text-sm font-medium text-foreground/60">Sub-issues</h3>
           </div>
           <IssuesList
             issues={childIssues}
@@ -2779,7 +2772,7 @@ export function IssueDetail() {
         onDrop={(evt) => void handleAttachmentDrop(evt)}
       >
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-medium text-muted-foreground">Attachments</h3>
+          <h3 className="text-sm font-medium text-foreground/60">Attachments</h3>
           {attachmentUploadButton}
         </div>
 
@@ -2881,7 +2874,7 @@ export function IssueDetail() {
                   </a>
                   <button
                     type="button"
-                    className="text-muted-foreground hover:text-destructive"
+                    className="text-foreground/60 hover:text-destructive"
                     onClick={() => deleteAttachment.mutate(attachment.id)}
                     disabled={deleteAttachment.isPending}
                     title="Delete attachment"
@@ -2889,7 +2882,7 @@ export function IssueDetail() {
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-foreground/60">
                   {attachment.contentType} · {(attachment.byteSize / 1024).toFixed(1)} KB
                 </p>
               </div>
@@ -3037,6 +3030,33 @@ export function IssueDetail() {
           </ScrollArea>
         </SheetContent>
       </Sheet>
+      <Dialog open={confirmHideOpen} onOpenChange={setConfirmHideOpen}>
+        <DialogContent role="alertdialog" aria-describedby="hide-issue-desc">
+          <DialogHeader>
+            <DialogTitle>Hide this issue?</DialogTitle>
+            <DialogDescription id="hide-issue-desc">
+              This issue will be hidden from your inbox and issue lists. You can unhide it later.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmHideOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setConfirmHideOpen(false);
+                updateIssue.mutate(
+                  { hiddenAt: new Date().toISOString() },
+                  { onSuccess: () => navigate("/issues/all") },
+                );
+              }}
+              disabled={updateIssue.isPending}
+              aria-busy={updateIssue.isPending}
+            >
+              Hide
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <ScrollToBottom />
     </div>
   );

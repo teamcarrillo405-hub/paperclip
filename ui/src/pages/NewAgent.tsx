@@ -224,7 +224,7 @@ export function NewAgent() {
             <label htmlFor="new-agent-name" className="text-sm font-medium">Agent name</label>
             <input
               id="new-agent-name"
-              className="w-full text-lg font-semibold bg-transparent border border-input rounded-md px-3 outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
+              className="w-full text-lg font-semibold bg-transparent border border-input rounded-md px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
               placeholder="Agent name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -239,7 +239,7 @@ export function NewAgent() {
             <label htmlFor="new-agent-title" className="text-sm font-medium">Title</label>
             <input
               id="new-agent-title"
-              className="w-full bg-transparent border-b border-input outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm text-muted-foreground placeholder:text-muted-foreground/40"
+              className="w-full bg-transparent border-b border-input outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm text-muted-foreground placeholder:text-muted-foreground/40"
               placeholder="Title (e.g. VP of Engineering)"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -376,8 +376,8 @@ export function NewAgent() {
                 <Button variant="ghost" size="sm" onClick={() => void refetchCompanySkills()}>Retry</Button>
               </div>
             ) : companySkillsLoading ? (
-              <div className="space-y-1">
-                {[1, 2, 3].map((i) => <div key={i} className="h-6 rounded bg-muted animate-pulse" />)}
+              <div className="space-y-1" role="status" aria-label="Loading company skills">
+                {[1, 2, 3].map((i) => <div key={i} className="h-6 rounded bg-muted animate-pulse" aria-hidden="true" />)}
               </div>
             ) : availableSkills.length === 0 ? (
               <p className="text-xs text-muted-foreground">

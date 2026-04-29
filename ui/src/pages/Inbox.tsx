@@ -291,7 +291,7 @@ export function FailedRunInboxRow({
                 type="button"
                 onClick={onArchive}
                 disabled={archiveDisabled}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-foreground/60 opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
                 aria-label="Dismiss from inbox"
               >
                 <X className="h-3.5 w-3.5" />
@@ -317,7 +317,7 @@ export function FailedRunInboxRow({
             <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
               {issue ? (
                 <>
-                  <span className="font-mono text-muted-foreground mr-1.5">
+                  <span className="font-mono text-foreground/60 mr-1.5">
                     {issue.identifier ?? issue.id.slice(0, 8)}
                   </span>
                   {issue.title}
@@ -326,7 +326,7 @@ export function FailedRunInboxRow({
                 <>Failed run{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
               )}
             </span>
-            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground/60">
               <StatusBadge status={run.status} />
               {linkedAgentName && issue ? <span>{linkedAgentName}</span> : null}
               <span className="truncate max-w-[300px]">{displayError}</span>
@@ -351,7 +351,7 @@ export function FailedRunInboxRow({
             <button
               type="button"
               onClick={onDismiss}
-              className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
+              className="rounded-md p-1 text-foreground/60 opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
               aria-label={linkedAgentName ? `Dismiss failed run — ${linkedAgentName}` : "Dismiss failed run"}
             >
               <X className="h-4 w-4" />
@@ -376,7 +376,7 @@ export function FailedRunInboxRow({
           <button
             type="button"
             onClick={onDismiss}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="rounded-md p-1 text-foreground/60 hover:bg-accent hover:text-foreground"
               aria-label={linkedAgentName ? `Dismiss failed run — ${linkedAgentName}` : "Dismiss failed run"}
           >
             <X className="h-4 w-4" />
@@ -450,7 +450,7 @@ function ApprovalInboxRow({
                 type="button"
                 onClick={onArchive}
                 disabled={archiveDisabled}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-foreground/60 opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
                 aria-label="Dismiss from inbox"
               >
                 <X className="h-3.5 w-3.5" />
@@ -470,13 +470,13 @@ function ApprovalInboxRow({
           {!showUnreadSlot && <span className="hidden h-2 w-2 shrink-0 sm:inline-flex" aria-hidden="true" />}
           <span className="hidden h-3.5 w-3.5 shrink-0 sm:inline-flex" aria-hidden="true" />
           <span className="mt-0.5 shrink-0 rounded-md bg-muted p-1.5 sm:mt-0">
-            <Icon className="h-4 w-4 text-muted-foreground" />
+            <Icon className="h-4 w-4 text-foreground/60" />
           </span>
           <span className="min-w-0 flex-1">
             <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
               {label}
             </span>
-            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground/60">
               <span className="capitalize">{approvalStatusLabel(approval.status)}</span>
               {requesterName ? <span>requested by {requesterName}</span> : null}
               <span>updated {timeAgo(approval.updatedAt)}</span>
@@ -490,6 +490,7 @@ function ApprovalInboxRow({
               className="h-8 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 px-3 text-white"
               onClick={onApprove}
               disabled={isPending}
+              aria-busy={isPending}
               aria-label={`Approve: ${label}`}
             >
               Approve
@@ -500,6 +501,7 @@ function ApprovalInboxRow({
               className="h-8 px-3"
               onClick={onReject}
               disabled={isPending}
+              aria-busy={isPending}
               aria-label={`Reject: ${label}`}
             >
               Reject
@@ -596,7 +598,7 @@ function JoinRequestInboxRow({
                 type="button"
                 onClick={onArchive}
                 disabled={archiveDisabled}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-md text-foreground/60 opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
                 aria-label="Dismiss from inbox"
               >
                 <X className="h-3.5 w-3.5" />
@@ -610,13 +612,13 @@ function JoinRequestInboxRow({
           {!showUnreadSlot && <span className="hidden h-2 w-2 shrink-0 sm:inline-flex" aria-hidden="true" />}
           <span className="hidden h-3.5 w-3.5 shrink-0 sm:inline-flex" aria-hidden="true" />
           <span className="mt-0.5 shrink-0 rounded-md bg-muted p-1.5 sm:mt-0">
-            <UserPlus className="h-4 w-4 text-muted-foreground" />
+            <UserPlus className="h-4 w-4 text-foreground/60" />
           </span>
           <span className="min-w-0 flex-1">
             <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
               {label}
             </span>
-            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground/60">
               <span>requested {timeAgo(joinRequest.createdAt)} from IP {joinRequest.requestIp}</span>
               {joinRequest.adapterType && <span>adapter: {joinRequest.adapterType}</span>}
             </span>
@@ -628,6 +630,7 @@ function JoinRequestInboxRow({
             className="h-8 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 px-3 text-white"
             onClick={onApprove}
             disabled={isPending}
+            aria-busy={isPending}
             aria-label={`Approve: ${label}`}
           >
             {isPending && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
@@ -639,6 +642,7 @@ function JoinRequestInboxRow({
             className="h-8 px-3"
             onClick={onReject}
             disabled={isPending}
+            aria-busy={isPending}
             aria-label={`Reject: ${label}`}
           >
             {isPending && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
@@ -1855,7 +1859,7 @@ export function Inbox() {
   }, [selectedIndex]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={InboxIcon} message="Select a company to view inbox." />;
+    return <div><h1 className="sr-only">Inbox</h1><EmptyState icon={InboxIcon} message="Select a company to view inbox." /></div>;
   }
 
   const hasRunFailures = failedRuns.length > 0;
@@ -1913,7 +1917,7 @@ export function Inbox() {
       <div className="space-y-2">
         {/* Search — full-width row on mobile, inline on desktop */}
         <div className="relative sm:hidden">
-          <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground/60" />
           <Input
             type="search"
             placeholder="Search inbox…"
@@ -1956,12 +1960,13 @@ export function Inbox() {
               { value: "unread", label: "Unread" },
               { value: "all", label: "All" },
             ]}
+            aria-label="Inbox navigation"
           />
         </Tabs>
 
         <div className="flex items-center gap-2">
           <div className="relative hidden sm:block">
-            <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground/60" />
             <Input
               type="search"
               placeholder="Search inbox…"
@@ -2020,7 +2025,7 @@ export function Inbox() {
                 variant="outline"
                 size="icon"
                 className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
-                aria-label="Group"
+                aria-label="Group inbox items"
               >
                 <Layers aria-hidden="true" className="h-3.5 w-3.5" />
               </Button>
@@ -2039,7 +2044,7 @@ export function Inbox() {
                     aria-checked={groupBy === value}
                     className={cn(
                       "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                      groupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                      groupBy === value ? "bg-accent/50 text-foreground" : "text-foreground/60 hover:bg-accent/50",
                     )}
                     onClick={() => updateGroupBy(value)}
                   >
@@ -2153,7 +2158,7 @@ export function Inbox() {
       )}
 
       {!allLoaded && visibleSections.length === 0 && (
-        <PageSkeleton variant="inbox" />
+        <PageSkeleton variant="inbox" title="Inbox" />
       )}
 
       {allLoaded && visibleSections.length === 0 && (
@@ -2247,7 +2252,7 @@ export function Inbox() {
                         </>
                       }
                       titleSuffix={hasChildren && !isExpanded && depth === 0 ? (
-                        <span className="ml-1.5 text-xs text-muted-foreground">
+                        <span className="ml-1.5 text-xs text-foreground/60">
                           ({childCount} sub-task{childCount !== 1 ? "s" : ""})
                         </span>
                       ) : undefined}
@@ -2315,7 +2320,7 @@ export function Inbox() {
                         className="flex items-center gap-3 border-y border-border/70 bg-muted/30 px-4 py-2"
                       >
                         <div className="h-px flex-1 bg-border/80" />
-                        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-foreground/60">
                           {group.searchSection === "archived" ? "Archived" : "Other results"}
                         </span>
                         <div className="h-px flex-1 bg-border/80" />
@@ -2389,7 +2394,7 @@ export function Inbox() {
                       elements.push(
                         <div key={`today-divider-${group.key}-${index}`} role="separator" aria-label="Earlier" className="my-2 flex items-center gap-3 px-4">
                           <div className="flex-1 border-t border-border" />
-                          <span className="shrink-0 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                          <span className="shrink-0 text-xs font-medium uppercase tracking-wider text-foreground/60">
                             Earlier
                           </span>
                         </div>,
@@ -2579,7 +2584,7 @@ export function Inbox() {
         <>
           {showSeparatorBefore("alerts") && <Separator />}
           <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-foreground/60">
               Alerts
             </h3>
             <div className="divide-y divide-border rounded-xl overflow-hidden border border-border">
@@ -2598,7 +2603,7 @@ export function Inbox() {
                   <button
                     type="button"
                     onClick={() => dismissAlert("alert:agent-errors")}
-                    className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
+                    className="rounded-md p-1 text-foreground/60 opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
                     aria-label="Dismiss agent errors alert"
                   >
                     <X aria-hidden="true" className="h-3.5 w-3.5" />
@@ -2621,7 +2626,7 @@ export function Inbox() {
                   <button
                     type="button"
                     onClick={() => dismissAlert("alert:budget")}
-                    className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
+                    className="rounded-md p-1 text-foreground/60 opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
                     aria-label="Dismiss budget alert"
                   >
                     <X aria-hidden="true" className="h-3.5 w-3.5" />

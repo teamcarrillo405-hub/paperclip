@@ -175,7 +175,7 @@ export function OrgChart() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
 
-  const { data: orgTree, isLoading, isError, error: orgError, refetch: refetchOrgTree } = useQuery({
+  const { data: orgTree, isLoading, isError, error: orgError, refetch: refetchOrgTree, isRefetching: isRefetchingOrg } = useQuery({
     queryKey: queryKeys.org(selectedCompanyId!),
     queryFn: () => agentsApi.org(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -436,29 +436,37 @@ export function OrgChart() {
   }, [pan, zoom]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Network} message="Select a company to view the org chart." />;
+    return (
+      <div>
+        <h1 className="sr-only">Org Chart</h1>
+        <EmptyState icon={Network} message="Select a company to view the org chart." />
+      </div>
+    );
   }
 
   if (isLoading) {
-    return <PageSkeleton variant="org-chart" />;
+    return <PageSkeleton variant="org-chart" title="Org Chart" />;
   }
 
   if (orgTree && orgTree.length === 0 && !isError) {
     return (
-      <EmptyState
-        icon={Network}
-        message="No organizational hierarchy defined."
-        action="Add your first agent"
-        onAction={() => navigate("/agents/new")}
-      />
+      <div>
+        <h1 className="sr-only">Org Chart</h1>
+        <EmptyState
+          icon={Network}
+          message="No organizational hierarchy defined."
+          action="Add your first agent"
+          onAction={() => navigate("/agents/new")}
+        />
+      </div>
     );
   }
 
   return (
     <div className="flex h-[calc(100dvh-9rem)] min-h-[420px] flex-col md:h-full md:min-h-0">
-      {/* Fix 1: sr-only h1 for page landmark */}
-      <h1 className="sr-only">Org Chart</h1>
-      <div ref={toolbarRef} className="mb-2 flex shrink-0 flex-wrap items-center justify-start gap-2">
+      <div ref={toolbarRef} className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
+        <h1 className="text-xl font-semibold tracking-tight">Org Chart</h1>
+        <div className="flex items-center gap-2">
         <Link to="/company/import">
           <Button variant="outline" size="sm">
             <Upload className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
@@ -471,6 +479,7 @@ export function OrgChart() {
             Export company
           </Button>
         </Link>
+        </div>
       </div>
       {isError && (
         <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 mb-4">
@@ -478,7 +487,7 @@ export function OrgChart() {
           <div className="flex-1 min-w-0">
             <p className="text-sm text-destructive">{orgError instanceof Error ? orgError.message : "Failed to load org chart."}</p>
           </div>
-          <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0" onClick={() => void refetchOrgTree()}>Retry</Button>
+          <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0" disabled={isRefetchingOrg} aria-busy={isRefetchingOrg} onClick={() => void refetchOrgTree()}>{isRefetchingOrg ? "Retrying…" : "Retry"}</Button>
         </div>
       )}
       {/* Fix 5: viewport role=application */}
@@ -571,7 +580,7 @@ export function OrgChart() {
           </button>
           <button
             type="button"
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-[10px] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-8"
+            className="flex size-9 items-center justify-center rounded border border-border bg-background text-xs transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-8"
             onClick={fitToScreen}
             title="Fit to screen"
             aria-label="Fit chart to screen"
@@ -673,17 +682,17 @@ export function OrgChart() {
                     <span className="text-sm font-semibold text-foreground leading-tight">
                       {node.name}
                     </span>
-                    <span className="text-xs text-muted-foreground leading-tight mt-0.5">
+                    <span className="text-xs text-foreground/60 leading-tight mt-0.5">
                       {agent?.title ?? roleLabel(node.role)}
                     </span>
                     {agent && (
-                      <span className="text-xs text-muted-foreground/60 leading-tight mt-1 truncate w-full">
+                      <span className="text-xs text-foreground/50 leading-tight mt-1 truncate w-full">
                         {getAdapterLabel(agent.adapterType)}
                       </span>
                     )}
                     {agent && agent.capabilities && (
                       <span
-                        className="text-xs text-muted-foreground/80 leading-tight mt-1 line-clamp-2 overflow-hidden w-full"
+                        className="text-xs text-foreground/60 leading-tight mt-1 line-clamp-2 overflow-hidden w-full"
                       >
                         {agent.capabilities}
                       </span>

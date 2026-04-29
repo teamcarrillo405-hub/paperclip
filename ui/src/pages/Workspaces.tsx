@@ -118,9 +118,11 @@ export function Workspaces() {
   const dataLoading = projectsLoading || issuesLoading || executionWorkspacesLoading;
   const error = (projectsError ?? issuesError ?? executionWorkspacesError) as Error | null;
 
-  if (experimentalSettingsQuery.isLoading) return <PageSkeleton variant="list" />;
+  if (experimentalSettingsQuery.isLoading) return <PageSkeleton variant="list" title="Workspaces" />;
   if (experimentalSettingsQuery.isError) return (
-    <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+    <div className="space-y-3">
+      <h1 className="sr-only">Workspaces — Error</h1>
+      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
       <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-destructive">Error</p>
@@ -133,20 +135,22 @@ export function Workspaces() {
         {experimentalSettingsQuery.isRefetching ? "Retrying…" : "Retry"}
       </Button>
     </div>
+    </div>
   );
   if (!selectedCompanyId) return (
-    <EmptyState icon={Building2} message="Select a company to view workspaces." />
+    <div><h1 className="sr-only">Workspaces</h1><EmptyState icon={Building2} message="Select a company to view workspaces." /></div>
   );
   if (!isolatedWorkspacesEnabled) return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-      <Settings className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
-      <p className="text-sm text-muted-foreground max-w-sm">
+    <div role="status" className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+      <h1 className="sr-only">Workspaces</h1>
+      <Settings className="h-8 w-8 text-foreground/60" aria-hidden="true" />
+      <p className="text-sm text-foreground/60 max-w-sm">
         Isolated workspaces are disabled for this instance. Contact your administrator to enable them in{" "}
         <Link to="/settings/instance" className="underline underline-offset-4">instance settings</Link>.
       </p>
     </div>
   );
-  if (dataLoading) return <PageSkeleton variant="list" />;
+  if (dataLoading) return <PageSkeleton variant="list" title="Workspaces" />;
   if (error) {
     const isDataRetrying = projectsLoading || issuesLoading || executionWorkspacesLoading;
     const refetchAll = () => {
@@ -155,18 +159,21 @@ export function Workspaces() {
       void refetchExecutionWorkspaces();
     };
     return (
-      <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-destructive">Error</p>
-          <p className="text-sm text-destructive">{error.message || "Failed to load workspaces."}</p>
+      <div className="space-y-3">
+        <h1 className="sr-only">Workspaces — Error</h1>
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-destructive">Error</p>
+            <p className="text-sm text-destructive">{error.message || "Failed to load workspaces."}</p>
+          </div>
+          <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            disabled={isDataRetrying}
+            aria-busy={isDataRetrying}
+            onClick={refetchAll}>
+            {isDataRetrying ? "Retrying…" : "Retry"}
+          </Button>
         </div>
-        <Button size="sm" variant="ghost" className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
-          disabled={isDataRetrying}
-          aria-busy={isDataRetrying}
-          onClick={refetchAll}>
-          {isDataRetrying ? "Retrying…" : "Retry"}
-        </Button>
       </div>
     );
   }
@@ -176,13 +183,14 @@ export function Workspaces() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
-          <p className="text-sm text-muted-foreground mt-1">Active execution environments across all projects.</p>
+          <p className="text-sm text-foreground/60 mt-1">Active execution environments across all projects.</p>
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => { void refetchProjects(); void refetchIssues(); void refetchExecutionWorkspaces(); }}
           disabled={dataLoading}
+          aria-busy={dataLoading}
           aria-label="Refresh workspaces"
         >
           {dataLoading ? <><LoaderCircle className="size-4 animate-spin" aria-hidden="true" /><span className="sr-only">Refreshing</span></> : <RefreshCw className="size-4" aria-hidden="true" />}
@@ -209,13 +217,13 @@ export function Workspaces() {
                     </Link>
                   </h2>
                   {group.project.description ? (
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                    <p className="mt-1 line-clamp-2 text-sm text-foreground/60">
                       {group.project.description}
                     </p>
                   ) : null}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-foreground/60">
                     {group.summaries.length} workspace{group.summaries.length === 1 ? "" : "s"}
                   </span>
                   {group.runningServiceCount > 0 && (

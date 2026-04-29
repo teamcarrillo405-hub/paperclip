@@ -39,14 +39,14 @@ export function EntityRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           {identifier && (
-            <span className="text-xs text-muted-foreground font-mono shrink-0 relative top-[1px]">
+            <span className="text-xs text-foreground/60 font-mono shrink-0 relative top-[1px]">
               {identifier}
             </span>
           )}
           <span className="truncate">{title}</span>
         </div>
         {subtitle && (
-          <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>
+          <p className="text-xs text-foreground/60 truncate mt-0.5">{subtitle}</p>
         )}
       </div>
       {trailing && <div className="flex items-center gap-2 shrink-0">{trailing}</div>}
@@ -61,8 +61,27 @@ export function EntityRow({
     );
   }
 
+  if (onClick) {
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        className={classes}
+        onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+      >
+        {content}
+      </div>
+    );
+  }
+
   return (
-    <div className={classes} onClick={onClick}>
+    <div className={classes}>
       {content}
     </div>
   );
