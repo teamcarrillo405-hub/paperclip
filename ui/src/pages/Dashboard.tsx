@@ -29,6 +29,14 @@ import type { Agent, Issue } from "@paperclipai/shared";
 import { PluginSlotOutlet } from "@/plugins/slots";
 import { useCompanyLiveEvents } from "../hooks/useCompanyLiveEvents";
 
+function calcForecast(spentCents: number): number | null {
+  const now = new Date();
+  const day = now.getDate();
+  if (day < 3) return null;
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return Math.round((spentCents / day) * daysInMonth);
+}
+
 const DASHBOARD_ACTIVITY_LIMIT = 10;
 
 function getRecentIssues(issues: Issue[]): Issue[] {
@@ -388,6 +396,9 @@ export function Dashboard() {
                   {data.costs.monthBudgetCents > 0
                     ? `${data.costs.monthUtilizationPercent}% of ${formatCents(data.costs.monthBudgetCents)} budget`
                     : "Unlimited budget"}
+                  {calcForecast(data.costs.monthSpendCents) !== null && (
+                    <> · Proj. {formatCents(calcForecast(data.costs.monthSpendCents)!)}</>
+                  )}
                 </span>
               }
             />

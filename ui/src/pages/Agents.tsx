@@ -120,6 +120,18 @@ export function Agents() {
     return map;
   }, [costByAgentData]);
 
+  const invokeMutation = useMutation({
+    mutationFn: ({ id }: { id: string }) =>
+      agentsApi.invoke(id, selectedCompanyId ?? undefined),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
+      pushToast({ title: "Run started", tone: "success" });
+    },
+    onError: (err: Error) => {
+      pushToast({ title: "Failed to start run", body: err.message, tone: "error" });
+    },
+  });
+
   const pauseMutation = useMutation({
     mutationFn: (id: string) => agentsApi.pause(id, selectedCompanyId ?? undefined),
     onSuccess: () => {
@@ -600,6 +612,21 @@ export function Agents() {
                           <span className="w-20 flex justify-end">
                             <StatusBadge status={agent.status} />
                           </span>
+                          {(agent.status === "active" || agent.status === "idle" || agent.status === "paused") && (
+                            <button
+                              type="button"
+                              aria-label={`Start run for ${agent.name}`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                invokeMutation.mutate({ id: agent.id });
+                              }}
+                              disabled={invokeMutation.isPending && invokeMutation.variables?.id === agent.id}
+                              className="text-xs font-medium px-2 py-0.5 border border-primary/30 text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+                            >
+                              {invokeMutation.isPending && invokeMutation.variables?.id === agent.id ? "..." : "Run"}
+                            </button>
+                          )}
                         </div>
                       </div>
                     }

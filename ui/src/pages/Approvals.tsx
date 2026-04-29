@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { approvalsApi } from "../api/approvals";
@@ -37,6 +37,7 @@ export function Approvals() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [processingApprovalId, setProcessingApprovalId] = useState<string | null>(null);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
+  const [agentFilter, setAgentFilter] = useState<string>("all");
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -154,6 +155,21 @@ export function Approvals() {
       if (urgencyDiff !== 0) return urgencyDiff;
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
+
+  const agentIdsInApprovals = useMemo(
+    () => new Set((data ?? []).map((a) => a.requestedByAgentId).filter(Boolean)),
+    [data],
+  );
+
+  const agentsInApprovals = useMemo(
+    () => (agents ?? []).filter((a) => agentIdsInApprovals.has(a.id)),
+    [agents, agentIdsInApprovals],
+  );
+
+  const agentFiltered =
+    agentFilter === "all"
+      ? filtered
+      : filtered.filter((a) => a.requestedByAgentId === agentFilter);
 
   const pendingItems = (data ?? []).filter(
     (a) => a.status === "pending" || a.status === "revision_requested",
@@ -303,6 +319,19 @@ export function Approvals() {
               Offline
             </span>
           )}
+          {agentsInApprovals.length > 1 && (
+            <select
+              value={agentFilter}
+              onChange={(e) => setAgentFilter(e.target.value)}
+              aria-label="Filter by agent"
+              className="h-7 px-2 py-1.5 text-xs border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="all">All agents</option>
+              {agentsInApprovals.map((a) => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Bulk approve/reject — only on Pending tab */}
@@ -375,7 +404,7 @@ export function Approvals() {
       </div>
 
       {/* Keyboard shortcut legend — only shown on Pending tab where shortcuts apply and items exist */}
-      {statusFilter === "pending" && filtered.length > 0 && (
+      {statusFilter === "pending" && agentFiltered.length > 0 && (
         <div className="flex items-center gap-3 flex-wrap">
           {[
             { keys: ["J", "K"], label: "navigate" },
@@ -433,7 +462,7 @@ export function Approvals() {
         </div>
       )}
 
-      {filtered.length === 0 && (
+      {agentFiltered.length === 0 && (
         <div role="status" className="flex flex-col items-center justify-center py-16 text-center">
           <ShieldCheck className="h-8 w-8 text-foreground/40 mb-3" aria-hidden="true" />
           <p className="text-sm text-foreground/60">
@@ -442,14 +471,14 @@ export function Approvals() {
         </div>
       )}
 
-      {filtered.length > 0 && (
+      {agentFiltered.length > 0 && (
         <div role="feed" aria-label={statusFilter === "all" ? "All approvals" : "Pending approvals"} aria-busy={isBulkOperating} className="grid gap-3">
           <span className="sr-only" aria-live="polite" aria-atomic="true">
-            {focusedIndex !== null ? (filtered[focusedIndex]?.type ?? "") : ""}
+            {focusedIndex !== null ? (agentFiltered[focusedIndex]?.type ?? "") : ""}
           </span>
           {statusFilter === "all" ? (() => {
-            const pendingGroup = filtered.filter((a) => a.status === "pending" || a.status === "revision_requested");
-            const resolvedGroup = filtered.filter((a) => a.status !== "pending" && a.status !== "revision_requested");
+            const pendingGroup = agentFiltered.filter((a) => a.status === "pending" || a.status === "revision_requested");
+            const resolvedGroup = agentFiltered.filter((a) => a.status !== "pending" && a.status !== "revision_requested");
             const allItems = [...pendingGroup, ...resolvedGroup];
             return allItems.map((approval, idx) => {
               const isFocused = focusedIndex === idx;
@@ -512,7 +541,7 @@ export function Approvals() {
                 </div>
               );
             });
-          })() : filtered.map((approval, idx) => {
+          })() : agentFiltered.map((approval, idx) => {
             const isFocused = focusedIndex === idx;
             const isSelected = selectedIds.has(approval.id);
             const isPending = approval.status === "pending" || approval.status === "revision_requested";
@@ -523,7 +552,7 @@ export function Approvals() {
                 tabIndex={-1}
                 role="article"
                 aria-posinset={idx + 1}
-                aria-setsize={filtered.length}
+                aria-setsize={agentFiltered.length}
                 className={cn(
                   "relative rounded-xl transition-all duration-300 focus:outline-none",
                   isFocused && "ring-2 ring-ring ring-offset-1 ring-offset-background",

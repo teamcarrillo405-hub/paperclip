@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "../lib/utils";
 import {
   Inbox,
@@ -78,6 +78,8 @@ export function Sidebar() {
   const { selectedCompanyId, selectedCompany } = useCompany();
   const inboxBadge = useInboxBadge(selectedCompanyId);
   const { collapsed, toggle } = useSidebarPreferences();
+  const [hoverExpanded, setHoverExpanded] = useState(false);
+  const effectiveCollapsed = collapsed && !hoverExpanded;
 
   useEffect(() => {
     function handleGlobalKey(e: KeyboardEvent) {
@@ -162,22 +164,24 @@ export function Sidebar() {
     companyPrefix: selectedCompany?.issuePrefix ?? null,
   };
 
-  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
+  const ToggleIcon = effectiveCollapsed ? PanelLeftOpen : PanelLeftClose;
 
   return (
     <aside
+      onMouseEnter={() => { if (collapsed) setHoverExpanded(true); }}
+      onMouseLeave={() => setHoverExpanded(false)}
       className="h-full min-h-0 border-r border-border bg-background flex flex-col transition-all duration-200 ease-in-out overflow-hidden"
-      style={{ width: collapsed ? "64px" : "240px" }}
+      style={{ width: effectiveCollapsed ? "64px" : "240px" }}
     >
       {/* AVERO logo */}
       <div
         className={
-          collapsed
+          effectiveCollapsed
             ? "flex items-center justify-center px-2 pt-4 pb-2 shrink-0"
             : "flex items-center justify-center px-4 pt-4 pb-2 shrink-0"
         }
       >
-        {collapsed ? (
+        {effectiveCollapsed ? (
           /* Show a small mark when collapsed — use first letter of branding */
           <div className="h-8 w-8 flex items-center justify-center">
             <img src="/branding/logo.png" alt="AVERO" className="h-6 w-auto object-contain" />
@@ -188,11 +192,11 @@ export function Sidebar() {
       </div>
 
       {/* Top bar: Company menu + Search */}
-      <div className={cn("flex items-center h-12 shrink-0", collapsed ? "justify-center" : "gap-1 px-3")}>
+      <div className={cn("flex items-center h-12 shrink-0", effectiveCollapsed ? "justify-center" : "gap-1 px-3")}>
         <div
           className={cn(
             "transition-all duration-150 overflow-hidden",
-            collapsed ? "opacity-0 max-w-0" : "opacity-100 flex-1 min-w-0",
+            effectiveCollapsed ? "opacity-0 max-w-0" : "opacity-100 flex-1 min-w-0",
           )}
         >
           <SidebarCompanyMenu />
@@ -217,7 +221,7 @@ export function Sidebar() {
               <span
                 className={cn(
                   "flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
-                  collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
+                  effectiveCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
                 )}
               >
                 Favorites
@@ -236,7 +240,7 @@ export function Sidebar() {
                     to={item.to}
                     label={item.label}
                     icon={item.icon}
-                    collapsed={collapsed}
+                    collapsed={effectiveCollapsed}
                     isFavorite
                     onFavoriteToggle={() => toggleFavorite(path)}
                   />
@@ -253,14 +257,14 @@ export function Sidebar() {
             <div
               className={cn(
                 "h-px w-full bg-border/50 transition-all duration-150",
-                collapsed ? "opacity-100" : "opacity-0 max-w-0 overflow-hidden",
+                effectiveCollapsed ? "opacity-100" : "opacity-0 max-w-0 overflow-hidden",
               )}
             />
             {/* Label shown only when expanded */}
             <span
               className={cn(
                 "block text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
-                collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
+                effectiveCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
               )}
             >
               Workspace
@@ -269,9 +273,9 @@ export function Sidebar() {
           {/* New Issue button */}
           <button
             onClick={() => openNewIssue()}
-            title={collapsed ? "New Issue" : undefined}
+            title={effectiveCollapsed ? "New Issue" : undefined}
             className={
-              collapsed
+              effectiveCollapsed
                 ? "flex items-center justify-center py-2 text-[13px] font-medium text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
                 : "flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
             }
@@ -280,7 +284,7 @@ export function Sidebar() {
             <span
               className={cn(
                 "truncate transition-all duration-150",
-                collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[200px]",
+                effectiveCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[200px]",
               )}
             >
               New Issue
@@ -291,10 +295,10 @@ export function Sidebar() {
             label="Dashboard"
             icon={LayoutDashboard}
             liveCount={liveRunCount}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
           />
-          <SidebarNavItem to="/roi" label="ROI Dashboard" icon={TrendingUp} collapsed={collapsed} />
-          <SidebarNavItem to="/financial-health" label="Financial Health" icon={DollarSign} collapsed={collapsed} />
+          <SidebarNavItem to="/roi" label="ROI Dashboard" icon={TrendingUp} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/financial-health" label="Financial Health" icon={DollarSign} collapsed={effectiveCollapsed} />
           <SidebarNavItem
             to="/inbox"
             label="Inbox"
@@ -302,7 +306,7 @@ export function Sidebar() {
             badge={inboxBadge.inbox}
             badgeTone={inboxBadge.failedRuns > 0 ? "danger" : "default"}
             alert={inboxBadge.failedRuns > 0}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/inbox")}
             isFavorite={favoritePaths.includes("/inbox")}
           />
@@ -318,7 +322,7 @@ export function Sidebar() {
         {/* Work section */}
         <SidebarSection
           label="Work"
-          collapsed={collapsed}
+          collapsed={effectiveCollapsed}
           collapsible
           isCollapsed={sectionCollapsed.has("Work")}
           onToggleCollapse={() => toggleSectionCollapsed("Work")}
@@ -329,7 +333,7 @@ export function Sidebar() {
             to="/issues"
             label="Issues"
             icon={CircleDot}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/issues")}
             isFavorite={favoritePaths.includes("/issues")}
           />
@@ -337,8 +341,8 @@ export function Sidebar() {
             to="/approvals"
             label="Approvals"
             icon={ClipboardCheck}
-            badge={!collapsed ? approvalsBadgeCount : undefined}
-            collapsed={collapsed}
+            badge={!effectiveCollapsed ? approvalsBadgeCount : undefined}
+            collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/approvals")}
             isFavorite={favoritePaths.includes("/approvals")}
           />
@@ -346,7 +350,7 @@ export function Sidebar() {
             to="/routines"
             label="Routines"
             icon={Repeat}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/routines")}
             isFavorite={favoritePaths.includes("/routines")}
           />
@@ -354,32 +358,32 @@ export function Sidebar() {
             to="/goals"
             label="Goals"
             icon={Target}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/goals")}
             isFavorite={favoritePaths.includes("/goals")}
           />
-          <SidebarNavItem to="/customers" label="Customers" icon={Users} collapsed={collapsed} />
-          <SidebarNavItem to="/social" label="Social Media" icon={Share2} collapsed={collapsed} />
-          <SidebarNavItem to="/marketing" label="Marketing" icon={Megaphone} collapsed={collapsed} />
-          <SidebarNavItem to="/crews" label="AI Crews" icon={Users} collapsed={collapsed} />
-          <SidebarNavItem to="/knowledge" label="Knowledge Base" icon={BookOpen} collapsed={collapsed} />
-          <SidebarNavItem to="/email" label="Email" icon={Mail} collapsed={collapsed} />
-          <SidebarNavItem to="/video-studio" label="Video Studio" icon={Video} collapsed={collapsed} />
-          <SidebarNavItem to="/image-studio" label="Image Studio" icon={Image} collapsed={collapsed} />
-          <SidebarNavItem to="/slides" label="Presentations" icon={Presentation} collapsed={collapsed} />
-          <SidebarNavItem to="/form-builder" label="Form Builder" icon={FileInput} collapsed={collapsed} />
-          <SidebarNavItem to="/automations" label="Automations" icon={GitBranch} collapsed={collapsed} />
+          <SidebarNavItem to="/customers" label="Customers" icon={Users} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/social" label="Social Media" icon={Share2} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/marketing" label="Marketing" icon={Megaphone} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/crews" label="AI Crews" icon={Users} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/knowledge" label="Knowledge Base" icon={BookOpen} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/email" label="Email" icon={Mail} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/video-studio" label="Video Studio" icon={Video} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/image-studio" label="Image Studio" icon={Image} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/slides" label="Presentations" icon={Presentation} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/form-builder" label="Form Builder" icon={FileInput} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/automations" label="Automations" icon={GitBranch} collapsed={effectiveCollapsed} />
           <SidebarNavItem
             to="/autonomous-tasks"
             label="Autonomous Tasks"
             icon={Bot}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/autonomous-tasks")}
             isFavorite={favoritePaths.includes("/autonomous-tasks")}
           />
-          <SidebarNavItem to="/live-meeting" label="Live Meeting" icon={Mic} collapsed={collapsed} />
+          <SidebarNavItem to="/live-meeting" label="Live Meeting" icon={Mic} collapsed={effectiveCollapsed} />
           {showWorkspacesLink ? (
-            <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} collapsed={collapsed} />
+            <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} collapsed={effectiveCollapsed} />
           ) : null}
         </SidebarSection>
 
@@ -390,17 +394,17 @@ export function Sidebar() {
         {/* Insights section */}
         <SidebarSection
           label="Insights"
-          collapsed={collapsed}
+          collapsed={effectiveCollapsed}
           collapsible
           isCollapsed={sectionCollapsed.has("Insights")}
           onToggleCollapse={() => toggleSectionCollapsed("Insights")}
         >
-          <SidebarNavItem to="/reports" label="Reports" icon={BarChart2} collapsed={collapsed} />
+          <SidebarNavItem to="/reports" label="Reports" icon={BarChart2} collapsed={effectiveCollapsed} />
           <SidebarNavItem
             to="/costs"
             label="Costs"
             icon={DollarSign}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/costs")}
             isFavorite={favoritePaths.includes("/costs")}
           />
@@ -408,7 +412,7 @@ export function Sidebar() {
             to="/activity"
             label="Activity"
             icon={History}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/activity")}
             isFavorite={favoritePaths.includes("/activity")}
           />
@@ -417,31 +421,31 @@ export function Sidebar() {
         {/* Company section */}
         <SidebarSection
           label="Company"
-          collapsed={collapsed}
+          collapsed={effectiveCollapsed}
           collapsible
           isCollapsed={sectionCollapsed.has("Company")}
           onToggleCollapse={() => toggleSectionCollapsed("Company")}
         >
-          <SidebarNavItem to="/org" label="Org" icon={Network} collapsed={collapsed} />
-          <SidebarNavItem to="/skills" label="Skills" icon={Boxes} collapsed={collapsed} />
+          <SidebarNavItem to="/org" label="Org" icon={Network} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/skills" label="Skills" icon={Boxes} collapsed={effectiveCollapsed} />
           <SidebarNavItem
             to="/compliance"
             label="Compliance"
             icon={ShieldCheck}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/compliance")}
             isFavorite={favoritePaths.includes("/compliance")}
           />
-          <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} collapsed={collapsed} />
-          <SidebarNavItem to="/onboarding" label="Setup Guide" icon={GraduationCap} collapsed={collapsed} />
+          <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/onboarding" label="Setup Guide" icon={GraduationCap} collapsed={effectiveCollapsed} />
           {showPartnerLink ? (
-            <SidebarNavItem to="/partner" label="Partner Program" icon={Handshake} collapsed={collapsed} />
+            <SidebarNavItem to="/partner" label="Partner Program" icon={Handshake} collapsed={effectiveCollapsed} />
           ) : null}
           {import.meta.env.VITE_DEV_MODE === "true" ? (
-            <SidebarNavItem to="/dev-tools" label="Dev Tools" icon={Terminal} collapsed={collapsed} />
+            <SidebarNavItem to="/dev-tools" label="Dev Tools" icon={Terminal} collapsed={effectiveCollapsed} />
           ) : null}
           {showAdminLink ? (
-            <SidebarNavItem to="/admin" label="Enterprise Admin" icon={Shield} collapsed={collapsed} />
+            <SidebarNavItem to="/admin" label="Enterprise Admin" icon={Shield} collapsed={effectiveCollapsed} />
           ) : null}
         </SidebarSection>
 
@@ -460,9 +464,9 @@ export function Sidebar() {
           <div
             className={cn(
               "flex items-center px-2 py-1.5 rounded-md hover:bg-accent/40 transition-colors cursor-default",
-              collapsed ? "justify-center" : "gap-2.5",
+              effectiveCollapsed ? "justify-center" : "gap-2.5",
             )}
-            title={collapsed ? (sessionData.user.name ?? sessionData.user.email ?? "") : undefined}
+            title={effectiveCollapsed ? (sessionData.user.name ?? sessionData.user.email ?? "") : undefined}
           >
             {sessionData.user.image ? (
               <img
@@ -478,7 +482,7 @@ export function Sidebar() {
             <div
               className={cn(
                 "min-w-0 transition-all duration-150",
-                collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[180px]",
+                effectiveCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[180px]",
               )}
             >
               <p className="text-[12px] font-medium truncate leading-tight">{sessionData.user.name ?? "User"}</p>
@@ -491,27 +495,27 @@ export function Sidebar() {
         <div
           className={cn(
             "flex items-center justify-between px-3 py-1 transition-all duration-150",
-            collapsed ? "opacity-0 max-h-0 overflow-hidden py-0 pointer-events-none" : "opacity-100 max-h-10",
+            effectiveCollapsed ? "opacity-0 max-h-0 overflow-hidden py-0 pointer-events-none" : "opacity-100 max-h-10",
           )}
         >
           <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
             Density
           </span>
-          <DensityToggle collapsed={collapsed} />
+          <DensityToggle collapsed={effectiveCollapsed} />
         </div>
         <button
           onClick={toggle}
-          title={collapsed ? "Expand sidebar ([ key)" : "Collapse sidebar ([ key)"}
+          title={effectiveCollapsed ? "Expand sidebar ([ key)" : "Collapse sidebar ([ key)"}
           className={cn(
             "w-full flex items-center py-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors",
-            collapsed ? "justify-center" : "gap-2.5 px-3 text-[13px]",
+            effectiveCollapsed ? "justify-center" : "gap-2.5 px-3 text-[13px]",
           )}
         >
           <ToggleIcon className="h-4 w-4 shrink-0" />
           <span
             className={cn(
               "text-[12px] font-medium transition-all duration-150",
-              collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[200px]",
+              effectiveCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[200px]",
             )}
           >
             Collapse

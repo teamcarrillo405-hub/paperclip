@@ -34,6 +34,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+function calcForecast(spentCents: number): number | null {
+  const now = new Date();
+  const day = now.getDate();
+  if (day < 3) return null;
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return Math.round((spentCents / day) * daysInMonth);
+}
+
 const NO_COMPANY = "__none__";
 
 function currentWeekRange(): { from: string; to: string } {
@@ -627,7 +635,11 @@ export function Costs() {
               <MetricTile
                 label="Inference spend"
                 value={formatCents(spendData?.summary.spendCents ?? 0)}
-                subtitle={`${formatTokens(inferenceTokenTotal)} tokens across request-scoped events`}
+                subtitle={
+                  preset === "mtd" && calcForecast(spendData?.summary.spendCents ?? 0) !== null
+                    ? `${formatTokens(inferenceTokenTotal)} tokens · Proj. ${formatCents(calcForecast(spendData?.summary.spendCents ?? 0)!)}`
+                    : `${formatTokens(inferenceTokenTotal)} tokens across request-scoped events`
+                }
                 icon={DollarSign}
               />
               <MetricTile
