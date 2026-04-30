@@ -1,6 +1,6 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { eq } from "drizzle-orm";
+import type { Db } from "@paperclipai/db";
+import { gustoOAuthTokens } from "@paperclipai/db";
 
 function gustoBaseUrl(): string {
   return process.env.GUSTO_SANDBOX === "true"
@@ -52,45 +52,58 @@ export interface GustoPaySchedule {
   day_2: number | null;
 }
 
-type Store = Record<string, GustoToken>;
+export function gustoOAuthStore(db: Db) {
+  return {
+    get: async (companyId: string): Promise<GustoToken | null> => {
+      const [row] = await db
+        .select()
+        .from(gustoOAuthTokens)
+        .where(eq(gustoOAuthTokens.companyId, companyId))
+        .limit(1);
+      if (!row) return null;
+      return {
+        accessToken: row.accessToken,
+        refreshToken: row.refreshToken,
+        expiresAt: row.expiresAt.toISOString(),
+        tokenType: row.tokenType,
+        gustoCompanyUuid: row.gustoCompanyUuid,
+        gustoCompanyName: row.gustoCompanyName,
+        updatedAt: row.updatedAt.toISOString(),
+      };
+    },
 
-function storeFilePath(): string {
-  return path.resolve(resolvePaperclipInstanceRoot(), "data", "gusto-oauth.json");
+    set: async (companyId: string, token: GustoToken): Promise<void> => {
+      await db
+        .insert(gustoOAuthTokens)
+        .values({
+          companyId,
+          accessToken: token.accessToken,
+          refreshToken: token.refreshToken,
+          expiresAt: new Date(token.expiresAt),
+          tokenType: token.tokenType,
+          gustoCompanyUuid: token.gustoCompanyUuid,
+          gustoCompanyName: token.gustoCompanyName,
+          updatedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: gustoOAuthTokens.companyId,
+          set: {
+            accessToken: token.accessToken,
+            refreshToken: token.refreshToken,
+            expiresAt: new Date(token.expiresAt),
+            tokenType: token.tokenType,
+            gustoCompanyUuid: token.gustoCompanyUuid,
+            gustoCompanyName: token.gustoCompanyName,
+            updatedAt: new Date(),
+          },
+        });
+    },
+
+    delete: async (companyId: string): Promise<void> => {
+      await db.delete(gustoOAuthTokens).where(eq(gustoOAuthTokens.companyId, companyId));
+    },
+  };
 }
-
-async function readStore(): Promise<Store> {
-  try {
-    const raw = await fs.readFile(storeFilePath(), "utf-8");
-    const parsed = JSON.parse(raw) as Store;
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return {};
-    throw err;
-  }
-}
-
-async function writeStore(store: Store): Promise<void> {
-  const file = storeFilePath();
-  await fs.mkdir(path.dirname(file), { recursive: true });
-  await fs.writeFile(file, JSON.stringify(store, null, 2), "utf-8");
-}
-
-export const gustoOAuthStore = {
-  get: async (companyId: string): Promise<GustoToken | null> => {
-    const store = await readStore();
-    return store[companyId] ?? null;
-  },
-  set: async (companyId: string, token: GustoToken): Promise<void> => {
-    const store = await readStore();
-    store[companyId] = token;
-    await writeStore(store);
-  },
-  delete: async (companyId: string): Promise<void> => {
-    const store = await readStore();
-    delete store[companyId];
-    await writeStore(store);
-  },
-};
 
 export function requireGustoEnv(): { clientId: string; clientSecret: string; redirectUri: string } {
   const clientId = (process.env.GUSTO_CLIENT_ID ?? "").trim();
@@ -105,7 +118,7 @@ export function requireGustoEnv(): { clientId: string; clientSecret: string; red
   return { clientId, clientSecret, redirectUri };
 }
 
-async function refreshIfExpired(companyId: string, token: GustoToken): Promise<GustoToken> {
+async function refreshIfExpired(db: Db, companyId: string, token: GustoToken): Promise<GustoToken> {
   const expiresAt = new Date(token.expiresAt).getTime();
   if (Date.now() < expiresAt - 60_000) return token;
 
@@ -139,16 +152,16 @@ async function refreshIfExpired(companyId: string, token: GustoToken): Promise<G
     tokenType: json.token_type ?? "Bearer",
     updatedAt: new Date().toISOString(),
   };
-  await gustoOAuthStore.set(companyId, refreshed);
+  await gustoOAuthStore(db).set(companyId, refreshed);
   return refreshed;
 }
 
-export async function gustoApiCall<T>(companyId: string, urlPath: string): Promise<T> {
-  const token = await gustoOAuthStore.get(companyId);
+export async function gustoApiCall<T>(db: Db, companyId: string, urlPath: string): Promise<T> {
+  const token = await gustoOAuthStore(db).get(companyId);
   if (!token) {
     throw Object.assign(new Error("Gusto not connected for this company"), { status: 422 });
   }
-  const fresh = await refreshIfExpired(companyId, token);
+  const fresh = await refreshIfExpired(db, companyId, token);
   const res = await fetch(`${gustoBaseUrl()}${urlPath}`, {
     headers: {
       Authorization: `${fresh.tokenType} ${fresh.accessToken}`,

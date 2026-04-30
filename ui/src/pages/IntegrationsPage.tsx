@@ -13,6 +13,8 @@ import {
   integrationsApi,
   type EmailProviderKey,
   type EmailStatusResponse,
+  type GoogleStatusResponse,
+  type GustoStatusResponse,
   type QuickBooksStatusResponse,
 } from "@/api/integrations";
 
@@ -21,6 +23,10 @@ const queryKeys = {
     ["integrations", "quickbooks", "status", companyId] as const,
   emailStatus: (companyId: string) =>
     ["integrations", "email", "status", companyId] as const,
+  googleStatus: (companyId: string) =>
+    ["integrations", "google", "status", companyId] as const,
+  gustoStatus: (companyId: string) =>
+    ["integrations", "gusto", "status", companyId] as const,
 };
 
 function QuickBooksIcon({ className }: { className?: string }) {
@@ -68,6 +74,26 @@ function TwilioIcon({ className }: { className?: string }) {
       <circle cx="31" cy="17" r="4" fill="#fff" />
       <circle cx="17" cy="31" r="4" fill="#fff" />
       <circle cx="31" cy="31" r="4" fill="#fff" />
+    </svg>
+  );
+}
+
+function GoogleWorkspaceIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
+      <path fill="#4285F4" d="M24 20.5v7h10.2c-.4 2.1-2.6 6.2-10.2 6.2-6.1 0-11.1-5.1-11.1-11.2S17.9 11.3 24 11.3c3.5 0 5.8 1.5 7.1 2.8l4.8-4.7C32.9 6.3 28.8 4.5 24 4.5 13.3 4.5 4.5 13.3 4.5 24S13.3 43.5 24 43.5c12.1 0 20.1-8.5 20.1-20.4 0-1.4-.1-2.4-.3-3.5H24z"/>
+      <path fill="#34A853" d="M24 43.5c5.4 0 10-1.8 13.3-4.8l-6.2-5.1c-1.7 1.2-3.9 1.9-7.1 1.9-5.4 0-10-3.7-11.7-8.6l-6.4 5c3.3 6.5 10 11.6 18.1 11.6z"/>
+      <path fill="#FBBC05" d="M12.3 27c-.4-1.3-.7-2.6-.7-4s.2-2.7.7-4l-6.4-5c-1.3 2.6-2.1 5.5-2.1 9s.8 6.4 2.1 9l6.4-5z"/>
+      <path fill="#EA4335" d="M24 11.3c3.1 0 5.2 1.3 6.4 2.4l4.8-4.7C32.9 6.3 28.8 4.5 24 4.5 15.9 4.5 9.2 9.5 5.9 16l6.4 5C14 16.9 18.6 11.3 24 11.3z"/>
+    </svg>
+  );
+}
+
+function GustoIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
+      <circle cx="24" cy="24" r="24" fill="#F45D48" />
+      <text x="24" y="32" textAnchor="middle" fill="white" fontSize="22" fontWeight="bold" fontFamily="Arial">G</text>
     </svg>
   );
 }
@@ -167,6 +193,18 @@ export function IntegrationsPage() {
     enabled: !!selectedCompanyId,
   });
 
+  const googleStatusQuery = useQuery<GoogleStatusResponse>({
+    queryKey: queryKeys.googleStatus(selectedCompanyId ?? ""),
+    queryFn: () => integrationsApi.google.getStatus(selectedCompanyId!),
+    enabled: !!selectedCompanyId,
+  });
+
+  const gustoStatusQuery = useQuery<GustoStatusResponse>({
+    queryKey: queryKeys.gustoStatus(selectedCompanyId ?? ""),
+    queryFn: () => integrationsApi.gusto.getStatus(selectedCompanyId!),
+    enabled: !!selectedCompanyId,
+  });
+
   useEffect(() => {
     if (handledRedirectRef.current) return;
     const connected = searchParams.get("connected");
@@ -193,6 +231,14 @@ export function IntegrationsPage() {
         body: emailProvider ? `Provider: ${emailProvider}` : undefined,
         tone: "error",
       });
+      matched = true;
+    }
+    if (connected === "google") {
+      pushToast({ title: "Google Workspace connected successfully", tone: "success" });
+      matched = true;
+    }
+    if (connected === "gusto") {
+      pushToast({ title: "Gusto Payroll connected successfully", tone: "success" });
       matched = true;
     }
 
@@ -284,6 +330,78 @@ export function IntegrationsPage() {
     },
   });
 
+  const connectGoogleMutation = useMutation({
+    mutationFn: () => integrationsApi.google.getConnectUrl(selectedCompanyId!),
+    onSuccess: (data) => {
+      const target = connectRedirectUrl(data);
+      if (!target) {
+        pushToast({ title: "Failed to start Google Workspace connect", tone: "error" });
+        return;
+      }
+      window.location.assign(target);
+    },
+    onError: (err: Error) => {
+      pushToast({
+        title: "Failed to start Google Workspace connect",
+        body: err.message,
+        tone: "error",
+      });
+    },
+  });
+
+  const disconnectGoogleMutation = useMutation({
+    mutationFn: () => integrationsApi.google.disconnect(selectedCompanyId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.googleStatus(selectedCompanyId ?? ""),
+      });
+      pushToast({ title: "Google Workspace disconnected", tone: "info" });
+    },
+    onError: (err: Error) => {
+      pushToast({
+        title: "Failed to disconnect Google Workspace",
+        body: err.message,
+        tone: "error",
+      });
+    },
+  });
+
+  const connectGustoMutation = useMutation({
+    mutationFn: () => integrationsApi.gusto.getConnectUrl(selectedCompanyId!),
+    onSuccess: (data) => {
+      const target = connectRedirectUrl(data);
+      if (!target) {
+        pushToast({ title: "Failed to start Gusto connect", tone: "error" });
+        return;
+      }
+      window.location.assign(target);
+    },
+    onError: (err: Error) => {
+      pushToast({
+        title: "Failed to start Gusto connect",
+        body: err.message,
+        tone: "error",
+      });
+    },
+  });
+
+  const disconnectGustoMutation = useMutation({
+    mutationFn: () => integrationsApi.gusto.disconnect(selectedCompanyId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.gustoStatus(selectedCompanyId ?? ""),
+      });
+      pushToast({ title: "Gusto Payroll disconnected", tone: "info" });
+    },
+    onError: (err: Error) => {
+      pushToast({
+        title: "Failed to disconnect Gusto Payroll",
+        body: err.message,
+        tone: "error",
+      });
+    },
+  });
+
   if (!selectedCompany || !selectedCompanyId) {
     return (
       <div className="text-sm text-muted-foreground">
@@ -294,12 +412,19 @@ export function IntegrationsPage() {
 
   const quickbooksStatus = quickbooksStatusQuery.data;
   const emailStatus = emailStatusQuery.data;
+  const googleStatus = googleStatusQuery.data;
+  const gustoStatus = gustoStatusQuery.data;
+
   const quickbooksConnected = !!quickbooksStatus?.connected;
   const gmailConnected = !!emailStatus?.gmail.connected;
   const outlookConnected = !!emailStatus?.outlook.connected;
+  const googleConnected = !!googleStatus?.connected;
+  const gustoConnected = !!gustoStatus?.connected;
 
   const quickbooksAccountLabel = quickbooksStatus?.companyName
     ?? (quickbooksStatus?.realmId ? `Realm ${quickbooksStatus.realmId}` : null);
+  const googleAccountLabel = googleConnected ? (googleStatus?.email ?? null) : null;
+  const gustoAccountLabel = gustoConnected ? (gustoStatus?.gustoCompanyName ?? null) : null;
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -313,6 +438,10 @@ export function IntegrationsPage() {
         </p>
       </div>
 
+      {/* Finance & HR */}
+      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mt-4 mb-2">
+        Finance &amp; HR
+      </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <IntegrationCard
           icon={<QuickBooksIcon className="h-10 w-10" />}
@@ -343,6 +472,41 @@ export function IntegrationsPage() {
           }
         />
 
+        <IntegrationCard
+          icon={<GustoIcon className="h-10 w-10" />}
+          name="Gusto Payroll"
+          description="Sync employees, payroll runs and pay schedules with your HR agents"
+          statusTone={gustoConnected ? "connected" : "disconnected"}
+          statusLabel={gustoConnected ? "Connected" : "Not Connected"}
+          accountLabel={gustoConnected ? gustoAccountLabel : null}
+          action={
+            gustoConnected ? (
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={disconnectGustoMutation.isPending}
+                onClick={() => disconnectGustoMutation.mutate()}
+              >
+                {disconnectGustoMutation.isPending ? "Disconnecting..." : "Disconnect"}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                disabled={connectGustoMutation.isPending || gustoStatusQuery.isLoading}
+                onClick={() => connectGustoMutation.mutate()}
+              >
+                {connectGustoMutation.isPending ? "Starting..." : "Connect"}
+              </Button>
+            )
+          }
+        />
+      </div>
+
+      {/* Communication */}
+      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mt-6 mb-2">
+        Communication
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
         <IntegrationCard
           icon={<GmailIcon className="h-10 w-10" />}
           name="Gmail"
@@ -424,6 +588,50 @@ export function IntegrationsPage() {
         />
 
         <IntegrationCard
+          icon={<GoogleWorkspaceIcon className="h-10 w-10" />}
+          name="Google Workspace"
+          description="Gmail, Calendar, Drive, Docs &amp; Sheets — one connection for all Google services"
+          statusTone={googleConnected ? "connected" : "disconnected"}
+          statusLabel={googleConnected ? "Connected" : "Not Connected"}
+          accountLabel={googleConnected ? googleAccountLabel : null}
+          action={
+            googleConnected ? (
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={disconnectGoogleMutation.isPending}
+                onClick={() => disconnectGoogleMutation.mutate()}
+              >
+                {disconnectGoogleMutation.isPending ? "Disconnecting..." : "Disconnect"}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                disabled={connectGoogleMutation.isPending || googleStatusQuery.isLoading}
+                onClick={() => connectGoogleMutation.mutate()}
+              >
+                {connectGoogleMutation.isPending ? "Starting..." : "Connect"}
+              </Button>
+            )
+          }
+        />
+
+        <IntegrationCard
+          icon={<TwilioIcon className="h-10 w-10" />}
+          name="Twilio SMS"
+          description="Send automated SMS messages to customers"
+          statusTone="coming-soon"
+          statusLabel="Coming Soon"
+          disabled
+        />
+      </div>
+
+      {/* Productivity & Automation */}
+      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mt-6 mb-2">
+        Productivity &amp; Automation
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <IntegrationCard
           icon={
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white">
               <Phone className="h-5 w-5" />
@@ -438,15 +646,6 @@ export function IntegrationsPage() {
               Connect
             </Button>
           }
-        />
-
-        <IntegrationCard
-          icon={<TwilioIcon className="h-10 w-10" />}
-          name="Twilio SMS"
-          description="Send automated SMS messages to customers"
-          statusTone="coming-soon"
-          statusLabel="Coming Soon"
-          disabled
         />
 
         <IntegrationCard

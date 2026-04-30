@@ -39,6 +39,19 @@ export interface EmailStatusResponse {
   outlook: EmailProviderStatus;
 }
 
+// Google Workspace
+export interface GoogleStatusResponse {
+  connected: boolean;
+  email?: string | null;
+}
+
+// Gusto Payroll
+export interface GustoStatusResponse {
+  connected: boolean;
+  gustoCompanyName?: string | null;
+  gustoCompanyUuid?: string | null;
+}
+
 function withCompany(path: string, companyId: string, extra?: Record<string, string>): string {
   const params = new URLSearchParams({ companyId });
   if (extra) {
@@ -63,5 +76,21 @@ export const integrationsApi = {
       api.get<EmailStatusResponse>(withCompany("/integrations/email/status", companyId)),
     disconnect: (companyId: string, provider: EmailProviderKey) =>
       api.delete<{ ok: boolean }>(withCompany("/integrations/email/disconnect", companyId, { provider })),
+  },
+  google: {
+    getConnectUrl: (companyId: string) =>
+      api.get<{ url: string }>(withCompany("/google/auth/connect", companyId)),
+    getStatus: (companyId: string) =>
+      api.get<GoogleStatusResponse>(withCompany("/google/auth/status", companyId)),
+    disconnect: (companyId: string) =>
+      api.delete<{ ok: boolean }>(withCompany("/google/auth/disconnect", companyId)),
+  },
+  gusto: {
+    getConnectUrl: (companyId: string) =>
+      api.get<{ url: string }>(withCompany("/integrations/gusto/connect", companyId)),
+    getStatus: (companyId: string) =>
+      api.get<GustoStatusResponse>(withCompany("/integrations/gusto/status", companyId)),
+    disconnect: (companyId: string) =>
+      api.delete<{ ok: boolean }>(withCompany("/integrations/gusto/disconnect", companyId)),
   },
 };

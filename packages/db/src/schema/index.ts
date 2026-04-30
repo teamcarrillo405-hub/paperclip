@@ -58,6 +58,7 @@ export { approvalComments } from "./approval_comments.js";
 export { activityLog } from "./activity_log.js";
 export { auditLog } from "./audit_log.js";
 export { companySecrets } from "./company_secrets.js";
+export { gustoOAuthTokens } from "./gusto_oauth_tokens.js";
 export { companySecretVersions } from "./company_secret_versions.js";
 export { companySkills } from "./company_skills.js";
 export { plugins } from "./plugins.js";

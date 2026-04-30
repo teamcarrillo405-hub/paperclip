@@ -252,7 +252,7 @@ export function Dashboard() {
       return (
         <div><h1 className="sr-only">Dashboard</h1><EmptyState
           icon={LayoutDashboard}
-          message="Welcome to Paperclip. Set up your first company and agent to get started."
+          message="Welcome to Avero. Set up your first company and agent to get started."
           action="Get Started"
           onAction={openOnboarding}
         /></div>

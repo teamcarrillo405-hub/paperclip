@@ -10,6 +10,7 @@
   "dependencies": {
     "@paperclipai/db": "workspace:*",
     "@paperclipai/video-studio": "workspace:*",
+    "drizzle-orm": "^0.38.4",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

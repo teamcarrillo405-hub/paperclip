@@ -20,7 +20,7 @@ export type BrandConfig = {
 };
 
 export const DEFAULT_BRAND: BrandConfig = {
-  productName: "Paperclip",
+  productName: "Avero",
   productTagline: "AI-powered agent orchestration",
   supportEmail: "",
   docsUrl: "",

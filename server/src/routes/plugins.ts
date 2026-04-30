@@ -103,13 +103,13 @@ interface PluginInstallRequest {
   isLocalPath?: boolean;
 }
 
-interface AvailablePluginExample {
+interface AvailablePlugin {
   packageName: string;
   pluginKey: string;
   displayName: string;
   description: string;
   localPath: string;
-  tag: "example";
+  tag: "example" | "integration" | "productivity";
 }
 
 /** Response body for GET /api/plugins/:pluginId/health */
@@ -140,42 +140,124 @@ const PLUGIN_SCOPED_API_RESPONSE_HEADER_ALLOWLIST = new Set([
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../../..");
 
-const BUNDLED_PLUGIN_EXAMPLES: AvailablePluginExample[] = [
+const BUNDLED_PLUGIN_EXAMPLES: AvailablePlugin[] = [
+  // ── Avero First-Party Integrations ────────────────────────────────────────
+  {
+    packageName: "@paperclipai/plugin-quickbooks",
+    pluginKey: "paperclip.quickbooks",
+    displayName: "QuickBooks Online",
+    description: "Invoices, customers, expenses, payments and P&L reports. Connect at Settings → Integrations.",
+    localPath: "packages/plugins/quickbooks",
+    tag: "integration",
+  },
+  {
+    packageName: "@paperclipai/plugin-gusto",
+    pluginKey: "paperclip.gusto",
+    displayName: "Gusto Payroll",
+    description: "Employees, payroll runs and pay schedules. Connect at Settings → Integrations.",
+    localPath: "packages/plugins/gusto",
+    tag: "integration",
+  },
+  {
+    packageName: "@paperclipai/plugin-google-workspace",
+    pluginKey: "paperclip.google-workspace",
+    displayName: "Google Workspace",
+    description: "Gmail, Calendar, Drive, Docs and Sheets — one connection for all Google services.",
+    localPath: "packages/plugins/google-workspace",
+    tag: "integration",
+  },
+  {
+    packageName: "@paperclipai/plugin-email",
+    pluginKey: "paperclip.email",
+    displayName: "Email (Gmail + Outlook)",
+    description: "Read, draft and send email via Gmail or Microsoft Outlook. Connect at Settings → Integrations.",
+    localPath: "packages/plugins/email",
+    tag: "integration",
+  },
+  {
+    packageName: "@paperclipai/plugin-social",
+    pluginKey: "paperclip.social",
+    displayName: "Social Media",
+    description: "Schedule and publish posts to Instagram, LinkedIn, X, Reddit and Google Business.",
+    localPath: "packages/plugins/social",
+    tag: "integration",
+  },
+  {
+    packageName: "@paperclipai/plugin-voice",
+    pluginKey: "paperclip.voice",
+    displayName: "Voice Agent (Twilio + Deepgram + ElevenLabs)",
+    description: "Answer inbound calls and make outbound AR reminder calls with AI voice.",
+    localPath: "packages/plugins/voice",
+    tag: "integration",
+  },
+  {
+    packageName: "@paperclipai/plugin-knowledge-base",
+    pluginKey: "paperclip.knowledge-base",
+    displayName: "Knowledge Base",
+    description: "Ingest documents and URLs into a searchable vector store your agents can query.",
+    localPath: "packages/plugins/knowledge-base",
+    tag: "productivity",
+  },
+  {
+    packageName: "@paperclipai/plugin-n8n",
+    pluginKey: "paperclip.n8n",
+    displayName: "n8n Automations",
+    description: "Trigger and manage visual workflow automations with 400+ integrations.",
+    localPath: "packages/plugins/n8n",
+    tag: "productivity",
+  },
+  {
+    packageName: "@paperclipai/plugin-postal",
+    pluginKey: "paperclip.postal",
+    displayName: "Postal (Transactional Email)",
+    description: "Send transactional emails via a self-hosted Postal mail server.",
+    localPath: "packages/plugins/postal",
+    tag: "integration",
+  },
+  {
+    packageName: "@paperclipai/plugin-wonda",
+    pluginKey: "paperclip.wonda",
+    displayName: "Wonda Marketing Studio",
+    description: "Competitor analysis, campaign generation and marketing content automation.",
+    localPath: "packages/plugins/wonda",
+    tag: "productivity",
+  },
+  {
+    packageName: "@paperclipai/plugin-crewai",
+    pluginKey: "paperclip.crewai",
+    displayName: "CrewAI Multi-Agent",
+    description: "Orchestrate multi-agent crews for complex parallel tasks.",
+    localPath: "packages/plugins/crewai",
+    tag: "productivity",
+  },
+  {
+    packageName: "@paperclipai/plugin-customer360",
+    pluginKey: "paperclip.customer360",
+    displayName: "Customer 360",
+    description: "Customer memory layer with optional Twenty CRM sync.",
+    localPath: "packages/plugins/customer360",
+    tag: "productivity",
+  },
+  // ── Developer Examples ─────────────────────────────────────────────────────
   {
     packageName: "@paperclipai/plugin-hello-world-example",
     pluginKey: "paperclip.hello-world-example",
     displayName: "Hello World Widget (Example)",
-    description: "Reference UI plugin that adds a simple Hello World widget to the Paperclip dashboard.",
+    description: "Reference UI plugin that adds a simple Hello World widget to the dashboard.",
     localPath: "packages/plugins/examples/plugin-hello-world-example",
-    tag: "example",
-  },
-  {
-    packageName: "@paperclipai/plugin-file-browser-example",
-    pluginKey: "paperclip-file-browser-example",
-    displayName: "File Browser (Example)",
-    description: "Example plugin that adds a Files link in project navigation plus a project detail file browser.",
-    localPath: "packages/plugins/examples/plugin-file-browser-example",
     tag: "example",
   },
   {
     packageName: "@paperclipai/plugin-kitchen-sink-example",
     pluginKey: "paperclip-kitchen-sink-example",
     displayName: "Kitchen Sink (Example)",
-    description: "Reference plugin that demonstrates the current Paperclip plugin API surface, bridge flows, UI extension surfaces, jobs, webhooks, tools, streams, and trusted local workspace/process demos.",
+    description: "Demonstrates the full plugin API surface: UI, jobs, webhooks, tools, streams.",
     localPath: "packages/plugins/examples/plugin-kitchen-sink-example",
-    tag: "example",
-  },
-  {
-    packageName: "@paperclipai/plugin-orchestration-smoke-example",
-    pluginKey: "paperclipai.plugin-orchestration-smoke-example",
-    displayName: "Orchestration Smoke (Example)",
-    description: "Acceptance fixture for scoped plugin routes, restricted database namespaces, issue orchestration, documents, wakeups, summaries, and UI status surfaces.",
-    localPath: "packages/plugins/examples/plugin-orchestration-smoke-example",
     tag: "example",
   },
 ];
 
-function listBundledPluginExamples(): AvailablePluginExample[] {
+function listBundledPluginExamples(): AvailablePlugin[] {
   return BUNDLED_PLUGIN_EXAMPLES.flatMap((plugin) => {
     const absoluteLocalPath = path.resolve(REPO_ROOT, plugin.localPath);
     if (!existsSync(absoluteLocalPath)) return [];

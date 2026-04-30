@@ -62,6 +62,7 @@ import { gooseRoutes } from "./routes/goose.js";
 import { crewaiRoutes } from "./routes/crewai.js";
 import { n8nRoutes } from "./routes/n8n-routes.js";
 import { knowledgeRoutes } from "./routes/knowledge.js";
+import { googleRoutes } from "./routes/google.js";
 import { postalRoutes } from "./routes/postal.js";
 import { devModeRoutes } from "./routes/dev-mode.js";
 import { applyUiBranding } from "./ui-branding.js";
@@ -286,6 +287,7 @@ export async function createApp(
   api.use(devModeRoutes());
   api.use(n8nRoutes());
   api.use(knowledgeRoutes(db));
+  api.use(googleRoutes(db));
   api.use(chatWidgetRoutes(db));
   api.use(chatWidgetSettingsAdminRoutes(db));
   if (opts.databaseBackupService) {

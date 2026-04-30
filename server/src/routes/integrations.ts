@@ -12,6 +12,13 @@ import {
   type OutlookOAuthConfig,
 } from "@paperclipai/plugin-email/providers/outlook";
 import { badRequest, notFound, unprocessable } from "../errors.js";
+import {
+  requireGustoEnv,
+  exchangeGustoCode,
+  fetchGustoCurrentCompany,
+  gustoOAuthStore,
+  type GustoToken,
+} from "../services/gusto-client.js";
 import { pluginStateStore } from "../services/plugin-state-store.js";
 import { pluginRegistryService } from "../services/plugin-registry.js";
 import { emailOAuthStore, type EmailProviderKey } from "../services/email-oauth-store.js";
@@ -541,6 +548,148 @@ export function integrationRoutes(db: Db) {
       const message = err instanceof Error ? err.message : String(err);
       res.redirect(emailSettingsRedirect("error", "outlook", { email_error: message }));
     }
+  });
+
+  // ---------------------------------------------------------------------
+  // Gusto Payroll OAuth flows
+  // ---------------------------------------------------------------------
+
+  const GUSTO_PLUGIN_KEY = "paperclip.gusto";
+  const GUSTO_STATE_NAMESPACE = "gusto";
+  const GUSTO_TOKEN_STATE_KEY = "oauth-token";
+
+  async function requireGustoPluginId(): Promise<string | null> {
+    try {
+      const plugin = await registry.getByKey(GUSTO_PLUGIN_KEY);
+      return plugin?.id ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  function gustoBaseUrl(): string {
+    return process.env.GUSTO_SANDBOX === "true"
+      ? "https://api.gusto-demo.com"
+      : "https://api.gusto.com";
+  }
+
+  /**
+   * GET /api/integrations/gusto/connect?companyId=
+   *
+   * Redirects the user to Gusto's OAuth authorization page.
+   * Encodes companyId as the OAuth state parameter.
+   */
+  router.get("/gusto/connect", (req, res) => {
+    const companyId = requireString(req.query.companyId, "companyId");
+    assertCompanyAccess(req, companyId);
+
+    const { clientId, redirectUri } = requireGustoEnv();
+
+    const url = new URL(`${gustoBaseUrl()}/oauth/authorize`);
+    url.searchParams.set("client_id", clientId);
+    url.searchParams.set("redirect_uri", redirectUri);
+    url.searchParams.set("response_type", "code");
+    url.searchParams.set("scope", "openid");
+    url.searchParams.set("state", companyId);
+
+    res.redirect(url.toString());
+  });
+
+  /**
+   * GET /api/integrations/gusto/callback?code=&state=
+   *
+   * OAuth redirect target. Exchanges the authorization code for tokens,
+   * fetches the Gusto company info, persists the token, then redirects
+   * the browser back to the integrations page.
+   */
+  router.get("/gusto/callback", async (req, res) => {
+    const code = typeof req.query.code === "string" ? req.query.code : "";
+    const state = typeof req.query.state === "string" ? req.query.state : "";
+    if (!code || !state) {
+      res.redirect("/integrations?gusto=error");
+      return;
+    }
+
+    const companyId = state;
+
+    try {
+      const { clientId, clientSecret, redirectUri } = requireGustoEnv();
+      const exchanged = await exchangeGustoCode(code, redirectUri, clientId, clientSecret);
+      const company = await fetchGustoCurrentCompany(exchanged.accessToken, exchanged.tokenType);
+
+      const token: GustoToken = {
+        accessToken: exchanged.accessToken,
+        refreshToken: exchanged.refreshToken,
+        expiresAt: exchanged.expiresAt,
+        tokenType: exchanged.tokenType,
+        gustoCompanyUuid: company.uuid,
+        gustoCompanyName: company.name,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await gustoOAuthStore(db).set(companyId, token);
+
+      // Also persist into the plugin state store so the Gusto plugin worker
+      // can read the token via ctx.state.get() — mirroring the QB pattern.
+      const gustoPluginId = await requireGustoPluginId();
+      if (gustoPluginId) {
+        await stateStore.set(gustoPluginId, {
+          scopeKind: "company",
+          scopeId: companyId,
+          namespace: GUSTO_STATE_NAMESPACE,
+          stateKey: GUSTO_TOKEN_STATE_KEY,
+          value: token as unknown as Record<string, unknown>,
+        });
+      }
+
+      res.redirect("/integrations?gusto=connected");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("[gusto] callback error:", message);
+      res.redirect("/integrations?gusto=error");
+    }
+  });
+
+  /**
+   * GET /api/integrations/gusto/status?companyId=
+   *
+   * Reports whether a Gusto token is stored for the company.
+   */
+  router.get("/gusto/status", async (req, res) => {
+    const companyId = requireString(req.query.companyId, "companyId");
+    assertCompanyAccess(req, companyId);
+
+    const token = await gustoOAuthStore(db).get(companyId);
+    res.json({
+      connected: !!token,
+      gustoCompanyName: token?.gustoCompanyName ?? null,
+      gustoCompanyUuid: token?.gustoCompanyUuid ?? null,
+    });
+  });
+
+  /**
+   * DELETE /api/integrations/gusto/disconnect?companyId=
+   *
+   * Clears the stored Gusto tokens for the company.
+   */
+  router.delete("/gusto/disconnect", async (req, res) => {
+    const companyId = requireString(req.query.companyId, "companyId");
+    assertCompanyAccess(req, companyId);
+
+    await gustoOAuthStore(db).delete(companyId);
+
+    // Also clear from the plugin state store so the worker sees the token gone.
+    const gustoPluginId = await requireGustoPluginId();
+    if (gustoPluginId) {
+      await stateStore.delete(
+        gustoPluginId,
+        "company",
+        GUSTO_TOKEN_STATE_KEY,
+        { scopeId: companyId, namespace: GUSTO_STATE_NAMESPACE },
+      );
+    }
+
+    res.json({ ok: true });
   });
 
   return router;
