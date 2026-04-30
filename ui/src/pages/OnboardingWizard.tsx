@@ -20,6 +20,7 @@ import {
   CONSTRUCTION_DEPARTMENTS,
   type ConstructionRole,
 } from "@/data/constructionRoles";
+import { buildNewAgentRuntimeConfig } from "@/lib/new-agent-runtime-config";
 
 const INDUSTRY_OPTIONS: { value: string; label: string }[] = [
   { value: "contractor", label: "Contractor / Trades (HVAC, plumbing, electrical, landscaping)" },
@@ -368,6 +369,21 @@ export function OnboardingWizard() {
   const [painPoint, setPainPoint] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [roleOwners, setRoleOwners] = useState<Record<string, string>>({});
+  const [roleOwnerIds, setRoleOwnerIds] = useState<Record<string, string>>({});
+
+  function toggleRole(id: string) {
+    setSelectedRoles((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
+    );
+  }
+
+  function setRoleOwner(roleId: string, memberName: string, memberId: string) {
+    setRoleOwners((prev) => ({ ...prev, [roleId]: memberName }));
+    setRoleOwnerIds((prev) => ({ ...prev, [roleId]: memberId }));
+  }
+
   const { data: status } = useQuery({
     queryKey: ["onboarding", "status", companyId],
     queryFn: () => onboardingApi.status(companyId!),
@@ -412,6 +428,39 @@ export function OnboardingWizard() {
     mutationFn: () => {
       if (!companyId) throw new Error("No company selected");
       return onboardingApi.complete(companyId);
+    },
+  });
+
+  const launchRolesMutation = useMutation({
+    mutationFn: async () => {
+      if (!companyId) throw new Error("No company selected");
+      const defaultRuntimeConfig = buildNewAgentRuntimeConfig();
+
+      for (const roleId of selectedRoles) {
+        const roleDef = CONSTRUCTION_ROLES.find((r) => r.id === roleId);
+        if (!roleDef) continue;
+        try {
+          const result = await agentsApi.hire(companyId, {
+            name: roleDef.title,
+            title: roleDef.title,
+            role: "general",
+            adapterType: "claude_local",
+            adapterConfig: {
+              promptTemplate: roleDef.systemPrompt,
+              dangerouslySkipPermissions: true,
+            },
+            runtimeConfig: defaultRuntimeConfig,
+            budgetMonthlyCents: 0,
+          });
+          // Pause immediately — agents start inactive
+          if (result.agent?.id) {
+            await agentsApi.pause(result.agent.id, companyId);
+          }
+        } catch {
+          // Partial failure: continue creating remaining agents
+        }
+      }
+      await onboardingApi.complete(companyId);
     },
   });
 
@@ -486,7 +535,16 @@ export function OnboardingWizard() {
         />
       )}
 
-      {step === 3 && (
+      {step === 3 && industry === "contractor" && (
+        <StepRoles
+          selectedIds={selectedRoles}
+          onToggle={toggleRole}
+          onNext={() => setStep(4)}
+          onBack={() => setStep(2)}
+        />
+      )}
+
+      {step === 3 && industry !== "contractor" && (
         <Step3
           selectedTemplateId={selectedTemplateId}
           setSelectedTemplateId={setSelectedTemplateId}
@@ -499,7 +557,27 @@ export function OnboardingWizard() {
         />
       )}
 
-      {step === 4 && selectedTemplate && (
+      {step === 4 && industry === "contractor" && (
+        <StepRolesReview
+          selectedIds={selectedRoles}
+          roleOwners={roleOwners}
+          roleOwnerIds={roleOwnerIds}
+          onOwnerChange={setRoleOwner}
+          onNext={async () => {
+            try {
+              await launchRolesMutation.mutateAsync();
+              setStep(5);
+            } catch {
+              // error shown via errorMessage prop
+            }
+          }}
+          onBack={() => setStep(3)}
+          launching={launchRolesMutation.isPending}
+          errorMessage={launchRolesMutation.isError ? "Something went wrong creating your agents. Please try again." : undefined}
+        />
+      )}
+
+      {step === 4 && industry !== "contractor" && selectedTemplate && (
         <Step4
           template={selectedTemplate}
           onNext={() => goTo(5, { templateId: selectedTemplate.id })}
@@ -512,11 +590,32 @@ export function OnboardingWizard() {
         />
       )}
 
-      {step === 5 && selectedTemplate && (
+      {step === 4 && industry !== "contractor" && !selectedTemplate && (
+        <div className="text-center py-8">
+          <p className="text-sm text-muted-foreground mb-4">No template selected.</p>
+          <Button variant="ghost" onClick={() => setStep(3)}>← Back</Button>
+        </div>
+      )}
+
+      {step === 5 && industry === "contractor" && (
+        <StepContractorDone
+          roleCount={selectedRoles.length}
+          onGoToDashboard={() => navigate("/dashboard")}
+        />
+      )}
+
+      {step === 5 && industry !== "contractor" && selectedTemplate && (
         <Step5
           template={selectedTemplate}
           onGoToDashboard={() => navigate("/dashboard")}
         />
+      )}
+
+      {step === 5 && industry !== "contractor" && !selectedTemplate && (
+        <div className="text-center py-8">
+          <p className="text-sm text-muted-foreground mb-4">Something went wrong. Please start over.</p>
+          <Button variant="ghost" onClick={() => setStep(1)}>Start over</Button>
+        </div>
       )}
     </div>
   );
@@ -892,8 +991,9 @@ function StepRolesReview(props: {
   onNext: () => void;
   onBack: () => void;
   launching: boolean;
+  errorMessage?: string;
 }) {
-  const { selectedIds, roleOwners, roleOwnerIds, onOwnerChange, onNext, onBack, launching } = props;
+  const { selectedIds, roleOwners, roleOwnerIds, onOwnerChange, onNext, onBack, launching, errorMessage } = props;
   const { selectedCompanyId } = useCompany();
 
   const { data: membersData } = useQuery({
@@ -981,6 +1081,10 @@ function StepRolesReview(props: {
           <strong>{selectedIds.length} agent{selectedIds.length === 1 ? "" : "s"}</strong> will be created in paused state. Go to <strong>Agents</strong> after setup to review and activate each one.
         </p>
       </div>
+
+      {errorMessage && (
+        <p className="mb-4 text-sm text-destructive">{errorMessage}</p>
+      )}
 
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={onBack}>← Back</Button>
@@ -1136,6 +1240,32 @@ function Step5(props: {
         </CardContent>
       </Card>
 
+      <Button size="lg" onClick={onGoToDashboard}>
+        Go to Dashboard →
+      </Button>
+    </div>
+  );
+}
+
+function StepContractorDone(props: {
+  roleCount: number;
+  onGoToDashboard: () => void;
+}) {
+  const { roleCount, onGoToDashboard } = props;
+  return (
+    <div className="text-center">
+      <div className="flex items-center justify-center mb-6">
+        <div className="h-20 w-20 rounded-full bg-emerald-500/10 flex items-center justify-center">
+          <HardHat className="h-10 w-10 text-amber-600" />
+        </div>
+      </div>
+      <h1 className="text-2xl font-semibold mb-2">Your team is ready</h1>
+      <p className="text-muted-foreground mb-2">
+        {roleCount} agent{roleCount === 1 ? " has" : "s have"} been created and are waiting for you.
+      </p>
+      <p className="text-sm text-muted-foreground mb-8">
+        Go to <strong>Agents</strong> to review each one and activate the roles you want to start working.
+      </p>
       <Button size="lg" onClick={onGoToDashboard}>
         Go to Dashboard →
       </Button>
