@@ -10,8 +10,6 @@ import {
 } from "lucide-react";
 import {
   ResponsiveContainer,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,
