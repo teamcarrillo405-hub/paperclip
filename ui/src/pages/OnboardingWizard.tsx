@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@/lib/router";
 import { Check, ChevronRight, Hammer, UtensilsCrossed, ShoppingBag, Briefcase, HelpCircle, Mail, Plug } from "lucide-react";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { useCompany } from "@/context/CompanyContext";
 import {
   onboardingApi,
@@ -326,6 +327,30 @@ function Step1(props: {
     setPainPoint,
     onNext,
   } = props;
+
+  const [nameError, setNameError] = useState<string | null>(null);
+  const nameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function validateName(value: string) {
+    if (value.length === 0) { setNameError(null); return; }
+    if (value.trim().length < 3) { setNameError("Name must be at least 3 characters"); return; }
+    if (!/^[a-zA-Z0-9 _&.',\-]+$/.test(value)) { setNameError("No special characters allowed"); return; }
+    setNameError(null);
+  }
+
+  function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = e.target.value;
+    setBusinessName(v);
+    if (nameTimerRef.current) clearTimeout(nameTimerRef.current);
+    nameTimerRef.current = setTimeout(() => validateName(v), 300);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (nameTimerRef.current) clearTimeout(nameTimerRef.current);
+    };
+  }, []);
+
   const ready = businessName.trim().length > 0 && !!industry && !!revenueRange && !!painPoint;
   return (
     <div>
@@ -338,11 +363,14 @@ function Step1(props: {
           <Label htmlFor="businessName">What's your business name?</Label>
           <Input
             id="businessName"
-            className="mt-1"
+            className={cn("mt-1", nameError && "border-red-500 focus-visible:ring-red-500")}
             placeholder="Acme Plumbing"
             value={businessName}
-            onChange={(e) => setBusinessName(e.target.value)}
+            onChange={handleNameChange}
           />
+          {nameError && (
+            <p className="mt-1 text-xs text-red-500">{nameError}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="industry">What kind of business is it?</Label>

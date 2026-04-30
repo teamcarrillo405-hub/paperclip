@@ -156,6 +156,66 @@ function FinanceSummaryCard({
   );
 }
 
+const SPARK_W = 600;
+const SPARK_H = 48;
+
+function DailySpendSparkline({ events }: { events: FinanceEvent[] }) {
+  const days = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const buckets: number[] = Array(daysInMonth).fill(0);
+    for (const ev of events) {
+      const d = new Date(ev.occurredAt);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        buckets[d.getDate() - 1] += ev.amountCents;
+      }
+    }
+    return buckets;
+  }, [events]);
+
+  const maxSpend = Math.max(...days, 1);
+  const pts = days.map((v, i) => {
+    const x = (i / (days.length - 1)) * SPARK_W;
+    const y = SPARK_H - (v / maxSpend) * (SPARK_H - 4);
+    return `${x},${y}`;
+  });
+  const linePath = `M ${pts.join(" L ")}`;
+  const areaPath = `M 0,${SPARK_H} L ${pts.join(" L ")} L ${SPARK_W},${SPARK_H} Z`;
+
+  return (
+    <div className="mb-6">
+      <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-widest">
+        Daily spend — current month
+      </p>
+      <svg
+        viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
+        className="w-full h-12"
+        aria-label={`Daily spend sparkline for current month. Total: $${(days.reduce((s, v) => s + v, 0) / 100).toFixed(2)}`}
+        role="img"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        {days.length >= 2 && (
+          <>
+            <path d={areaPath} fill="url(#sparkGrad)" />
+            <path d={linePath} fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </>
+        )}
+        {days.length < 2 && (
+          <line x1="0" y1={SPARK_H / 2} x2={SPARK_W} y2={SPARK_H / 2} stroke="var(--muted-foreground)" strokeWidth="1" strokeDasharray="4 4" />
+        )}
+      </svg>
+    </div>
+  );
+}
+
 export function Costs() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -789,6 +849,8 @@ export function Costs() {
                   eventCount={financeData?.summary.eventCount ?? 0}
                 />
               </div>
+
+              <DailySpendSparkline events={financeData?.events ?? []} />
 
               <div className="grid gap-4 xl:grid-cols-[1.25fr,0.95fr]">
                 <Card>

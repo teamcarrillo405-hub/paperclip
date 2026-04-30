@@ -36,6 +36,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ClipboardCheck,
+  Puzzle,
+  Plug,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@/lib/router";
@@ -341,7 +343,7 @@ export function Sidebar() {
             to="/approvals"
             label="Approvals"
             icon={ClipboardCheck}
-            badge={!effectiveCollapsed ? approvalsBadgeCount : undefined}
+            badge={approvalsBadgeCount}
             collapsed={effectiveCollapsed}
             onFavoriteToggle={() => toggleFavorite("/approvals")}
             isFavorite={favoritePaths.includes("/approvals")}
@@ -436,6 +438,8 @@ export function Sidebar() {
             onFavoriteToggle={() => toggleFavorite("/compliance")}
             isFavorite={favoritePaths.includes("/compliance")}
           />
+          <SidebarNavItem to="/integrations" label="Integrations" icon={Plug} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/instance/settings/plugins" label="Plugins" icon={Puzzle} collapsed={effectiveCollapsed} />
           <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} collapsed={effectiveCollapsed} />
           <SidebarNavItem to="/onboarding" label="Setup Guide" icon={GraduationCap} collapsed={effectiveCollapsed} />
           {showPartnerLink ? (

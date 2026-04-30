@@ -508,9 +508,16 @@ export function CommandPalette() {
         )}
 
         {/* Actions — hidden when query is non-empty and no action matches */}
-        {(searchQuery.length === 0 || ACTION_ITEMS.some((a) => a.label.toLowerCase().includes(searchQuery.toLowerCase()))) && (
+        {(searchQuery.length === 0 || ACTION_ITEMS.some((a) => fuzzyScore(searchQuery, a.label) > 0)) && (
           <CommandGroup heading="Actions">
-            {(searchQuery.length === 0 ? ACTION_ITEMS : ACTION_ITEMS.filter((a) => a.label.toLowerCase().includes(searchQuery.toLowerCase()))).map((action) => (
+            {(searchQuery.length === 0
+              ? ACTION_ITEMS
+              : ACTION_ITEMS
+                  .map((a) => ({ action: a, score: fuzzyScore(searchQuery, a.label) }))
+                  .filter((x) => x.score > 0)
+                  .sort((a, b) => b.score - a.score)
+                  .map((x) => x.action)
+            ).map((action) => (
               <CommandItem
                 key={action.id}
                 value={action.value ?? action.label}
