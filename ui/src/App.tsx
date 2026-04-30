@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from "@/lib/router";
 import { Button } from "@/components/ui/button";
 import { Layout } from "./components/Layout";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { CloudAccessGate } from "./components/CloudAccessGate";
 import { Dashboard } from "./pages/Dashboard";
@@ -314,7 +315,7 @@ function NoCompaniesStartPage() {
 
 export function App() {
   return (
-    <>
+    <ErrorBoundary>
       <Routes>
         <Route path="auth" element={<AuthPage />} />
         <Route path="board-claim/:token" element={<BoardClaimPage />} />
@@ -370,6 +371,6 @@ export function App() {
         </Route>
       </Routes>
       <OnboardingWizard />
-    </>
+    </ErrorBoundary>
   );
 }
