@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@/lib/router";
-import { Check, ChevronRight, Hammer, UtensilsCrossed, ShoppingBag, Briefcase, HelpCircle, Mail, Plug } from "lucide-react";
+import { useNavigate, Link } from "@/lib/router";
+import { Check, Circle, ChevronRight, Hammer, UtensilsCrossed, ShoppingBag, Briefcase, HelpCircle, Mail, Plug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,8 @@ import {
   onboardingApi,
   type OnboardingBusinessProfile,
 } from "@/api/onboarding";
+import { agentsApi } from "@/api/agents";
+import { integrationsApi } from "@/api/integrations";
 
 const INDUSTRY_OPTIONS: { value: string; label: string }[] = [
   { value: "contractor", label: "Contractor / Trades (HVAC, plumbing, electrical, landscaping)" },
@@ -144,6 +146,210 @@ function StepIndicator({ step }: { step: number }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// SetupGuideChecklist — shown after the initial wizard is complete
+// ---------------------------------------------------------------------------
+
+interface ChecklistItem {
+  id: string;
+  title: string;
+  description: string;
+  checked: boolean;
+  cta?: React.ReactNode;
+}
+
+function SetupGuideChecklist({ companyId }: { companyId: string }) {
+  const TOTAL_GUIDE_STEPS = 6;
+
+  // Agent count
+  const { data: agents } = useQuery({
+    queryKey: ["agents", "list", companyId],
+    queryFn: () => agentsApi.list(companyId),
+    enabled: !!companyId,
+    retry: false,
+  });
+
+  // Integration status — check QuickBooks as proxy for "any integration"
+  const { data: qbStatus } = useQuery({
+    queryKey: ["integrations", "quickbooks", "status", companyId],
+    queryFn: () => integrationsApi.quickbooks.getStatus(companyId),
+    enabled: !!companyId,
+    retry: false,
+  });
+  const { data: emailStatus } = useQuery({
+    queryKey: ["integrations", "email", "status", companyId],
+    queryFn: () => integrationsApi.email.getStatus(companyId),
+    enabled: !!companyId,
+    retry: false,
+  });
+
+  const integrationConnected =
+    (qbStatus?.connected ?? false) ||
+    (emailStatus?.gmail?.connected ?? false) ||
+    (emailStatus?.outlook?.connected ?? false);
+
+  // localStorage-backed items
+  const [budgetSet, setBudgetSet] = useState(
+    () => !!localStorage.getItem(`avero:setup:budget_set:${companyId}`),
+  );
+  const [invited, setInvited] = useState(
+    () => !!localStorage.getItem(`avero:setup:invited:${companyId}`),
+  );
+  const [approvalReviewed, setApprovalReviewed] = useState(
+    () => !!localStorage.getItem(`avero:setup:approval_reviewed:${companyId}`),
+  );
+
+  function markBudget() {
+    localStorage.setItem(`avero:setup:budget_set:${companyId}`, "1");
+    setBudgetSet(true);
+  }
+  function markInvited() {
+    localStorage.setItem(`avero:setup:invited:${companyId}`, "1");
+    setInvited(true);
+  }
+  function markApproval() {
+    localStorage.setItem(`avero:setup:approval_reviewed:${companyId}`, "1");
+    setApprovalReviewed(true);
+  }
+
+  const hasAgents = (agents?.length ?? 0) > 0;
+
+  const items: ChecklistItem[] = [
+    {
+      id: "profile",
+      title: "Create your business profile",
+      description: "Your company name, industry, and revenue range are saved.",
+      checked: true,
+    },
+    {
+      id: "agent",
+      title: "Create your first agent",
+      description: "Agents handle recurring tasks so your team can focus on higher-value work.",
+      checked: hasAgents,
+      cta: !hasAgents ? (
+        <Link to="/agents/new">
+          <Button size="sm" variant="outline">Create agent</Button>
+        </Link>
+      ) : undefined,
+    },
+    {
+      id: "integration",
+      title: "Connect an integration",
+      description: "Link QuickBooks, Gmail, or another service to unlock automated workflows.",
+      checked: integrationConnected,
+      cta: !integrationConnected ? (
+        <Link to="/integrations">
+          <Button size="sm" variant="outline">Connect</Button>
+        </Link>
+      ) : undefined,
+    },
+    {
+      id: "budget",
+      title: "Set a cost budget",
+      description: "Cap how much AI spend is allowed per month so you stay in control.",
+      checked: budgetSet,
+      cta: !budgetSet ? (
+        <div className="flex items-center gap-2">
+          <Link to="/costs">
+            <Button size="sm" variant="outline">Go to Costs</Button>
+          </Link>
+          <Button size="sm" variant="ghost" onClick={markBudget}>Mark done</Button>
+        </div>
+      ) : undefined,
+    },
+    {
+      id: "invite",
+      title: "Invite a team member",
+      description: "Bring your team in so they can collaborate on approvals and tasks.",
+      checked: invited,
+      cta: !invited ? (
+        <div className="flex items-center gap-2">
+          <Link to="/company/settings#members">
+            <Button size="sm" variant="outline">Invite</Button>
+          </Link>
+          <Button size="sm" variant="ghost" onClick={markInvited}>Mark done</Button>
+        </div>
+      ) : undefined,
+    },
+    {
+      id: "approval",
+      title: "Review your first approval",
+      description: "Approve or reject an AI-generated action to see how the workflow operates.",
+      checked: approvalReviewed,
+      cta: !approvalReviewed ? (
+        <div className="flex items-center gap-2">
+          <Link to="/approvals">
+            <Button size="sm" variant="outline">Go to Approvals</Button>
+          </Link>
+          <Button size="sm" variant="ghost" onClick={markApproval}>Mark done</Button>
+        </div>
+      ) : undefined,
+    },
+  ];
+
+  const completedCount = items.filter((i) => i.checked).length;
+
+  return (
+    <div className="mx-auto max-w-2xl py-10 px-4">
+      {/* Header */}
+      <h1 className="text-2xl font-semibold">Setup Guide</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Get the most out of Avero Paperclip</p>
+
+      {/* Progress bar */}
+      <div className="mt-6 mb-8">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+          <span>{completedCount} of {TOTAL_GUIDE_STEPS} steps complete</span>
+          <span>{Math.round((completedCount / TOTAL_GUIDE_STEPS) * 100)}%</span>
+        </div>
+        <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full bg-primary transition-all duration-300"
+            style={{ width: `${(completedCount / TOTAL_GUIDE_STEPS) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Items */}
+      <div className="space-y-3">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className={cn(
+              "flex items-start gap-4 rounded-lg border border-border bg-card p-4",
+              item.checked && "opacity-50",
+            )}
+          >
+            <div className="mt-0.5 shrink-0">
+              {item.checked ? (
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
+                  <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                </div>
+              ) : (
+                <Circle className="h-5 w-5 text-muted-foreground" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className={cn("text-sm", item.checked ? "line-through text-muted-foreground" : "font-semibold")}>
+                {item.title}
+              </p>
+              {!item.checked && (
+                <>
+                  <p className="mt-0.5 text-sm text-muted-foreground">{item.description}</p>
+                  {item.cta && <div className="mt-3">{item.cta}</div>}
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// OnboardingWizard — initial 5-step setup wizard
+// ---------------------------------------------------------------------------
+
 export function OnboardingWizard() {
   const navigate = useNavigate();
   const { selectedCompany, selectedCompanyId } = useCompany();
@@ -233,6 +439,11 @@ export function OnboardingWizard() {
         </Card>
       </div>
     );
+  }
+
+  // Once the wizard is complete, show the post-wizard Setup Guide checklist
+  if (status?.onboardingCompleted === true) {
+    return <SetupGuideChecklist companyId={companyId} />;
   }
 
   return (
