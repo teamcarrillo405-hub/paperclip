@@ -252,26 +252,8 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Workspace section: core navigation */}
+        {/* Primary nav — always visible, no section label */}
         <div className="flex flex-col gap-0.5">
-          <div className="px-3 py-1.5">
-            {/* Divider shown only when collapsed */}
-            <div
-              className={cn(
-                "h-px w-full bg-border/50 transition-all duration-150",
-                effectiveCollapsed ? "opacity-100" : "opacity-0 max-w-0 overflow-hidden",
-              )}
-            />
-            {/* Label shown only when expanded */}
-            <span
-              className={cn(
-                "block text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
-                effectiveCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
-              )}
-            >
-              Workspace
-            </span>
-          </div>
           {/* New Issue button */}
           <button
             onClick={() => openNewIssue()}
@@ -299,8 +281,6 @@ export function Sidebar() {
             liveCount={liveRunCount}
             collapsed={effectiveCollapsed}
           />
-          <SidebarNavItem to="/roi" label="ROI Dashboard" icon={TrendingUp} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/financial-health" label="Financial Health" icon={DollarSign} collapsed={effectiveCollapsed} />
           <SidebarNavItem
             to="/inbox"
             label="Inbox"
@@ -312,25 +292,6 @@ export function Sidebar() {
             onFavoriteToggle={() => toggleFavorite("/inbox")}
             isFavorite={favoritePaths.includes("/inbox")}
           />
-          <PluginSlotOutlet
-            slotTypes={["sidebar"]}
-            context={pluginContext}
-            className="flex flex-col gap-0.5"
-            itemClassName="text-[13px] font-medium"
-            missingBehavior="placeholder"
-          />
-        </div>
-
-        {/* Work section */}
-        <SidebarSection
-          label="Work"
-          collapsed={effectiveCollapsed}
-          collapsible
-          isCollapsed={sectionCollapsed.has("Work")}
-          onToggleCollapse={() => toggleSectionCollapsed("Work")}
-          createHref="/issues?new=1"
-          createTitle="New issue"
-        >
           <SidebarNavItem
             to="/issues"
             label="Issues"
@@ -349,60 +310,6 @@ export function Sidebar() {
             isFavorite={favoritePaths.includes("/approvals")}
           />
           <SidebarNavItem
-            to="/routines"
-            label="Routines"
-            icon={Repeat}
-            collapsed={effectiveCollapsed}
-            onFavoriteToggle={() => toggleFavorite("/routines")}
-            isFavorite={favoritePaths.includes("/routines")}
-          />
-          <SidebarNavItem
-            to="/goals"
-            label="Goals"
-            icon={Target}
-            collapsed={effectiveCollapsed}
-            onFavoriteToggle={() => toggleFavorite("/goals")}
-            isFavorite={favoritePaths.includes("/goals")}
-          />
-          <SidebarNavItem to="/customers" label="Customers" icon={Users} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/social" label="Social Media" icon={Share2} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/marketing" label="Marketing" icon={Megaphone} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/crews" label="AI Crews" icon={Users} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/knowledge" label="Knowledge Base" icon={BookOpen} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/email" label="Email" icon={Mail} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/video-studio" label="Video Studio" icon={Video} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/image-studio" label="Image Studio" icon={Image} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/slides" label="Presentations" icon={Presentation} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/form-builder" label="Form Builder" icon={FileInput} collapsed={effectiveCollapsed} />
-          <SidebarNavItem to="/automations" label="Automations" icon={GitBranch} collapsed={effectiveCollapsed} />
-          <SidebarNavItem
-            to="/autonomous-tasks"
-            label="Autonomous Tasks"
-            icon={Bot}
-            collapsed={effectiveCollapsed}
-            onFavoriteToggle={() => toggleFavorite("/autonomous-tasks")}
-            isFavorite={favoritePaths.includes("/autonomous-tasks")}
-          />
-          <SidebarNavItem to="/live-meeting" label="Live Meeting" icon={Mic} collapsed={effectiveCollapsed} />
-          {showWorkspacesLink ? (
-            <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} collapsed={effectiveCollapsed} />
-          ) : null}
-        </SidebarSection>
-
-        <SidebarProjects />
-
-        <SidebarAgents />
-
-        {/* Insights section */}
-        <SidebarSection
-          label="Insights"
-          collapsed={effectiveCollapsed}
-          collapsible
-          isCollapsed={sectionCollapsed.has("Insights")}
-          onToggleCollapse={() => toggleSectionCollapsed("Insights")}
-        >
-          <SidebarNavItem to="/reports" label="Reports" icon={BarChart2} collapsed={effectiveCollapsed} />
-          <SidebarNavItem
             to="/costs"
             label="Costs"
             icon={DollarSign}
@@ -418,6 +325,79 @@ export function Sidebar() {
             onFavoriteToggle={() => toggleFavorite("/activity")}
             isFavorite={favoritePaths.includes("/activity")}
           />
+          <PluginSlotOutlet
+            slotTypes={["sidebar"]}
+            context={pluginContext}
+            className="flex flex-col gap-0.5"
+            itemClassName="text-[13px] font-medium"
+            missingBehavior="placeholder"
+          />
+        </div>
+
+        <SidebarProjects />
+
+        <SidebarAgents />
+
+        {/* Tools section — collapsible, defaults closed (key "Tools__open" absent = collapsed) */}
+        <SidebarSection
+          label="Tools"
+          collapsed={effectiveCollapsed}
+          collapsible
+          isCollapsed={!sectionCollapsed.has("Tools__open")}
+          onToggleCollapse={() => toggleSectionCollapsed("Tools__open")}
+        >
+          <SidebarNavItem
+            to="/routines"
+            label="Routines"
+            icon={Repeat}
+            collapsed={effectiveCollapsed}
+            onFavoriteToggle={() => toggleFavorite("/routines")}
+            isFavorite={favoritePaths.includes("/routines")}
+          />
+          <SidebarNavItem
+            to="/goals"
+            label="Goals"
+            icon={Target}
+            collapsed={effectiveCollapsed}
+            onFavoriteToggle={() => toggleFavorite("/goals")}
+            isFavorite={favoritePaths.includes("/goals")}
+          />
+          <SidebarNavItem
+            to="/autonomous-tasks"
+            label="Autonomous Tasks"
+            icon={Bot}
+            collapsed={effectiveCollapsed}
+            onFavoriteToggle={() => toggleFavorite("/autonomous-tasks")}
+            isFavorite={favoritePaths.includes("/autonomous-tasks")}
+          />
+          <SidebarNavItem to="/customers" label="Customers" icon={Users} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/social" label="Social Media" icon={Share2} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/marketing" label="Marketing" icon={Megaphone} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/crews" label="AI Crews" icon={Users} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/knowledge" label="Knowledge Base" icon={BookOpen} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/email" label="Email" icon={Mail} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/video-studio" label="Video Studio" icon={Video} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/image-studio" label="Image Studio" icon={Image} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/slides" label="Presentations" icon={Presentation} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/form-builder" label="Form Builder" icon={FileInput} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/automations" label="Automations" icon={GitBranch} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/live-meeting" label="Live Meeting" icon={Mic} collapsed={effectiveCollapsed} />
+          {showWorkspacesLink ? (
+            <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} collapsed={effectiveCollapsed} />
+          ) : null}
+        </SidebarSection>
+
+        {/* Insights section */}
+        <SidebarSection
+          label="Insights"
+          collapsed={effectiveCollapsed}
+          collapsible
+          isCollapsed={sectionCollapsed.has("Insights")}
+          onToggleCollapse={() => toggleSectionCollapsed("Insights")}
+        >
+          <SidebarNavItem to="/roi" label="ROI Dashboard" icon={TrendingUp} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/financial-health" label="Financial Health" icon={DollarSign} collapsed={effectiveCollapsed} />
+          <SidebarNavItem to="/reports" label="Reports" icon={BarChart2} collapsed={effectiveCollapsed} />
         </SidebarSection>
 
         {/* Company section */}
