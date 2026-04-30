@@ -975,13 +975,13 @@ function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmentTestRe
     <div className={`rounded-md border px-3 py-2 text-xs ${statusClass}`}>
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium">{statusLabel}</span>
-        <span className="text-[11px] opacity-80">
+        <span className="text-xs opacity-80">
           {new Date(result.testedAt).toLocaleTimeString()}
         </span>
       </div>
       <div className="mt-2 space-y-1.5">
         {result.checks.map((check, idx) => (
-          <div key={`${check.code}-${idx}`} className="text-[11px] leading-relaxed break-words">
+          <div key={`${check.code}-${idx}`} className="text-xs leading-relaxed break-words">
             <span className="font-medium uppercase tracking-wide opacity-80">
               {check.level}
             </span>
@@ -1051,7 +1051,7 @@ function AdapterTypeDropdown({
               <span>{item.label}</span>
             </span>
             {item.comingSoon && (
-              <span className="text-[10px] text-muted-foreground">Coming soon</span>
+              <span className="text-xs text-muted-foreground">Coming soon</span>
             )}
           </button>
         ))}
@@ -1232,7 +1232,7 @@ function ModelDropdown({
               <span className="block w-full text-left truncate font-mono text-xs" title={value}>
                 {models.find((m) => m.id === value)?.label ?? value}
               </span>
-              <span className="shrink-0 ml-auto text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/20">
+              <span className="shrink-0 ml-auto text-xs font-medium px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/20">
                 current
               </span>
             </button>
@@ -1251,7 +1251,7 @@ function ModelDropdown({
               <span className="block w-full text-left truncate font-mono text-xs" title={detectedModel}>
                 {models.find((m) => m.id === detectedModel)?.label ?? detectedModel}
               </span>
-              <span className="shrink-0 ml-auto text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/20">
+              <span className="shrink-0 ml-auto text-xs font-medium px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/20">
                 detected
               </span>
             </button>
@@ -1275,7 +1275,7 @@ function ModelDropdown({
                   <span className="block w-full text-left truncate font-mono text-xs" title={candidate}>
                     {entry?.label ?? candidate}
                   </span>
-                  <span className="shrink-0 ml-auto text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/20">
+                  <span className="shrink-0 ml-auto text-xs font-medium px-1.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/20">
                     config
                   </span>
                 </button>
@@ -1314,7 +1314,7 @@ function ModelDropdown({
             {groupedModels.map((group) => (
               <div key={group.provider} className="mb-1 last:mb-0">
                 {groupByProvider && (
-                  <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <div className="px-2 py-1 text-xs uppercase tracking-wide text-muted-foreground">
                     {group.provider} ({group.entries.length})
                   </div>
                 )}

@@ -243,8 +243,8 @@ export function EnvVarEditor({
           </div>
         );
       })}
-      {sealError && <p className="text-[11px] text-destructive">{sealError}</p>}
-      <p className="text-[11px] text-muted-foreground/60">
+      {sealError && <p className="text-xs text-destructive">{sealError}</p>}
+      <p className="text-xs text-muted-foreground/60">
         PAPERCLIP_* variables are injected automatically at runtime.
       </p>
     </div>

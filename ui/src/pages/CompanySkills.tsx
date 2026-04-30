@@ -468,7 +468,7 @@ function SkillList({
                     </TooltipTrigger>
                     <TooltipContent side="top">{source.managedLabel}</TooltipContent>
                   </Tooltip>
-                  <span className="min-w-0 overflow-hidden text-[13px] font-medium leading-5 line-clamp-3">
+                  <span className="min-w-0 overflow-hidden text-sm font-medium leading-5 line-clamp-3">
                     {skill.name}
                   </span>
                 </span>

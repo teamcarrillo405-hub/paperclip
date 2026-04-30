@@ -125,7 +125,7 @@ export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
                     <button
                       onClick={() => handleCancelRun(run.id)}
                       disabled={cancellingRunIds.has(run.id)}
-                      className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/[0.06] px-2.5 py-1 text-[11px] font-medium text-red-700 transition-colors hover:bg-red-500/[0.12] dark:text-red-300 disabled:opacity-50"
+                      className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/[0.06] px-2.5 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-500/[0.12] dark:text-red-300 disabled:opacity-50"
                     >
                       <Square className="h-2.5 w-2.5" fill="currentColor" />
                       {cancellingRunIds.has(run.id) ? "Stopping…" : "Stop"}
@@ -133,7 +133,7 @@ export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
                   )}
                   <Link
                     to={`/agents/${run.agentId}/runs/${run.id}`}
-                    className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-cyan-700 transition-colors hover:border-cyan-500/30 hover:text-cyan-600 dark:text-cyan-300"
+                    className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-2.5 py-1 text-xs font-medium text-cyan-700 transition-colors hover:border-cyan-500/30 hover:text-cyan-600 dark:text-cyan-300"
                   >
                     Open run
                     <ExternalLink className="h-3 w-3" />

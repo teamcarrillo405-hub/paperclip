@@ -340,12 +340,12 @@ const FieldWrapper = React.memo(({
       </div>
       {children}
       {description && (
-        <p className="text-[12px] text-muted-foreground leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {description}
         </p>
       )}
       {error && (
-        <p className="text-[12px] font-medium text-destructive">{error}</p>
+        <p className="text-xs font-medium text-destructive">{error}</p>
       )}
     </div>
   );

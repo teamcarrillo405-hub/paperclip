@@ -1009,7 +1009,7 @@ export function NewIssueDialog() {
                   >
                     <span
                       className={cn(
-                        "px-1 py-0.5 rounded text-[10px] font-semibold leading-none",
+                        "px-1 py-0.5 rounded text-xs font-semibold leading-none",
                         !c.brandColor && "bg-muted",
                       )}
                       style={
@@ -1350,7 +1350,7 @@ export function NewIssueDialog() {
             <div className="px-4 py-3 space-y-2">
             <div className="space-y-1.5">
               <div className="text-xs font-medium">Execution workspace</div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Control whether this issue runs in the shared workspace, a new isolated workspace, or an existing one.
               </div>
               <select
@@ -1384,12 +1384,12 @@ export function NewIssueDialog() {
                 </select>
               )}
               {executionWorkspaceMode === "reuse_existing" && selectedReusableExecutionWorkspace && (
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   Reusing {selectedReusableExecutionWorkspace.name} from {selectedReusableExecutionWorkspace.branchName ?? selectedReusableExecutionWorkspace.cwd ?? "existing execution workspace"}.
                 </div>
               )}
               {showParentWorkspaceWarning ? (
-                <div className="rounded-md border border-amber-300/60 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-900 dark:border-amber-800/70 dark:bg-amber-950/30 dark:text-amber-100">
+                <div className="rounded-md border border-amber-300/60 bg-amber-50 px-2 py-1.5 text-xs text-amber-900 dark:border-amber-800/70 dark:bg-amber-950/30 dark:text-amber-100">
                   Warning: this sub-issue will no longer use the parent issue workspace{parentExecutionWorkspaceLabel ? ` (${parentExecutionWorkspaceLabel})` : ""}.
                 </div>
               ) : null}
@@ -1490,12 +1490,12 @@ export function NewIssueDialog() {
                       <div key={file.id} className="flex items-start justify-between gap-3 rounded-md border border-border/70 px-3 py-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="rounded-full border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                            <span className="rounded-full border border-border px-2 py-0.5 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
                               {file.documentKey}
                             </span>
                             <span className="truncate text-sm">{file.file.name}</span>
                           </div>
-                          <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                             <FileText className="h-3.5 w-3.5" />
                             <span>{file.title || file.file.name}</span>
                             <span>•</span>
@@ -1529,7 +1529,7 @@ export function NewIssueDialog() {
                             <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                             <span className="truncate text-sm">{file.file.name}</span>
                           </div>
-                          <div className="mt-1 text-[11px] text-muted-foreground">
+                          <div className="mt-1 text-xs text-muted-foreground">
                             {file.file.type || "application/octet-stream"} • {formatFileSize(file.file)}
                           </div>
                         </div>

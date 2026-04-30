@@ -81,7 +81,7 @@ export function SidebarAgents() {
                 open && "rotate-90"
               )}
             />
-            <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
+            <span className="text-xs font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
               Agents
             </span>
           </CollapsibleTrigger>
@@ -111,7 +111,7 @@ export function SidebarAgents() {
                   if (isMobile) setSidebarOpen(false);
                 }}
                 className={cn(
-                  "flex items-center gap-2.5 px-3 py-1.5 text-[13px] font-medium transition-colors",
+                  "flex items-center gap-2.5 px-3 py-1.5 text-sm font-medium transition-colors",
                   activeAgentId === agentRouteRef(agent)
                     ? "bg-accent text-foreground"
                     : "text-foreground/80 hover:bg-accent/50 hover:text-foreground"
@@ -131,7 +131,7 @@ export function SidebarAgents() {
                       </span>
                     ) : null}
                     {runCount > 0 ? (
-                      <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
+                      <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
                         {runCount} live
                       </span>
                     ) : null}

@@ -189,7 +189,7 @@ function trapFocus(container: HTMLElement, event: KeyboardEvent): void {
 function launcherTriggerClassName(placementZone: PluginLauncherPlacementZone): string {
   switch (placementZone) {
     case "projectSidebarItem":
-      return "justify-start h-auto px-3 py-1 text-[12px] font-normal text-muted-foreground hover:text-foreground";
+      return "justify-start h-auto px-3 py-1 text-xs font-normal text-muted-foreground hover:text-foreground";
     case "contextMenuItem":
     case "commentContextMenuItem":
       return "justify-start h-7 w-full px-2 text-xs font-normal";

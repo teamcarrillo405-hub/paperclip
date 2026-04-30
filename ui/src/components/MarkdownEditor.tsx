@@ -1165,17 +1165,17 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
                 )}
                 <span>{option.kind === "skill" ? `/${option.slug}` : option.name}</span>
                 {option.kind === "project" && option.projectId && (
-                  <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <span className="ml-auto text-xs uppercase tracking-wide text-muted-foreground">
                     Project
                   </span>
                 )}
                 {option.kind === "user" && (
-                  <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <span className="ml-auto text-xs uppercase tracking-wide text-muted-foreground">
                     User
                   </span>
                 )}
                 {option.kind === "skill" && (
-                  <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <span className="ml-auto text-xs uppercase tracking-wide text-muted-foreground">
                     Skill
                   </span>
                 )}

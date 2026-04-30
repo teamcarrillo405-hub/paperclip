@@ -81,7 +81,7 @@ function AdapterRow({
                 : <span title="Installed from npm"><Package className="h-4 w-4 text-red-500" /></span>
             )}
             {adapter.version && (
-              <Badge variant="secondary" className="font-mono text-[10px]">
+              <Badge variant="secondary" className="font-mono text-xs">
                 v{adapter.version}
               </Badge>
             )}

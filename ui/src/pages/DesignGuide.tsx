@@ -214,7 +214,7 @@ export function DesignGuide() {
                 "command", "dialog", "dropdown-menu", "input", "label", "popover", "scroll-area",
                 "select", "separator", "sheet", "skeleton", "tabs", "textarea", "tooltip",
               ].map((name) => (
-                <Badge key={name} variant="outline" className="font-mono text-[10px]">
+                <Badge key={name} variant="outline" className="font-mono text-xs">
                   {name}
                 </Badge>
               ))}
@@ -227,7 +227,7 @@ export function DesignGuide() {
                 "FilterBar", "InlineEditor", "PageSkeleton", "Identity", "CommentThread", "MarkdownEditor",
                 "PropertiesPanel", "Sidebar", "CommandPalette",
               ].map((name) => (
-                <Badge key={name} variant="ghost" className="font-mono text-[10px]">
+                <Badge key={name} variant="ghost" className="font-mono text-xs">
                   {name}
                 </Badge>
               ))}
@@ -461,7 +461,7 @@ export function DesignGuide() {
               ["on_demand", "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300"],
               ["automation", "bg-muted text-muted-foreground"],
             ].map(([label, cls]) => (
-              <span key={label} className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${cls}`}>
+              <span key={label} className={`rounded-full px-1.5 py-0.5 text-xs font-medium ${cls}`}>
                 {label}
               </span>
             ))}
@@ -1312,7 +1312,7 @@ export function DesignGuide() {
             return (
               <div key={name as string} className="flex flex-col items-center gap-1.5 p-2">
                 <LucideIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground font-mono">{name as string}</span>
+                <span className="text-xs text-muted-foreground font-mono">{name as string}</span>
               </div>
             );
           })}

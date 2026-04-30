@@ -73,7 +73,7 @@ function ConfidenceBadge({ level }: { level: ActionItemDetection["confidence"] }
   return (
     <span
       className={cn(
-        "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase",
+        "rounded px-1.5 py-0.5 text-xs font-semibold uppercase",
         level === "high" && "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200",
         level === "medium" &&
           "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200",

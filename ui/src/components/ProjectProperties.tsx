@@ -57,7 +57,7 @@ export type ProjectConfigFieldKey =
 function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
   if (state === "saving") {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
         <Loader2 className="h-3 w-3 animate-spin" />
         Saving
       </span>
@@ -65,7 +65,7 @@ function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
   }
   if (state === "saved") {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] text-green-600 dark:text-green-400">
+      <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
         <Check className="h-3 w-3" />
         Saved
       </span>
@@ -73,7 +73,7 @@ function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
   }
   if (state === "error") {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] text-destructive">
+      <span className="inline-flex items-center gap-1 text-xs text-destructive">
         <AlertCircle className="h-3 w-3" />
         Failed
       </span>
@@ -616,7 +616,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
               }}
               onChange={(env) => commitField("env", { env: env ?? null })}
             />
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Applied to all runs for issues in this project. Project values override agent env on key conflicts.
             </p>
           </div>
@@ -644,7 +644,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border text-[10px] text-muted-foreground hover:text-foreground"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border text-xs text-muted-foreground hover:text-foreground"
                   aria-label="Codebase help"
                 >
                   ?
@@ -657,7 +657,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
           </div>
           <div className="space-y-2 rounded-md border border-border/70 p-3">
             <div className="space-y-1">
-              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Repo</div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Repo</div>
               {codebase.repoUrl ? (
                 <div className="flex items-center justify-between gap-2">
                   {isSafeExternalUrl(codebase.repoUrl) ? (
@@ -720,14 +720,14 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
             </div>
 
             <div className="space-y-1">
-              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Local folder</div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Local folder</div>
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0 space-y-1">
                   <div className="min-w-0 break-all font-mono text-xs text-foreground/60">
                     {codebase.effectiveLocalFolder}
                   </div>
                   {codebase.origin === "managed_checkout" && (
-                    <div className="text-[11px] text-muted-foreground">Paperclip-managed folder.</div>
+                    <div className="text-xs text-muted-foreground">Paperclip-managed folder.</div>
                   )}
                 </div>
                 <div className="flex items-center gap-1">
@@ -758,7 +758,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
             </div>
 
             {hasAdditionalLegacyWorkspaces && (
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Additional legacy workspace records exist on this project. Paperclip is using the primary workspace as the codebase view.
               </div>
             )}
@@ -772,10 +772,10 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                   >
                     <div className="min-w-0 space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-medium">{service.serviceName}</span>
+                        <span className="text-xs font-medium">{service.serviceName}</span>
                         <span
                           className={cn(
-                            "rounded-full px-1.5 py-0.5 text-[10px] uppercase tracking-wide",
+                            "rounded-full px-1.5 py-0.5 text-xs uppercase tracking-wide",
                             service.status === "running"
                               ? "bg-green-500/15 text-green-700 dark:text-green-300"
                               : service.status === "failed"
@@ -786,7 +786,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                           {service.status}
                         </span>
                       </div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         {service.url ? (
                           <a
                             href={service.url}
@@ -801,7 +801,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                         )}
                       </div>
                     </div>
-                    <div className="text-[10px] text-muted-foreground whitespace-nowrap">
+                    <div className="text-xs text-muted-foreground whitespace-nowrap">
                       {service.lifecycle}
                     </div>
                   </div>
@@ -903,7 +903,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border text-[10px] text-muted-foreground hover:text-foreground"
+                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border text-xs text-muted-foreground hover:text-foreground"
                       aria-label="Execution workspaces help"
                     >
                       ?
@@ -949,7 +949,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                           <span>New issues default to isolated checkout</span>
                           <SaveIndicator state={fieldState("execution_workspace_default_mode")} />
                         </div>
-                        <div className="text-[11px] text-muted-foreground">
+                        <div className="text-xs text-muted-foreground">
                           If disabled, new issues stay on the project's primary checkout unless someone opts in.
                         </div>
                       </div>
@@ -1105,7 +1105,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                             placeholder="bash ./scripts/teardown-worktree.sh"
                           />
                         </div>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           Provision runs inside the derived worktree before agent execution. Teardown is stored here for
                           future cleanup flows.
                         </p>

@@ -895,7 +895,7 @@ export function RoutineDetail() {
         onChange={(description) => setEditDraft((current) => ({ ...current, description }))}
         placeholder="Add instructions..."
         bordered={false}
-        contentClassName="min-h-[120px] text-[15px] leading-7"
+        contentClassName="min-h-[120px] text-base leading-7"
         onSubmit={() => {
           if (!saveRoutine.isPending && editDraft.title.trim()) {
             saveRoutine.mutate();

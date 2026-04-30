@@ -343,7 +343,7 @@ export function IssueRunLedgerContent({
                 <Link
                   key={child.id}
                   to={`/issues/${child.identifier ?? child.id}`}
-                  className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] hover:bg-accent/40"
+                  className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs hover:bg-accent/40"
                 >
                   <span className="shrink-0 font-mono text-muted-foreground">{child.identifier ?? child.id.slice(0, 8)}</span>
                   <span className="truncate">{child.title}</span>
@@ -351,7 +351,7 @@ export function IssueRunLedgerContent({
                 </Link>
               ))}
               {children.active.length > 4 ? (
-                <span className="rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground">
+                <span className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground">
                   +{children.active.length - 4} more
                 </span>
               ) : null}
@@ -382,18 +382,18 @@ export function IssueRunLedgerContent({
                   >
                     {run.runId.slice(0, 8)}
                   </Link>
-                  <span className="rounded-md border border-border px-1.5 py-0.5 text-[11px] capitalize text-muted-foreground">
+                  <span className="rounded-md border border-border px-1.5 py-0.5 text-xs capitalize text-muted-foreground">
                     {statusLabel(run.status)}
                   </span>
                   {run.isLive ? (
-                    <span className="inline-flex items-center gap-1 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[11px] text-cyan-700 dark:text-cyan-300">
+                    <span className="inline-flex items-center gap-1 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-xs text-cyan-700 dark:text-cyan-300">
                       <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
                       live
                     </span>
                   ) : null}
                   <span
                     className={cn(
-                      "rounded-md border px-1.5 py-0.5 text-[11px] font-medium",
+                      "rounded-md border px-1.5 py-0.5 text-xs font-medium",
                       liveness.tone,
                     )}
                     title={liveness.description}
@@ -401,17 +401,17 @@ export function IssueRunLedgerContent({
                     {liveness.label}
                   </span>
                   {exhausted ? (
-                    <span className="rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[11px] font-medium text-red-700 dark:text-red-300">
+                    <span className="rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
                       Exhausted
                     </span>
                   ) : null}
                   {continuation ? (
-                    <span className="text-[11px] text-muted-foreground">{continuation}</span>
+                    <span className="text-xs text-muted-foreground">{continuation}</span>
                   ) : null}
                   {retryState ? (
                     <span
                       className={cn(
-                        "rounded-md border px-1.5 py-0.5 text-[11px] font-medium",
+                        "rounded-md border px-1.5 py-0.5 text-xs font-medium",
                         retryState.tone,
                       )}
                     >

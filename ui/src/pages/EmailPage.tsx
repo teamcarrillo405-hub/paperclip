@@ -9,6 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useToastActions } from "@/context/ToastContext";
+import { integrationsApi, type EmailStatusResponse } from "@/api/integrations";
+import { EmptyState } from "@/components/EmptyState";
+import { PageSkeleton } from "@/components/PageSkeleton";
+import { useNavigate } from "@/lib/router";
 
 interface PostalStatus {
   provider: "postal" | "smtp" | "console";
@@ -62,6 +66,7 @@ export function EmailPage() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [testEmail, setTestEmail] = useState("");
 
   useEffect(() => {
@@ -70,6 +75,12 @@ export function EmailPage() {
   }, [setBreadcrumbs]);
 
   const companyId = selectedCompanyId;
+
+  const emailStatusQuery = useQuery<EmailStatusResponse>({
+    queryKey: ["integrations", "email", "status", companyId],
+    queryFn: () => integrationsApi.email.getStatus(companyId ?? ""),
+    enabled: Boolean(companyId),
+  });
 
   const statusQuery = useQuery<PostalStatus>({
     queryKey: ["postal", "status"],
@@ -125,6 +136,17 @@ export function EmailPage() {
     };
   }, [statusQuery.data]);
 
+  const emailConnected =
+    emailStatusQuery.data?.gmail.connected || emailStatusQuery.data?.outlook.connected;
+
+  if (emailStatusQuery.isLoading) {
+    return (
+      <div className="p-6">
+        <PageSkeleton variant="list" title="Email" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
@@ -135,147 +157,180 @@ export function EmailPage() {
           <Mail size={20} />
         </div>
         <div>
-          <h1 className="text-xl font-semibold">Email</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Email</h1>
           <p className="text-sm text-muted-foreground">
             Transactional email powered by Postal, with SMTP and dev fallback.
           </p>
         </div>
       </div>
 
-      {banner ? (
-        <Card>
-          <CardContent
-            className="flex items-start gap-3 py-4"
-            style={{
-              borderLeft: `4px solid ${banner.tone === "ok" ? BRAND_ACCENT : "#f97316"}`,
-            }}
+      {emailStatusQuery.isError && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-destructive">
+              {(emailStatusQuery.error as Error)?.message || "Failed to load email status."}
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive/70 hover:text-destructive h-auto px-1 py-0 text-xs shrink-0"
+            disabled={emailStatusQuery.isFetching}
+            onClick={() => void emailStatusQuery.refetch()}
           >
-            <banner.icon
-              size={20}
-              style={{ color: banner.tone === "ok" ? BRAND_ACCENT : "#f97316", marginTop: 2 }}
-            />
-            <div>
-              <div className="font-medium">{banner.title}</div>
-              <div className="text-sm text-muted-foreground">{banner.text}</div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
+            {emailStatusQuery.isFetching ? "Retrying…" : "Retry"}
+          </Button>
+        </div>
+      )}
 
-      <Card>
-        <CardContent className="py-4 space-y-3">
-          <div className="font-medium flex items-center gap-2">
-            <Send size={16} /> Send a test email
-          </div>
-          <div className="flex gap-2 items-end">
-            <div className="flex-1">
-              <Label htmlFor="test-email">Recipient</Label>
-              <Input
-                id="test-email"
-                type="email"
-                placeholder="you@example.com"
-                value={testEmail}
-                onChange={(e) => setTestEmail(e.target.value)}
-              />
-            </div>
-            <Button
-              disabled={!testEmail || testMutation.isPending || !companyId}
-              onClick={() => testMutation.mutate(testEmail)}
-              style={{ background: BRAND_PRIMARY }}
-            >
-              {testMutation.isPending ? "Sending…" : "Send test"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {!emailStatusQuery.isError && emailStatusQuery.data && !emailConnected && (
+        <EmptyState
+          icon={Mail}
+          message="Connect Gmail or Outlook to manage emails from your agents."
+          action="Connect email"
+          onAction={() => navigate("/integrations")}
+        />
+      )}
 
-      <div>
-        <div className="font-medium mb-3">Templates</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {TEMPLATE_CARDS.map((t) => (
-            <Card key={t.id} className="overflow-hidden">
-              <div style={{ height: 64, background: t.color }} />
-              <CardContent className="py-3">
-                <div className="font-medium text-sm">{t.label}</div>
-                <div className="text-xs text-muted-foreground">{t.description}</div>
+      {emailConnected && (
+        <>
+          {banner ? (
+            <Card>
+              <CardContent
+                className="flex items-start gap-3 py-4"
+                style={{
+                  borderLeft: `4px solid ${banner.tone === "ok" ? BRAND_ACCENT : "#f97316"}`,
+                }}
+              >
+                <banner.icon
+                  size={20}
+                  style={{ color: banner.tone === "ok" ? BRAND_ACCENT : "#f97316", marginTop: 2 }}
+                />
+                <div>
+                  <div className="font-medium">{banner.title}</div>
+                  <div className="text-sm text-muted-foreground">{banner.text}</div>
+                </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </div>
+          ) : null}
 
-      <Card>
-        <CardContent className="py-4">
-          <div className="font-medium mb-2 flex items-center gap-2">
-            <Clock size={16} /> Recent sends
-          </div>
-          {historyQuery.isLoading ? (
-            <div className="text-sm text-muted-foreground">Loading…</div>
-          ) : historyQuery.data && historyQuery.data.items.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs uppercase text-muted-foreground border-b">
-                    <th className="py-2 pr-3">To</th>
-                    <th className="py-2 pr-3">Subject</th>
-                    <th className="py-2 pr-3">Template</th>
-                    <th className="py-2 pr-3">Status</th>
-                    <th className="py-2 pr-3">Provider</th>
-                    <th className="py-2 pr-3">When</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {historyQuery.data.items.map((row) => (
-                    <tr key={row.id} className="border-b last:border-0">
-                      <td className="py-2 pr-3">{row.to}</td>
-                      <td className="py-2 pr-3">{row.subject}</td>
-                      <td className="py-2 pr-3">
-                        {row.templateName ? <Badge variant="secondary">{row.templateName}</Badge> : "—"}
-                      </td>
-                      <td className="py-2 pr-3">
-                        <Badge
-                          style={{
-                            background: row.status === "sent" ? BRAND_ACCENT : "#dc2626",
-                            color: "#fff",
-                          }}
-                        >
-                          {row.status}
-                        </Badge>
-                      </td>
-                      <td className="py-2 pr-3">{row.provider}</td>
-                      <td className="py-2 pr-3">{new Date(row.createdAt).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <Card>
+            <CardContent className="py-4 space-y-3">
+              <div className="font-medium flex items-center gap-2">
+                <Send size={16} /> Send a test email
+              </div>
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label htmlFor="test-email">Recipient</Label>
+                  <Input
+                    id="test-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                  />
+                </div>
+                <Button
+                  disabled={!testEmail || testMutation.isPending || !companyId}
+                  onClick={() => testMutation.mutate(testEmail)}
+                  style={{ background: BRAND_PRIMARY }}
+                >
+                  {testMutation.isPending ? "Sending…" : "Send test"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div>
+            <div className="font-medium mb-3">Templates</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              {TEMPLATE_CARDS.map((t) => (
+                <Card key={t.id} className="overflow-hidden">
+                  <div style={{ height: 64, background: t.color }} />
+                  <CardContent className="py-3">
+                    <div className="font-medium text-sm">{t.label}</div>
+                    <div className="text-xs text-muted-foreground">{t.description}</div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">No emails sent yet.</div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
 
-      <Card>
-        <CardContent className="py-4 space-y-2 text-sm">
-          <div className="font-medium">Configuration</div>
-          {statusQuery.data ? (
-            <dl className="grid grid-cols-2 gap-1 text-xs">
-              <dt className="text-muted-foreground">Active provider</dt>
-              <dd>{statusQuery.data.provider}</dd>
-              <dt className="text-muted-foreground">Postal host</dt>
-              <dd>{statusQuery.data.postalHost ?? "—"}</dd>
-              <dt className="text-muted-foreground">SMTP host</dt>
-              <dd>{statusQuery.data.smtpHost ?? "—"}</dd>
-              <dt className="text-muted-foreground">From address</dt>
-              <dd>{statusQuery.data.fromAddress}</dd>
-              <dt className="text-muted-foreground">From domain</dt>
-              <dd>{statusQuery.data.fromDomain ?? "—"}</dd>
-            </dl>
-          ) : (
-            <div className="text-muted-foreground">Loading…</div>
-          )}
-        </CardContent>
-      </Card>
+          <Card>
+            <CardContent className="py-4">
+              <div className="font-medium mb-2 flex items-center gap-2">
+                <Clock size={16} /> Recent sends
+              </div>
+              {historyQuery.isLoading ? (
+                <div className="text-sm text-muted-foreground">Loading…</div>
+              ) : historyQuery.data && historyQuery.data.items.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs uppercase text-muted-foreground border-b">
+                        <th className="py-2 pr-3">To</th>
+                        <th className="py-2 pr-3">Subject</th>
+                        <th className="py-2 pr-3">Template</th>
+                        <th className="py-2 pr-3">Status</th>
+                        <th className="py-2 pr-3">Provider</th>
+                        <th className="py-2 pr-3">When</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {historyQuery.data.items.map((row) => (
+                        <tr key={row.id} className="border-b last:border-0">
+                          <td className="py-2 pr-3">{row.to}</td>
+                          <td className="py-2 pr-3">{row.subject}</td>
+                          <td className="py-2 pr-3">
+                            {row.templateName ? <Badge variant="secondary">{row.templateName}</Badge> : "—"}
+                          </td>
+                          <td className="py-2 pr-3">
+                            <Badge
+                              style={{
+                                background: row.status === "sent" ? BRAND_ACCENT : "#dc2626",
+                                color: "#fff",
+                              }}
+                            >
+                              {row.status}
+                            </Badge>
+                          </td>
+                          <td className="py-2 pr-3">{row.provider}</td>
+                          <td className="py-2 pr-3">{new Date(row.createdAt).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">No emails sent yet.</div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="py-4 space-y-2 text-sm">
+              <div className="font-medium">Configuration</div>
+              {statusQuery.data ? (
+                <dl className="grid grid-cols-2 gap-1 text-xs">
+                  <dt className="text-muted-foreground">Active provider</dt>
+                  <dd>{statusQuery.data.provider}</dd>
+                  <dt className="text-muted-foreground">Postal host</dt>
+                  <dd>{statusQuery.data.postalHost ?? "—"}</dd>
+                  <dt className="text-muted-foreground">SMTP host</dt>
+                  <dd>{statusQuery.data.smtpHost ?? "—"}</dd>
+                  <dt className="text-muted-foreground">From address</dt>
+                  <dd>{statusQuery.data.fromAddress}</dd>
+                  <dt className="text-muted-foreground">From domain</dt>
+                  <dd>{statusQuery.data.fromDomain ?? "—"}</dd>
+                </dl>
+              ) : (
+                <div className="text-muted-foreground">Loading…</div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

@@ -2642,7 +2642,7 @@ export function IssueDetail() {
           value={issue.description ?? ""}
           onSave={(description) => updateIssue.mutateAsync({ description })}
           as="p"
-          className="text-[15px] leading-7 text-foreground"
+          className="text-base leading-7 text-foreground"
           placeholder="Add a description..."
           multiline
           mentions={mentionOptions}

@@ -93,7 +93,7 @@ export function IssueColumnPicker({
       <DropdownMenuContent align="end" className="w-[300px] rounded-xl border-border/70 p-1.5 shadow-xl shadow-black/10">
         <DropdownMenuLabel className="px-2 pb-1 pt-1.5">
           <div className="space-y-1">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
               Desktop issue rows
             </div>
             <div className="text-sm font-medium text-foreground">
@@ -176,7 +176,7 @@ export function InboxIssueMetaLeading({
           </span>
           <span
             className={cn(
-              "hidden text-[11px] font-medium sm:inline",
+              "hidden text-xs font-medium sm:inline",
               "text-blue-600 dark:text-blue-400",
             )}
           >
@@ -297,7 +297,7 @@ export function InboxIssueTrailingColumns({
                 {(issue.labels ?? []).slice(0, 2).map((label) => (
                   <span
                     key={label.id}
-                    className="inline-flex min-w-0 max-w-full shrink-0 items-center rounded-full border px-1.5 py-0 text-[10px] font-medium"
+                    className="inline-flex min-w-0 max-w-full shrink-0 items-center rounded-full border px-1.5 py-0 text-xs font-medium"
                     style={{
                       borderColor: label.color,
                       color: pickTextColorForPillBg(label.color, 0.12),

@@ -329,7 +329,7 @@ export function PluginSettings() {
                                   <span className="truncate font-mono text-xs" title={run.jobKey ?? run.jobId}>
                                     {run.jobKey ?? run.jobId.slice(0, 8)}
                                   </span>
-                                  <Badge variant="outline" className="px-1 py-0 text-[10px]">
+                                  <Badge variant="outline" className="px-1 py-0 text-xs">
                                     {run.trigger}
                                   </Badge>
                                 </div>
@@ -415,7 +415,7 @@ export function PluginSettings() {
                           }`}
                         >
                           <span className="shrink-0 text-muted-foreground/50">{new Date(entry.createdAt).toLocaleTimeString()}</span>
-                          <Badge variant="outline" className="h-4 shrink-0 px-1 text-[10px]">{entry.level}</Badge>
+                          <Badge variant="outline" className="h-4 shrink-0 px-1 text-xs">{entry.level}</Badge>
                           <span className="truncate" title={entry.message}>{entry.message}</span>
                         </div>
                       ))}

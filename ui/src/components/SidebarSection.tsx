@@ -44,7 +44,7 @@ export function SidebarSection({
         {/* Label row — fades in when expanded */}
         <span
           className={cn(
-            "flex items-center gap-1 text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
+            "flex items-center gap-1 text-xs font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
             collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
           )}
         >

@@ -148,7 +148,7 @@ function TaskField({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-sm border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em]",
+        "inline-flex items-center rounded-sm border px-2 py-0.5 text-xs font-medium uppercase tracking-[0.16em]",
         tone === "default"
           ? "border-border/70 bg-transparent text-foreground"
           : "border-border/60 bg-transparent text-muted-foreground",
@@ -246,7 +246,7 @@ function TaskTreeNode({
                   </div>
                 </div>
                 {depth > 0 ? (
-                  <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="mt-0.5 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                     Child task
                   </div>
                 ) : null}
@@ -262,13 +262,13 @@ function TaskTreeNode({
           {createdTask?.issueId ? (
             <Link
               to={`/issues/${createdTask.identifier ?? createdTask.issueId}`}
-              className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-emerald-500/50 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-900 transition-colors hover:bg-emerald-500/15 dark:text-emerald-100"
+              className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-emerald-500/50 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-900 transition-colors hover:bg-emerald-500/15 dark:text-emerald-100"
             >
               {createdTask.identifier ?? createdTask.issueId.slice(0, 8)}
               <ChevronRight className="h-3 w-3" />
             </Link>
           ) : isSkipped ? (
-            <span className="inline-flex shrink-0 items-center rounded-sm border border-amber-500/60 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-900 dark:text-amber-100">
+            <span className="inline-flex shrink-0 items-center rounded-sm border border-amber-500/60 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-900 dark:text-amber-100">
               Skipped
             </span>
           ) : null}
@@ -470,7 +470,7 @@ function SuggestTasksCard({
 
       {interaction.status === "accepted" ? (
         <div className="rounded-sm border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
             Resolution summary
           </div>
           <p className="mt-1 leading-6">
@@ -483,7 +483,7 @@ function SuggestTasksCard({
 
       {interaction.status === "rejected" ? (
         <div className="rounded-sm border border-rose-500/60 bg-rose-500/10 px-4 py-3 text-sm text-rose-900 dark:text-rose-100">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-700">
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-700">
             Rejection reason
           </div>
           <p className={cn(
@@ -722,7 +722,7 @@ function AskUserQuestionsCard({
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Question {index + 1}
                   </div>
                   <div
@@ -815,7 +815,7 @@ function AskUserQuestionsCard({
 
           {interaction.result?.summaryMarkdown ? (
             <div className="rounded-2xl border border-emerald-300/60 bg-emerald-50/85 p-4">
-              <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
                 Submitted summary
               </div>
               <MarkdownBody>{interaction.result.summaryMarkdown}</MarkdownBody>
@@ -864,7 +864,7 @@ function RequestConfirmationTargetChip({
 
   const href = requestConfirmationTargetHref({ interaction, target });
   const className = cn(
-    "inline-flex max-w-full items-center gap-1.5 rounded-sm border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em]",
+    "inline-flex max-w-full items-center gap-1.5 rounded-sm border px-2 py-0.5 text-xs font-medium uppercase tracking-[0.16em]",
     tone === "default"
       ? "border-border/70 bg-transparent text-foreground"
       : "border-border/60 bg-transparent text-muted-foreground",
@@ -931,7 +931,7 @@ function RequestConfirmationResolution({
     const expiredByTargetChange = outcome === "stale_target";
     return (
       <div className="space-y-3 rounded-sm border border-amber-500/60 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
+        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">
           {expiredByComment ? "Expired by comment" : "Expired by target change"}
         </div>
         <p className="leading-6">
@@ -1188,7 +1188,7 @@ export function IssueThreadInteractionCard({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1 basis-64">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={cn("inline-flex items-center gap-1 rounded-sm border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]", styles.badge)}>
+            <span className={cn("inline-flex items-center gap-1 rounded-sm border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em]", styles.badge)}>
               <StatusIcon className="h-3.5 w-3.5" />
               {interactionKindLabel(interaction.kind)}
               <span className="text-current/60">/</span>
@@ -1196,7 +1196,7 @@ export function IssueThreadInteractionCard({
             </span>
             {interaction.continuationPolicy === "wake_assignee"
               || interaction.continuationPolicy === "wake_assignee_on_accept" ? (
-              <span className="inline-flex items-center gap-1 rounded-sm border border-border/70 bg-transparent px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-foreground/70">
+              <span className="inline-flex items-center gap-1 rounded-sm border border-border/70 bg-transparent px-2.5 py-1 text-xs font-medium uppercase tracking-[0.16em] text-foreground/70">
                 <ListChecks className="h-3.5 w-3.5" />
                 {interaction.continuationPolicy === "wake_assignee_on_accept"
                   ? "Wakes on confirm"

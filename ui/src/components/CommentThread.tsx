@@ -341,7 +341,7 @@ function CommentCard({
         )}
         <span className="flex items-center gap-1.5">
           {isQueued ? (
-            <span className="inline-flex items-center rounded-full border border-amber-400/60 bg-amber-100/70 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-800 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200">
+            <span className="inline-flex items-center rounded-full border border-amber-400/60 bg-amber-100/70 px-2 py-0.5 text-xs font-medium uppercase tracking-[0.14em] text-amber-800 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200">
               Queued
             </span>
           ) : null}
@@ -404,12 +404,12 @@ function CommentCard({
             comment.runAgentId ? (
               <Link
                 to={`/agents/${comment.runAgentId}/runs/${comment.runId}`}
-                className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-[10px] font-mono text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+                className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-xs font-mono text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
               >
                 run {comment.runId.slice(0, 8)}
               </Link>
             ) : (
-              <span className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-[10px] font-mono text-muted-foreground">
+              <span className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-xs font-mono text-muted-foreground">
                 run {comment.runId.slice(0, 8)}
               </span>
             )
@@ -421,12 +421,12 @@ function CommentCard({
           {comment.runAgentId ? (
             <Link
               to={`/agents/${comment.runAgentId}/runs/${comment.runId}`}
-              className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-[10px] font-mono text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+              className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-xs font-mono text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
             >
               run {comment.runId.slice(0, 8)}
             </Link>
           ) : (
-            <span className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-[10px] font-mono text-muted-foreground">
+            <span className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-xs font-mono text-muted-foreground">
               run {comment.runId.slice(0, 8)}
             </span>
           )}
@@ -473,7 +473,7 @@ function TimelineEventCard({
 
         {event.statusChange ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="w-14 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <span className="w-14 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
               Status
             </span>
             <span className="text-muted-foreground">
@@ -488,7 +488,7 @@ function TimelineEventCard({
 
         {event.assigneeChange ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="w-14 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <span className="w-14 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
               Assignee
             </span>
             <span className="text-muted-foreground">

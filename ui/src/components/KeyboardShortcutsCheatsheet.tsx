@@ -116,7 +116,7 @@ export function KeyboardShortcutsCheatsheetContent() {
         ) : (
           filteredSections.map((section) => (
             <div key={section.title} className="px-5 py-3">
-              <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {section.title}
               </h3>
               <div className="space-y-1.5">

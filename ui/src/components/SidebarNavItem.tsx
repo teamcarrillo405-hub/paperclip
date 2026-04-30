@@ -49,7 +49,7 @@ export function SidebarNavItem({
       onClick={() => { if (isMobile) setSidebarOpen(false); }}
       className={({ isActive }) =>
         cn(
-          "group flex items-center gap-2.5 py-2 text-[13px] font-medium transition-colors border-l-2",
+          "group flex items-center gap-2.5 py-2 text-sm font-medium transition-colors border-l-2",
           collapsed ? "px-0 justify-center" : "pl-[10px] pr-3",
           isActive
             ? "bg-accent text-foreground border-l-primary"
@@ -90,7 +90,7 @@ export function SidebarNavItem({
         {textBadge && (
           <span
             className={cn(
-              "rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none",
+              "rounded-full px-1.5 py-0.5 text-xs font-medium leading-none",
               textBadgeTone === "amber"
                 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
                 : "bg-muted text-muted-foreground",
@@ -105,7 +105,7 @@ export function SidebarNavItem({
               <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
             </span>
-            <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">{liveCount} live</span>
+            <span className="text-xs font-medium text-blue-600 dark:text-blue-400">{liveCount} live</span>
           </span>
         )}
         {badge != null && badge > 0 && (

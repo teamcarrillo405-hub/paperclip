@@ -222,12 +222,12 @@ export function Sidebar() {
             <div className="px-3 py-1.5">
               <span
                 className={cn(
-                  "flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
+                  "flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest font-mono text-muted-foreground/60 transition-all duration-150",
                   effectiveCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100",
                 )}
               >
                 Favorites
-                <span className="px-1 py-0.5 rounded bg-muted text-muted-foreground/60 text-[9px] font-semibold tabular-nums leading-none">
+                <span className="px-1 py-0.5 rounded bg-muted text-muted-foreground/60 text-xs font-semibold tabular-nums leading-none">
                   {favoritePaths.length}
                 </span>
               </span>
@@ -260,8 +260,8 @@ export function Sidebar() {
             title={effectiveCollapsed ? "New Issue" : undefined}
             className={
               effectiveCollapsed
-                ? "flex items-center justify-center py-2 text-[13px] font-medium text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
-                : "flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+                ? "flex items-center justify-center py-2 text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+                : "flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
             }
           >
             <SquarePen className="h-4 w-4 shrink-0" />
@@ -329,7 +329,7 @@ export function Sidebar() {
             slotTypes={["sidebar"]}
             context={pluginContext}
             className="flex flex-col gap-0.5"
-            itemClassName="text-[13px] font-medium"
+            itemClassName="text-sm font-medium"
             missingBehavior="placeholder"
           />
         </div>
@@ -459,7 +459,7 @@ export function Sidebar() {
                 className="h-6 w-6 rounded-full shrink-0 object-cover"
               />
             ) : (
-              <span className="h-6 w-6 rounded-full shrink-0 flex items-center justify-center bg-primary/10 text-primary text-[10px] font-semibold uppercase">
+              <span className="h-6 w-6 rounded-full shrink-0 flex items-center justify-center bg-primary/10 text-primary text-xs font-semibold uppercase">
                 {(sessionData.user.name ?? sessionData.user.email ?? "?").charAt(0)}
               </span>
             )}
@@ -469,9 +469,9 @@ export function Sidebar() {
                 effectiveCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[180px]",
               )}
             >
-              <p className="text-[12px] font-medium truncate leading-tight">{sessionData.user.name ?? "User"}</p>
+              <p className="text-xs font-medium truncate leading-tight">{sessionData.user.name ?? "User"}</p>
               {sessionData.user.email && (
-                <p className="text-[10px] text-muted-foreground/70 truncate leading-tight">{sessionData.user.email}</p>
+                <p className="text-xs text-muted-foreground/70 truncate leading-tight">{sessionData.user.email}</p>
               )}
             </div>
           </div>
@@ -482,7 +482,7 @@ export function Sidebar() {
             effectiveCollapsed ? "opacity-0 max-h-0 overflow-hidden py-0 pointer-events-none" : "opacity-100 max-h-10",
           )}
         >
-          <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
+          <span className="text-xs font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
             Density
           </span>
           <DensityToggle collapsed={effectiveCollapsed} />
@@ -492,13 +492,13 @@ export function Sidebar() {
           title={effectiveCollapsed ? "Expand sidebar ([ key)" : "Collapse sidebar ([ key)"}
           className={cn(
             "w-full flex items-center py-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors",
-            effectiveCollapsed ? "justify-center" : "gap-2.5 px-3 text-[13px]",
+            effectiveCollapsed ? "justify-center" : "gap-2.5 px-3 text-sm",
           )}
         >
           <ToggleIcon className="h-4 w-4 shrink-0" />
           <span
             className={cn(
-              "text-[12px] font-medium transition-all duration-150",
+              "text-xs font-medium transition-all duration-150",
               effectiveCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-[200px]",
             )}
           >

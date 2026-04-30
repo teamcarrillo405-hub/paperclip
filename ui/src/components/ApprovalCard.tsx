@@ -106,7 +106,7 @@ export function ApprovalCard({
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="border-border/70 bg-background/70 px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground"
+                  className="border-border/70 bg-background/70 px-2 py-0.5 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground"
                 >
                   {kindLabel}
                 </Badge>
@@ -137,7 +137,7 @@ export function ApprovalCard({
             <span
               title={`Waiting ${ageInfo.label}`}
               className={cn(
-                "text-[10px] font-mono leading-none",
+                "text-xs font-mono leading-none",
                 ageInfo.severity === "red" && "text-red-500 dark:text-red-400",
                 ageInfo.severity === "amber" && "text-amber-500 dark:text-amber-400",
                 ageInfo.severity === "muted" && "text-muted-foreground/60",

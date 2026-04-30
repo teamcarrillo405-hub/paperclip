@@ -96,7 +96,7 @@ function CustomerListRow({ customer, selected, onSelect }: CustomerListRowProps)
         </div>
         <div className="shrink-0 text-right">
           <div className="text-sm font-semibold">{formatCurrency(customer.lifetimeValue)}</div>
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">LTV</div>
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">LTV</div>
         </div>
       </div>
     </button>
@@ -120,11 +120,11 @@ function Timeline({ entries }: TimelineProps) {
           <div className="mt-1 h-2 w-2 shrink-0 bg-muted-foreground/50" />
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px] uppercase">
+              <Badge variant="outline" className="text-xs uppercase">
                 {entry.type}
               </Badge>
               {entry.channel && (
-                <span className="text-[11px] text-muted-foreground">{entry.channel}</span>
+                <span className="text-xs text-muted-foreground">{entry.channel}</span>
               )}
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Clock className="h-3 w-3" />

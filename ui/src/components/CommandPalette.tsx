@@ -131,7 +131,7 @@ function KbdBadge({ keys }: { keys: string }) {
       {keys.split("+").map((k, i) => (
         <kbd
           key={i}
-          className="inline-flex items-center justify-center rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-muted-foreground border border-border"
+          className="inline-flex items-center justify-center rounded bg-muted px-1.5 py-0.5 font-mono text-xs font-medium leading-none text-muted-foreground border border-border"
         >
           {k}
         </kbd>

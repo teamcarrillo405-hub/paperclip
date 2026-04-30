@@ -669,7 +669,7 @@ export function OnboardingWizard() {
               <div className="mb-6">
                 <img src="/branding/logo.svg" alt="AVERO" className="h-24 w-auto max-w-[360px]" />
               </div>
-              <p className="text-white/40 text-[10px] tracking-[0.3em] uppercase mb-8">
+              <p className="text-white/40 text-xs tracking-[0.3em] uppercase mb-8">
                 We Build AI That Moves Your Business Forward
               </p>
             </div>
@@ -735,16 +735,16 @@ export function OnboardingWizard() {
                       </p>
                       {isActive && (
                         <>
-                          <p className="text-[10px] text-[#2F80FF] uppercase tracking-[0.18em] font-medium leading-none mt-0.5">
+                          <p className="text-xs text-[#2F80FF] uppercase tracking-[0.18em] font-medium leading-none mt-0.5">
                             In progress
                           </p>
-                          <p className="text-[10px] text-white/30 leading-none mt-0.5">
+                          <p className="text-xs text-white/30 leading-none mt-0.5">
                             {STEPS.length - s} step{STEPS.length - s !== 1 ? "s" : ""} left
                           </p>
                         </>
                       )}
                       {isDone && (
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-[0.18em] font-medium leading-none mt-0.5">
+                        <p className="text-xs text-zinc-500 uppercase tracking-[0.18em] font-medium leading-none mt-0.5">
                           Complete
                         </p>
                       )}
@@ -756,7 +756,7 @@ export function OnboardingWizard() {
 
             {/* Bottom wordmark */}
             <div className="px-8 py-6 mt-auto">
-              <p className="text-zinc-600 text-[9px] tracking-[0.2em] uppercase text-center">
+              <p className="text-zinc-600 text-xs tracking-[0.2em] uppercase text-center">
                 averoai.com
               </p>
             </div>
@@ -803,7 +803,7 @@ export function OnboardingWizard() {
               <div className="mb-7">
                 <p className="text-[#2F80FF] text-xs font-semibold tracking-[0.25em] uppercase mb-3">
                   Step {step} of 4
-                  <span className="text-[11px] text-muted-foreground/60 ml-2 normal-case tracking-normal font-normal">
+                  <span className="text-xs text-muted-foreground/60 ml-2 normal-case tracking-normal font-normal">
                     {step < 4
                       ? `~2 min · ${4 - step} step${4 - step !== 1 ? "s" : ""} remaining`
                       : "Final step"}
@@ -888,13 +888,13 @@ export function OnboardingWizard() {
                           }}
                         >
                           {opt.recommended && (
-                            <span className="absolute -top-1.5 right-1.5 bg-green-500 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
+                            <span className="absolute -top-1.5 right-1.5 bg-green-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full leading-none">
                               Recommended
                             </span>
                           )}
                           <opt.icon className="h-4 w-4" />
                           <span className="font-medium">{opt.label}</span>
-                          <span className="text-muted-foreground text-[10px]">
+                          <span className="text-muted-foreground text-xs">
                             {opt.description}
                           </span>
                         </button>
@@ -951,7 +951,7 @@ export function OnboardingWizard() {
                           >
                             <opt.icon className="h-4 w-4" />
                             <span className="font-medium">{opt.label}</span>
-                            <span className="text-muted-foreground text-[10px]">
+                            <span className="text-muted-foreground text-xs">
                               {opt.comingSoon
                                 ? opt.disabledLabel ?? "Coming soon"
                                 : opt.description}
@@ -1025,7 +1025,7 @@ export function OnboardingWizard() {
                                   className="mb-1 last:mb-0"
                                 >
                                   {adapterType === "opencode_local" && (
-                                    <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                                    <div className="px-2 py-1 text-xs uppercase tracking-wide text-muted-foreground">
                                       {group.provider} ({group.entries.length})
                                     </div>
                                   )}
@@ -1072,7 +1072,7 @@ export function OnboardingWizard() {
                           <p className="text-xs font-medium">
                             Adapter environment check
                           </p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Runs a live probe that asks the adapter CLI to
                             respond with hello.
                           </p>
@@ -1089,7 +1089,7 @@ export function OnboardingWizard() {
                       </div>
 
                       {adapterEnvError && (
-                        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-2.5 py-2 text-[11px] text-destructive">
+                        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-2.5 py-2 text-xs text-destructive">
                           {adapterEnvError}
                         </div>
                       )}
@@ -1106,7 +1106,7 @@ export function OnboardingWizard() {
 
                       {shouldSuggestUnsetAnthropicApiKey && (
                         <div className="rounded-md border border-amber-300/60 bg-amber-50/40 px-2.5 py-2 space-y-2">
-                          <p className="text-[11px] text-amber-900/90 leading-relaxed">
+                          <p className="text-xs text-amber-900/90 leading-relaxed">
                             Claude failed while{" "}
                             <span className="font-mono">ANTHROPIC_API_KEY</span>{" "}
                             is set. You can clear it in this CEO adapter config
@@ -1129,7 +1129,7 @@ export function OnboardingWizard() {
                       )}
 
                       {adapterEnvResult && adapterEnvResult.status === "fail" && (
-                        <div className="rounded-md border border-border/70 bg-muted/20 px-2.5 py-2 text-[11px] space-y-1.5">
+                        <div className="rounded-md border border-border/70 bg-muted/20 px-2.5 py-2 text-xs space-y-1.5">
                           <p className="font-medium">Manual debug</p>
                           <p className="text-muted-foreground font-mono break-all">
                             {adapterType === "cursor"
@@ -1238,7 +1238,7 @@ export function OnboardingWizard() {
                     </label>
                     {/* Template picker */}
                     <div className="mb-4">
-                      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Quick start</p>
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Quick start</p>
                       <div className="grid grid-cols-2 gap-2">
                         {STARTER_TEMPLATES.map((t) => (
                           <button
@@ -1259,9 +1259,9 @@ export function OnboardingWizard() {
                             <span className="font-semibold block text-foreground mb-0.5">{t.label}</span>
                             <span className="text-muted-foreground/80 leading-relaxed line-clamp-2">{t.description}</span>
                             <span className="flex items-center gap-1.5 mt-1.5">
-                              <span className="inline-flex items-center rounded-full bg-[#2F80FF]/10 text-[#2F80FF] px-1.5 py-0.5 text-[9px] font-medium">{t.category}</span>
-                              <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">{t.time}</span>
-                              <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">{t.difficulty}</span>
+                              <span className="inline-flex items-center rounded-full bg-[#2F80FF]/10 text-[#2F80FF] px-1.5 py-0.5 text-xs font-medium">{t.category}</span>
+                              <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">{t.time}</span>
+                              <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">{t.difficulty}</span>
                             </span>
                           </button>
                         ))}
@@ -1271,13 +1271,13 @@ export function OnboardingWizard() {
                         if (!tpl) return null;
                         return (
                           <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-xs animate-in fade-in-0 duration-150">
-                            <p className="text-[9px] font-semibold uppercase tracking-widest text-primary/70 mb-1.5">Preview — how this will appear</p>
+                            <p className="text-xs font-semibold uppercase tracking-widest text-primary/70 mb-1.5">Preview — how this will appear</p>
                             <div className="rounded border border-border/60 bg-background px-3 py-2 shadow-sm">
                               <div className="flex items-start gap-2">
                                 <span className="mt-0.5 h-3 w-3 rounded-full border-2 border-muted-foreground/30 shrink-0" />
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium text-foreground truncate">{tpl.label}</p>
-                                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{tpl.description}</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{tpl.description}</p>
                                 </div>
                               </div>
                             </div>
@@ -1431,7 +1431,7 @@ export function OnboardingWizard() {
                     )}
                   </div>
                   {/* Keyboard shortcut hint */}
-                  <p className="text-[11px] text-zinc-400 tabular-nums select-none">
+                  <p className="text-xs text-zinc-400 tabular-nums select-none">
                     {isMac ? "Cmd" : "Ctrl"}+Enter to continue
                   </p>
                 </div>
@@ -1477,16 +1477,16 @@ function AgentPreviewCard({
     >
       {/* Card header */}
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#2F80FF]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2F80FF]">
           Agent Preview
         </p>
         {adapterTestPassed ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600">
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             Ready to deploy
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
             Test environment first
           </span>
@@ -1499,7 +1499,7 @@ function AgentPreviewCard({
       {/* Agent name */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-0.5">
-          <p className="text-[10px] text-zinc-400 uppercase tracking-[0.15em]">Name</p>
+          <p className="text-xs text-zinc-400 uppercase tracking-[0.15em]">Name</p>
           <p
             className="text-sm font-semibold text-[#2F80FF] leading-snug transition-all duration-150"
             style={{ fontFamily: "'Sora', sans-serif" }}
@@ -1508,7 +1508,7 @@ function AgentPreviewCard({
           </p>
         </div>
         <div className="flex flex-col gap-0.5 items-end">
-          <p className="text-[10px] text-zinc-400 uppercase tracking-[0.15em]">Adapter</p>
+          <p className="text-xs text-zinc-400 uppercase tracking-[0.15em]">Adapter</p>
           <p className="text-sm font-medium text-zinc-600 leading-snug transition-all duration-150">
             {adapterLabel}
           </p>
@@ -1537,7 +1537,7 @@ function AdapterEnvironmentResult({
       : "text-red-700 dark:text-red-300 border-red-300 dark:border-red-500/40 bg-red-50 dark:bg-red-500/10";
 
   return (
-    <div className={`rounded-md border px-2.5 py-2 text-[11px] ${statusClass}`}>
+    <div className={`rounded-md border px-2.5 py-2 text-xs ${statusClass}`}>
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium">{statusLabel}</span>
         <span className="opacity-80">

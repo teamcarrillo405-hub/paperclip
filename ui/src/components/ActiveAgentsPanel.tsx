@@ -113,7 +113,7 @@ export function ActiveAgentsPanel({ companyId, isLive = false }: ActiveAgentsPan
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-60" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-500" />
             </span>
-            <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium uppercase tracking-wide">Live</span>
+            <span className="text-xs text-cyan-600 dark:text-cyan-400 font-medium uppercase tracking-wide">Live</span>
           </span>
         )}
       </div>
@@ -247,9 +247,9 @@ const AgentRunCard = memo(function AgentRunCard({
               ) : (
                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-muted-foreground/35" />
               )}
-              <Identity name={run.agentName} size="sm" className="[&>span:last-child]:!text-[11px]" />
+              <Identity name={run.agentName} size="sm" className="[&>span:last-child]:!text-xs" />
             </div>
-            <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
               <span>
                 {isActive
                   ? `Live now \u00b7 ${elapsedLabel}`
@@ -261,14 +261,14 @@ const AgentRunCard = memo(function AgentRunCard({
                 const runCost = typeof run.usageJson?.costCents === "number" ? run.usageJson.costCents : null;
                 if (runCost != null && runCost > 0) {
                   return (
-                    <span className="ml-auto font-mono text-[10px] text-muted-foreground/70" title="Cost for this run">
+                    <span className="ml-auto font-mono text-xs text-muted-foreground/70" title="Cost for this run">
                       {formatCents(runCost)} this run
                     </span>
                   );
                 }
                 if (mtdCostCents != null && mtdCostCents > 0) {
                   return (
-                    <span className="ml-auto font-mono text-[10px] text-muted-foreground/70" title="Agent cost this month">
+                    <span className="ml-auto font-mono text-xs text-muted-foreground/70" title="Agent cost this month">
                       {formatCents(mtdCostCents)} MTD
                     </span>
                   );
@@ -330,7 +330,7 @@ const AgentRunCard = memo(function AgentRunCard({
               to={`/agents/${run.agentId}/runs/${run.id}`}
               title="View run details"
               aria-label="View run details"
-              className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-2 py-1 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               <ExternalLink className="h-2.5 w-2.5" />
             </Link>

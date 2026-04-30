@@ -75,7 +75,7 @@ export function DensityToggle({ collapsed = false }: DensityToggleProps) {
             role="radio"
             aria-checked={isActive}
             className={cn(
-              "flex h-5 items-center justify-center rounded-sm font-mono text-[10px] font-medium leading-none transition-colors",
+              "flex h-5 items-center justify-center rounded-sm font-mono text-xs font-medium leading-none transition-colors",
               collapsed ? "w-5" : "px-1.5",
               isActive
                 ? "bg-primary text-primary-foreground"

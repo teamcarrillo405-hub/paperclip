@@ -115,7 +115,7 @@ function LabSection({
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             {eyebrow}
           </div>
           <h2 className="mt-1 text-xl font-semibold tracking-tight">{title}</h2>
@@ -509,7 +509,7 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
         </div>
         <div className="hidden min-h-[420px] items-center justify-center bg-[radial-gradient(circle_at_top,rgba(8,145,178,0.18),transparent_48%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,1))] px-8 py-10 md:flex">
           <div className="max-w-sm space-y-4 text-zinc-200">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/[0.08] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-cyan-200">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/[0.08] px-3 py-1 text-xs uppercase tracking-[0.22em] text-cyan-200">
               Auth preview
             </div>
             <div className="text-2xl font-semibold">Side-by-side signup styling review</div>
@@ -700,7 +700,7 @@ export function InviteUxLab() {
       <div className="overflow-hidden rounded-[32px] border border-border/70 bg-[linear-gradient(135deg,rgba(8,145,178,0.10),transparent_28%),linear-gradient(180deg,rgba(245,158,11,0.10),transparent_44%),var(--background)] shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_320px]">
           <div className="p-6 sm:p-7">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/[0.08] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-700 dark:text-cyan-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/[0.08] px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-700 dark:text-cyan-300">
               <FlaskConical className="h-3.5 w-3.5" />
               Invite UX Lab
             </div>
@@ -710,20 +710,20 @@ export function InviteUxLab() {
             </p>
 
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.18em]">
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
                 /tests/ux/invites
               </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.18em]">
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
                 signup + invite states
               </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.18em]">
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
                 fixture-backed preview
               </Badge>
             </div>
           </div>
 
           <aside className="border-t border-border/60 bg-background/70 p-6 lg:border-l lg:border-t-0">
-            <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Covered states
             </div>
             <div className="space-y-3">
