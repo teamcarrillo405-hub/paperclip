@@ -1,7 +1,9 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from "@/lib/router";
 import { Button } from "@/components/ui/button";
 import { Layout } from "./components/Layout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { PageSkeleton } from "./components/PageSkeleton";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { CloudAccessGate } from "./components/CloudAccessGate";
 import { Dashboard } from "./pages/Dashboard";
@@ -37,14 +39,14 @@ import { RoiDashboard } from "./pages/RoiDashboard";
 import { FinancialHealthPage } from "./pages/FinancialHealthPage";
 import { PartnerPortal } from "./pages/PartnerPortal";
 import { CompliancePage } from "./pages/CompliancePage";
-import { AutonomousTasksPage } from "./pages/AutonomousTasksPage";
-import { KnowledgeBasePage } from "./pages/KnowledgeBasePage";
+const AutonomousTasksPage = lazy(() => import("./pages/AutonomousTasksPage").then(m => ({ default: m.AutonomousTasksPage })));
+const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage").then(m => ({ default: m.KnowledgeBasePage })));
 import { DevToolsPage } from "./pages/DevToolsPage";
 import { MarketingPage } from "./pages/MarketingPage";
-import { EmailPage } from "./pages/EmailPage";
-import { VideoStudioPage } from "./pages/VideoStudioPage";
-import { ImageStudioPage } from "./pages/ImageStudioPage";
-import { CrewsPage } from "./pages/CrewsPage";
+const EmailPage = lazy(() => import("./pages/EmailPage").then(m => ({ default: m.EmailPage })));
+const VideoStudioPage = lazy(() => import("./pages/VideoStudioPage").then(m => ({ default: m.VideoStudioPage })));
+const ImageStudioPage = lazy(() => import("./pages/ImageStudioPage").then(m => ({ default: m.ImageStudioPage })));
+const CrewsPage = lazy(() => import("./pages/CrewsPage").then(m => ({ default: m.CrewsPage })));
 import { InstanceGeneralSettings } from "./pages/InstanceGeneralSettings";
 import { InstanceAccess } from "./pages/InstanceAccess";
 import { InstanceSettings } from "./pages/InstanceSettings";
@@ -150,13 +152,13 @@ function boardRoutes() {
       <Route path="financial-health" element={<FinancialHealthPage />} />
       <Route path="partner" element={<PartnerPortal />} />
       <Route path="compliance" element={<CompliancePage />} />
-      <Route path="autonomous-tasks" element={<AutonomousTasksPage />} />
+      <Route path="autonomous-tasks" element={<Suspense fallback={<PageSkeleton />}><AutonomousTasksPage /></Suspense>} />
       <Route path="marketing" element={<MarketingPage />} />
-      <Route path="email" element={<EmailPage />} />
-      <Route path="video-studio" element={<VideoStudioPage />} />
-      <Route path="image-studio" element={<ImageStudioPage />} />
-      <Route path="crews" element={<CrewsPage />} />
-      <Route path="knowledge" element={<KnowledgeBasePage />} />
+      <Route path="email" element={<Suspense fallback={<PageSkeleton />}><EmailPage /></Suspense>} />
+      <Route path="video-studio" element={<Suspense fallback={<PageSkeleton />}><VideoStudioPage /></Suspense>} />
+      <Route path="image-studio" element={<Suspense fallback={<PageSkeleton />}><ImageStudioPage /></Suspense>} />
+      <Route path="crews" element={<Suspense fallback={<PageSkeleton />}><CrewsPage /></Suspense>} />
+      <Route path="knowledge" element={<Suspense fallback={<PageSkeleton />}><KnowledgeBasePage /></Suspense>} />
       <Route path="dev-tools" element={<DevToolsPage />} />
       <Route path="instance/settings/adapters" element={<AdapterManager />} />
       <Route path=":pluginRoutePath" element={<PluginPage />} />
