@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BILLING_PLANS, billingApi, type BillingPlanId } from "../api/billing";
 import { useCompany } from "../context/CompanyContext";
+import { useBreadcrumbs } from "../context/BreadcrumbContext";
 
 const PLAN_ORDER: BillingPlanId[] = ["starter", "growth", "scale"];
 
@@ -29,8 +30,14 @@ function featuresFor(planId: BillingPlanId): string[] {
 
 export function PricingPage() {
   const { selectedCompanyId } = useCompany();
+  const { setBreadcrumbs } = useBreadcrumbs();
   const [loadingPlan, setLoadingPlan] = useState<BillingPlanId | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setBreadcrumbs([{ label: "Pricing" }]);
+    return () => setBreadcrumbs([]);
+  }, [setBreadcrumbs]);
 
   async function startCheckout(planId: BillingPlanId) {
     if (!selectedCompanyId) {
