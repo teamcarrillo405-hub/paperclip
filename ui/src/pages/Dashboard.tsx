@@ -20,7 +20,7 @@ import { ActivityRow } from "../components/ActivityRow";
 import { Identity } from "../components/Identity";
 import { timeAgo } from "../lib/timeAgo";
 import { cn, formatCents } from "../lib/utils";
-import { Bot, CircleDot, DollarSign, ShieldCheck, LayoutDashboard, PauseCircle, AlertCircle } from "lucide-react";
+import { Bot, CircleDot, DollarSign, ShieldCheck, LayoutDashboard, PauseCircle, AlertCircle, Plug, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ActiveAgentsPanel } from "../components/ActiveAgentsPanel";
 import { ChartCard, RunActivityChart, PriorityChart, IssueStatusChart, SuccessRateChart } from "../components/ActivityCharts";
@@ -28,6 +28,53 @@ import { PageSkeleton } from "../components/PageSkeleton";
 import type { Agent, Issue } from "@paperclipai/shared";
 import { PluginSlotOutlet } from "@/plugins/slots";
 import { useCompanyLiveEvents } from "../hooks/useCompanyLiveEvents";
+
+function WelcomePanel({ companyName }: { companyName: string }) {
+  const ctaCards = [
+    {
+      icon: Bot,
+      title: "Create your first agent",
+      description: "Set up an AI agent to start automating work.",
+      buttonLabel: "New Agent",
+      to: "/agents/new",
+    },
+    {
+      icon: Plug,
+      title: "Connect an integration",
+      description: "Link Gusto, QuickBooks, Gmail, or Google Workspace.",
+      buttonLabel: "Go to Integrations",
+      to: "/integrations",
+    },
+    {
+      icon: Users,
+      title: "Invite a teammate",
+      description: "Bring your team in to collaborate on agents and approvals.",
+      buttonLabel: "Invite",
+      to: "/company/settings#members",
+    },
+  ] as const;
+
+  return (
+    <div className="mb-6">
+      <h2 className="text-2xl font-semibold text-foreground">Welcome to {companyName}</h2>
+      <p className="text-sm text-muted-foreground mt-1 mb-4">You're set up. Here's where to start.</p>
+      <div className="grid grid-cols-3 gap-4">
+        {ctaCards.map(({ icon: Icon, title, description, buttonLabel, to }) => (
+          <div key={to} className="bg-card border border-border rounded-lg p-5 flex flex-col gap-3">
+            <Icon className="h-5 w-5 text-foreground/60" aria-hidden="true" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">{title}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
+            </div>
+            <Link to={to}>
+              <Button variant="outline" size="sm">{buttonLabel}</Button>
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function calcForecast(spentCents: number): number | null {
   const now = new Date();
@@ -311,23 +358,7 @@ export function Dashboard() {
       </div>
 
       {hasNoAgents && (
-        // Amber tokens replaced with yellow-500 opacity variants — works in both
-        // light and dark mode without requiring a custom warning semantic token.
-        <div className="flex items-center justify-between gap-3 rounded-md border border-yellow-500/30 bg-yellow-500/5 px-4 py-3">
-          <div className="flex items-center gap-2.5">
-            <Bot className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" aria-hidden="true" />
-            <p className="text-sm text-foreground">
-              You have no agents.
-            </p>
-          </div>
-          <Button
-            variant="link"
-            className="h-auto p-0 text-sm font-medium underline"
-            onClick={() => openOnboarding({ initialStep: 2, companyId: selectedCompanyId! })}
-          >
-            Create one here
-          </Button>
-        </div>
+        <WelcomePanel companyName={selectedCompany?.name ?? "Avero"} />
       )}
 
       <ActiveAgentsPanel companyId={selectedCompanyId!} isLive={isConnected} />
