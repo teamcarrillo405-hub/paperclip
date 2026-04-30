@@ -40,6 +40,7 @@ import {
 import { resellerApi, type ResellerPartner } from "../api/reseller";
 import { ApiError } from "../api/client";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { useBreadcrumbs } from "../context/BreadcrumbContext";
 
 function formatCurrencyCents(cents: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -175,7 +176,7 @@ function NonPartnerView() {
         <div className="flex justify-center">
           <Handshake className="h-10 w-10 text-primary" />
         </div>
-        <h1 className="mt-3 text-3xl font-semibold">Earn 20% recurring commission</h1>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight">Earn 20% recurring commission</h1>
         <p className="mt-2 text-muted-foreground">
           Refer clients to Avero AI and earn 20% of every monthly subscription for as
           long as they stay.
@@ -348,7 +349,7 @@ function PartnerDashboard({ partner }: { partner: ResellerPartner }) {
     <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Partner Dashboard</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Partner Dashboard</h1>
           <p className="text-sm text-muted-foreground">
             Welcome back, {partner.name}. Commission rate: {partner.commissionPercent}%.
           </p>
@@ -511,10 +512,15 @@ function StatCard({
 }
 
 export function PartnerPortal() {
+  const { setBreadcrumbs } = useBreadcrumbs();
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["reseller", "me"],
     queryFn: () => resellerApi.me(),
   });
+
+  useEffect(() => {
+    setBreadcrumbs([{ label: "Partner Program" }]);
+  }, [setBreadcrumbs]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
