@@ -119,7 +119,7 @@ export function Issues() {
 
   return (
     <>
-      <h1 className="sr-only">Issues</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Issues</h1>
       <IssuesList
       issues={issues ?? []}
       isLoading={isLoading}

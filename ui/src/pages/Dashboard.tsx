@@ -356,7 +356,7 @@ export function Dashboard() {
           ) : null}
 
           <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">Overview</h2>
+            <h2 className="text-base font-semibold text-foreground/60 uppercase tracking-wide">Overview</h2>
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             <MetricCard
               icon={Bot}
@@ -421,7 +421,7 @@ export function Dashboard() {
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-foreground">Activity</h2>
+              <h2 className="text-base font-semibold text-foreground">Activity</h2>
               <div
                 role="group"
                 aria-label="Chart time range"
