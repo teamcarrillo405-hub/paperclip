@@ -14,6 +14,7 @@ import {
 } from "@/api/onboarding";
 import { agentsApi } from "@/api/agents";
 import { integrationsApi } from "@/api/integrations";
+import { accessApi } from "@/api/access";
 import {
   CONSTRUCTION_ROLES,
   CONSTRUCTION_DEPARTMENTS,
@@ -878,6 +879,114 @@ function StepRoles(props: {
             Next <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function StepRolesReview(props: {
+  selectedIds: string[];
+  roleOwners: Record<string, string>;
+  roleOwnerIds: Record<string, string>;
+  onOwnerChange: (roleId: string, memberName: string, memberId: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+  launching: boolean;
+}) {
+  const { selectedIds, roleOwners, roleOwnerIds, onOwnerChange, onNext, onBack, launching } = props;
+  const { selectedCompanyId } = useCompany();
+
+  const { data: membersData } = useQuery({
+    queryKey: ["company", selectedCompanyId, "members"],
+    queryFn: () => accessApi.listMembers(selectedCompanyId!),
+    enabled: !!selectedCompanyId,
+    staleTime: 60_000,
+  });
+
+  const members = membersData?.members ?? [];
+
+  const selectedRoles = useMemo(
+    () =>
+      selectedIds
+        .map((id) => CONSTRUCTION_ROLES.find((r) => r.id === id))
+        .filter((r): r is ConstructionRole => !!r),
+    [selectedIds],
+  );
+
+  return (
+    <div>
+      <h1 className="text-2xl font-semibold mb-2">Review your construction team</h1>
+      <p className="text-sm text-muted-foreground mb-6">
+        Agents will be created in <strong>paused state</strong> — they won't take any actions until you activate them from the Agents page. Optionally assign a team member to supervise each role.
+      </p>
+
+      <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1 scrollbar-auto-hide mb-6">
+        {selectedRoles.map((role) => (
+          <div
+            key={role.id}
+            className="flex items-start gap-4 rounded-lg border border-border bg-card p-4"
+          >
+            <Check className="h-4 w-4 mt-0.5 text-emerald-600 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <p className="text-sm font-semibold">{role.title}</p>
+                  <p className="text-xs text-muted-foreground">{role.department}</p>
+                </div>
+                {members.length > 0 && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <label
+                      htmlFor={`owner-${role.id}`}
+                      className="text-xs text-muted-foreground"
+                    >
+                      Supervised by:
+                    </label>
+                    <select
+                      id={`owner-${role.id}`}
+                      name={`owner-${role.id}`}
+                      className="text-xs rounded-md border border-input bg-background px-2 py-1"
+                      value={roleOwnerIds[role.id] ?? ""}
+                      onChange={(e) => {
+                        const selected = members.find((m) => m.principalId === e.target.value);
+                        if (selected) {
+                          onOwnerChange(
+                            role.id,
+                            selected.user?.name ?? selected.user?.email ?? selected.principalId,
+                            selected.principalId,
+                          );
+                        } else {
+                          // empty string = clear owner assignment
+                          onOwnerChange(role.id, "", "");
+                        }
+                      }}
+                    >
+                      <option value="">— Unassigned —</option>
+                      {members.map((m) => (
+                        <option key={m.principalId} value={m.principalId}>
+                          {m.user?.name ?? m.user?.email ?? m.principalId}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 leading-snug">{role.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20 px-4 py-3 mb-6">
+        <p className="text-sm text-amber-800 dark:text-amber-200">
+          <strong>{selectedIds.length} agent{selectedIds.length === 1 ? "" : "s"}</strong> will be created in paused state. Go to <strong>Agents</strong> after setup to review and activate each one.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBack}>← Back</Button>
+        <Button onClick={onNext} disabled={launching}>
+          {launching ? "Creating agents…" : `Create ${selectedIds.length} agent${selectedIds.length === 1 ? "" : "s"} →`}
+        </Button>
       </div>
     </div>
   );
