@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertCircle,
   AlertTriangle,
   CheckCircle2,
   ExternalLink,
@@ -23,6 +24,7 @@ import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useToastActions } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import {
   n8nApi,
   type N8nExecutionStatus,
@@ -326,6 +328,19 @@ export function AutomationsPage() {
 
   const connected = statusQuery.data?.connected === true;
   const n8nBaseUrl = statusQuery.data?.baseUrl ?? "http://n8n:5678";
+
+  if (workflowsQuery.isLoading) return <PageSkeleton variant="list" title="Automations" />;
+
+  if (workflowsQuery.isError) {
+    return (
+      <div className="p-6">
+        <div role="alert" className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>Failed to load automations. <button onClick={() => workflowsQuery.refetch()} className="underline">Try again</button></span>
+        </div>
+      </div>
+    );
+  }
 
   const recentExecutions = workflows
     .map((wf) => (wf.lastExecution ? { wf, execution: wf.lastExecution } : null))

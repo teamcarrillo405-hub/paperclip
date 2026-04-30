@@ -392,6 +392,11 @@ export function MarketingPage() {
                 {createMutation.isPending ? "Generating…" : "Generate Campaign"}
               </Button>
             </div>
+            {createMutation.isError && (
+              <p className="text-sm text-destructive mt-2">
+                {createMutation.error instanceof Error ? createMutation.error.message : "Failed to create campaign. Please try again."}
+              </p>
+            )}
           </CardContent>
         </Card>
       ) : null}
