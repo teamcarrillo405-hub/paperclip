@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Mic, MicOff, Square, Play, CheckSquare, Square as SquareIcon } from "lucide-react";
+import { Mic, MicOff, Square, Play, CheckSquare, Square as SquareIcon, AlertCircle } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { meetingApi } from "../api/meeting";
@@ -440,8 +440,9 @@ export function LiveMeetingPage() {
         </h1>
 
         {errorMessage && (
-          <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-950/50 dark:text-red-300">
-            {errorMessage}
+          <div role="alert" className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 mb-4 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{errorMessage}</span>
           </div>
         )}
 
@@ -530,7 +531,7 @@ export function LiveMeetingPage() {
             {pageStatus === "ended" && (
               <div className="rounded border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                 Meeting has ended.{" "}
-                {session.issuesCreated.length > 0 &&
+                {(session.issuesCreated?.length ?? 0) > 0 &&
                   `${session.issuesCreated.length} issue${session.issuesCreated.length === 1 ? "" : "s"} created.`}
               </div>
             )}
@@ -559,7 +560,7 @@ export function LiveMeetingPage() {
                     : "Transcript will appear here once the session starts."}
               </p>
             ) : (
-              transcriptLines.map((line) => (
+              (transcriptLines ?? []).map((line) => (
                 <span
                   key={line.id}
                   className={cn(
@@ -601,7 +602,7 @@ export function LiveMeetingPage() {
               </p>
             ) : (
               <ul className="flex flex-col gap-2">
-                {actionItems.map((item, idx) => (
+                {(actionItems ?? []).map((item, idx) => (
                   <li
                     key={`${item.detectedAt}-${idx}`}
                     className="flex items-start gap-2 rounded border border-border bg-card px-3 py-2 text-sm"
