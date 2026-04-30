@@ -477,31 +477,33 @@ export function Dashboard() {
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <section aria-label="Run activity chart">
+            <div className="flex flex-col gap-4">
+              <section aria-label="Run activity chart" className="w-full">
                 <ChartCard title="Run Activity" subtitle={`Last ${chartDays} days`}>
                   <span className="sr-only">Activity chart showing agent run counts over the last {chartDays} days.</span>
                   <RunActivityChart activity={data.runActivity} days={chartDays} />
                 </ChartCard>
               </section>
-              <section aria-label="Issues by priority chart">
-                <ChartCard title="Issues by Priority" subtitle={`Last ${chartDays} days`}>
-                  <span className="sr-only">Bar chart showing issue counts grouped by priority over the last {chartDays} days.</span>
-                  <PriorityChart issues={issues ?? []} days={chartDays} />
-                </ChartCard>
-              </section>
-              <section aria-label="Issues by status chart">
-                <ChartCard title="Issues by Status" subtitle={`Last ${chartDays} days`}>
-                  <span className="sr-only">Chart showing issue distribution by status over the last {chartDays} days.</span>
-                  <IssueStatusChart issues={issues ?? []} days={chartDays} />
-                </ChartCard>
-              </section>
-              <section aria-label="Success rate chart">
-                <ChartCard title="Success Rate" subtitle={`Last ${chartDays} days`}>
-                  <span className="sr-only">Chart showing the agent run success rate over the last {chartDays} days.</span>
-                  <SuccessRateChart activity={data.runActivity} days={chartDays} />
-                </ChartCard>
-              </section>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <section aria-label="Issues by priority chart">
+                  <ChartCard title="Issues by Priority" subtitle={`Last ${chartDays} days`}>
+                    <span className="sr-only">Bar chart showing issue counts grouped by priority over the last {chartDays} days.</span>
+                    <PriorityChart issues={issues ?? []} days={chartDays} />
+                  </ChartCard>
+                </section>
+                <section aria-label="Issues by status chart">
+                  <ChartCard title="Issues by Status" subtitle={`Last ${chartDays} days`}>
+                    <span className="sr-only">Chart showing issue distribution by status over the last {chartDays} days.</span>
+                    <IssueStatusChart issues={issues ?? []} days={chartDays} />
+                  </ChartCard>
+                </section>
+                <section aria-label="Success rate chart">
+                  <ChartCard title="Success Rate" subtitle={`Last ${chartDays} days`}>
+                    <span className="sr-only">Chart showing the agent run success rate over the last {chartDays} days.</span>
+                    <SuccessRateChart activity={data.runActivity} days={chartDays} />
+                  </ChartCard>
+                </section>
+              </div>
             </div>
           </div>
 

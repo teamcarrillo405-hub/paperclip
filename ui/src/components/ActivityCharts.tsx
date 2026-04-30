@@ -109,7 +109,7 @@ export function RunActivityChart(props: RunChartProps) {
 
   return (
     <div>
-      <div className="flex items-end gap-[3px] h-20">
+      <div className="flex items-end gap-[3px] h-32">
         {days.map(day => {
           const entry = grouped.get(day) ?? { date: day, succeeded: 0, failed: 0, other: 0, total: 0 };
           const total = entry.total;
