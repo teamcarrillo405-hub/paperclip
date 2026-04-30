@@ -13,6 +13,7 @@ import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { slidesApi, type DocType, type PresentationRequest } from "../api/slides";
 import { EmptyState } from "../components/EmptyState";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { timeAgo } from "../lib/timeAgo";
 
 const DOC_TYPE_LABELS: Record<DocType, string> = {
@@ -61,7 +62,7 @@ export function SlidesPage() {
     }
   }, [selectedCompany?.name, form.companyName]);
 
-  const { data, isLoading: listLoading } = useQuery({
+  const { data, isLoading: slidesQueryIsLoading } = useQuery({
     queryKey: ["slides", selectedCompanyId],
     queryFn: () => slidesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -115,6 +116,8 @@ export function SlidesPage() {
       />
     );
   }
+
+  if (slidesQueryIsLoading) return <PageSkeleton variant="list" title="Presentations" />;
 
   const presentations = data?.presentations ?? [];
 
@@ -238,12 +241,7 @@ export function SlidesPage() {
             Past Presentations
           </h2>
 
-          {listLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground py-6">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading…
-            </div>
-          ) : presentations.length === 0 ? (
+          {presentations.length === 0 ? (
             <div className="rounded-lg border border-border p-8 text-center">
               <Presentation className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-muted-foreground">No presentations yet</p>

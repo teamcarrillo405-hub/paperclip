@@ -22,6 +22,7 @@ import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useToastActions } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import {
   socialApi,
   type CreateSocialPostInput,
@@ -205,6 +206,8 @@ export function SocialMediaPage() {
       </div>
     );
   }
+
+  if (postsQuery.isLoading) return <PageSkeleton variant="list" title="Social Media" />;
 
   return (
     <div className="max-w-5xl space-y-6">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Clock, Download, Image as ImageIcon, Sparkles, Wand2 } from "lucide-react";
+import { Clock, Download, Image as ImageIcon, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -168,10 +168,17 @@ export function ImageStudioPage() {
             </Button>
           </div>
 
-          {generateMutation.isError && (
-            <div className="text-sm text-destructive">
-              {(generateMutation.error as Error)?.message ?? "Generation failed"}
+          {generateMutation.isPending && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-3">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Generating image…</span>
             </div>
+          )}
+
+          {generateMutation.isError && (
+            <p className="text-sm text-destructive mt-2">
+              {generateMutation.error instanceof Error ? generateMutation.error.message : "Generation failed. Please try again."}
+            </p>
           )}
         </CardContent>
       </Card>
