@@ -15,6 +15,7 @@ import { ApprovalCard } from "../components/ApprovalCard";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { useCompanyLiveEvents } from "../hooks/useCompanyLiveEvents";
+import { FirstRunBanner } from "../components/FirstRunBanner";
 
 type StatusFilter = "pending" | "all";
 
@@ -293,6 +294,11 @@ export function Approvals() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold tracking-tight">Approvals</h1>
+      <FirstRunBanner
+        storageKey={`avero:firstrun:approvals:${selectedCompanyId}`}
+        title="How Approvals work"
+        description="Your AI agents request approval before taking high-stakes actions. Review each request and approve or reject it — agents wait for your decision."
+      />
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Tabs value={statusFilter} onValueChange={(v) => navigate(`/approvals/${v}`)}>

@@ -15,6 +15,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { crewsApi, type CrewSummary, type CrewRun } from "@/api/crews";
+import { useCompany } from "../context/CompanyContext";
+import { FirstRunBanner } from "../components/FirstRunBanner";
 
 const BRAND_PRIMARY = "#2563eb";
 const BRAND_ACCENT = "#16a34a";
@@ -253,6 +255,7 @@ function RecentRuns() {
 }
 
 export function CrewsPage() {
+  const { selectedCompanyId } = useCompany();
   const [selectedCrew, setSelectedCrew] = useState<CrewSummary | null>(null);
 
   const { data: crews, isLoading, error } = useQuery({
@@ -294,6 +297,12 @@ export function CrewsPage() {
           </p>
         </div>
       </header>
+
+      <FirstRunBanner
+        storageKey={`avero:firstrun:crews:${selectedCompanyId}`}
+        title="What are AI Crews?"
+        description="Crews are coordinated groups of agents that work together on complex, multi-step tasks. Unlike solo agents, a crew delegates subtasks automatically across its members."
+      />
 
       {error ? (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">

@@ -33,6 +33,7 @@ import { billingTypeDisplayName, cn, formatCents, formatTokens, providerDisplayN
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FirstRunBanner } from "../components/FirstRunBanner";
 
 function calcForecast(spentCents: number): number | null {
   const now = new Date();
@@ -634,6 +635,11 @@ export function Costs() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
                 <h1 className="text-2xl font-semibold tracking-tight">Costs</h1>
+                <FirstRunBanner
+                  storageKey={`avero:firstrun:costs:${selectedCompanyId}`}
+                  title="Tracking AI spend"
+                  description="Costs shows your month-to-date AI spending by agent. Set budget alerts in Company Settings to get notified when spend approaches your limit."
+                />
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                   Inference spend, platform fees, credits, and live quota windows.
                 </p>
