@@ -23,7 +23,7 @@ import {
 import { buildNewAgentRuntimeConfig } from "@/lib/new-agent-runtime-config";
 
 const INDUSTRY_OPTIONS: { value: string; label: string }[] = [
-  { value: "contractor", label: "Contractor / Trades (HVAC, plumbing, electrical, landscaping)" },
+  { value: "contractor", label: "Construction / Contractor (GC, trades, HVAC, plumbing, electrical)" },
   { value: "restaurant", label: "Restaurant / Food Service" },
   { value: "retail", label: "Retail Store" },
   { value: "professional_services", label: "Professional Services (consulting, legal, accounting)" },
