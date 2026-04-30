@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, Link } from "@/lib/router";
-import { Check, Circle, ChevronRight, Hammer, UtensilsCrossed, ShoppingBag, Briefcase, HelpCircle, Mail, Plug } from "lucide-react";
+import { Check, Circle, ChevronRight, ChevronDown, HardHat, Hammer, UtensilsCrossed, ShoppingBag, Briefcase, HelpCircle, Mail, Plug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,11 @@ import {
 } from "@/api/onboarding";
 import { agentsApi } from "@/api/agents";
 import { integrationsApi } from "@/api/integrations";
+import {
+  CONSTRUCTION_ROLES,
+  CONSTRUCTION_DEPARTMENTS,
+  type ConstructionRole,
+} from "@/data/constructionRoles";
 
 const INDUSTRY_OPTIONS: { value: string; label: string }[] = [
   { value: "contractor", label: "Contractor / Trades (HVAC, plumbing, electrical, landscaping)" },
@@ -762,6 +767,117 @@ function Step3(props: {
         <Button onClick={onNext} disabled={!selectedTemplateId}>
           Next <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
+      </div>
+    </div>
+  );
+}
+
+const BY_DEPT = CONSTRUCTION_DEPARTMENTS.map((dept) => ({
+  dept,
+  roles: CONSTRUCTION_ROLES.filter((r) => r.department === dept),
+}));
+
+function StepRoles(props: {
+  selectedIds: string[];
+  onToggle: (id: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const { selectedIds, onToggle, onNext, onBack } = props;
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-2">
+        <HardHat className="h-6 w-6 text-amber-600 shrink-0" />
+        <h1 className="text-2xl font-semibold">Build your construction team</h1>
+      </div>
+      <p className="text-sm text-muted-foreground mb-6">
+        Check the roles your company needs. Each one becomes a paused AI agent ready for you to activate — no agents start working until you say so.
+      </p>
+
+      <div className="space-y-6 max-h-[420px] overflow-y-auto pr-1 scrollbar-auto-hide">
+        {BY_DEPT.map(({ dept, roles }) => (
+          <div key={dept}>
+            <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/70 font-mono mb-2 px-1">
+              {dept}
+            </div>
+            <div className="space-y-2">
+              {roles.map((role) => {
+                const selected = selectedIds.includes(role.id);
+                const expanded = expandedId === role.id;
+                return (
+                  <div
+                    key={role.id}
+                    className={cn(
+                      "rounded-lg border transition-colors",
+                      selected
+                        ? "border-primary bg-accent/20"
+                        : "border-border hover:border-primary/40",
+                    )}
+                  >
+                    <div className="flex items-start gap-3 p-4">
+                      <input
+                        type="checkbox"
+                        id={`role-${role.id}`}
+                        checked={selected}
+                        onChange={() => onToggle(role.id)}
+                        className="mt-0.5 h-4 w-4 accent-primary shrink-0 cursor-pointer"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <label
+                            htmlFor={`role-${role.id}`}
+                            className="cursor-pointer text-sm font-semibold"
+                          >
+                            {role.title}
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setExpandedId(expanded ? null : role.id)}
+                            className="shrink-0 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                            aria-label={expanded ? `Collapse ${role.title}` : `Expand ${role.title}`}
+                          >
+                            {expanded ? "Less" : "More"}
+                            <ChevronDown
+                              className={cn(
+                                "h-3 w-3 transition-transform",
+                                expanded && "rotate-180",
+                              )}
+                            />
+                          </button>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-0.5 leading-snug">
+                          {expanded ? role.fullDescription : role.description}
+                        </p>
+                        {expanded && role.suggestedIntegrations.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1.5">
+                            <span className="font-medium">Suggested integrations: </span>
+                            {role.suggestedIntegrations.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 flex items-center justify-between">
+        <Button variant="ghost" onClick={onBack}>← Back</Button>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">
+            {selectedIds.length === 0
+              ? "No roles selected"
+              : `${selectedIds.length} role${selectedIds.length === 1 ? "" : "s"} selected`}
+          </span>
+          <Button onClick={onNext} disabled={selectedIds.length === 0}>
+            Next <ChevronRight className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
