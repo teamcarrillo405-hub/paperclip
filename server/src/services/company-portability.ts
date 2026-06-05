@@ -142,8 +142,29 @@ function classifyPortableFileKind(pathValue: string): CompanyPortabilityExportPr
   if (normalized.startsWith("agents/")) return "agent";
   if (normalized.startsWith("skills/")) return "skill";
   if (normalized.startsWith("projects/")) return "project";
-  if (normalized.startsWith("tasks/")) return "issue";
+  if (normalized.startsWith("tasks/") || normalized.startsWith("issues/")) return "issue";
   return "other";
+}
+
+function isPortableFileNamed(pathValue: string, names: string[]) {
+  const normalized = normalizePortablePath(pathValue).toLowerCase();
+  return names.some((name) => normalized === name || normalized.endsWith(`/${name}`));
+}
+
+function isPortableAgentMarkdownPath(pathValue: string) {
+  return isPortableFileNamed(pathValue, ["agents.md", "agent.md"]);
+}
+
+function isPortableProjectMarkdownPath(pathValue: string) {
+  return isPortableFileNamed(pathValue, ["project.md"]);
+}
+
+function isPortableTaskMarkdownPath(pathValue: string) {
+  return isPortableFileNamed(pathValue, ["task.md", "issue.md"]);
+}
+
+function isPortableSkillMarkdownPath(pathValue: string) {
+  return isPortableFileNamed(pathValue, ["skill.md"]);
 }
 
 function normalizeSkillSlug(value: string | null | undefined) {
@@ -1452,7 +1473,7 @@ function collectSelectedExportSlugs(selectedFiles: Set<string>) {
     if (agentMatch) agents.add(agentMatch[1]!);
     const projectMatch = filePath.match(/^projects\/([^/]+)\//);
     if (projectMatch) projects.add(projectMatch[1]!);
-    const taskMatch = filePath.match(/^tasks\/([^/]+)\//);
+    const taskMatch = filePath.match(/^(?:tasks|issues)\/([^/]+)\//);
     if (taskMatch) tasks.add(taskMatch[1]!);
   }
   return { agents, projects, tasks, routines: new Set(tasks) };
@@ -2386,28 +2407,20 @@ function buildManifestFromPackageFiles(
   const includeEntries = readIncludeEntries(companyFrontmatter);
   const referencedAgentPaths = includeEntries
     .map((entry) => resolvePortablePath(resolvedCompanyPath, entry.path))
-    .filter((entry) => entry.endsWith("/AGENTS.md") || entry === "AGENTS.md");
+    .filter(isPortableAgentMarkdownPath);
   const referencedProjectPaths = includeEntries
     .map((entry) => resolvePortablePath(resolvedCompanyPath, entry.path))
-    .filter((entry) => entry.endsWith("/PROJECT.md") || entry === "PROJECT.md");
+    .filter(isPortableProjectMarkdownPath);
   const referencedTaskPaths = includeEntries
     .map((entry) => resolvePortablePath(resolvedCompanyPath, entry.path))
-    .filter((entry) => entry.endsWith("/TASK.md") || entry === "TASK.md");
+    .filter(isPortableTaskMarkdownPath);
   const referencedSkillPaths = includeEntries
     .map((entry) => resolvePortablePath(resolvedCompanyPath, entry.path))
-    .filter((entry) => entry.endsWith("/SKILL.md") || entry === "SKILL.md");
-  const discoveredAgentPaths = Object.keys(normalizedFiles).filter(
-    (entry) => entry.endsWith("/AGENTS.md") || entry === "AGENTS.md",
-  );
-  const discoveredProjectPaths = Object.keys(normalizedFiles).filter(
-    (entry) => entry.endsWith("/PROJECT.md") || entry === "PROJECT.md",
-  );
-  const discoveredTaskPaths = Object.keys(normalizedFiles).filter(
-    (entry) => entry.endsWith("/TASK.md") || entry === "TASK.md",
-  );
-  const discoveredSkillPaths = Object.keys(normalizedFiles).filter(
-    (entry) => entry.endsWith("/SKILL.md") || entry === "SKILL.md",
-  );
+    .filter(isPortableSkillMarkdownPath);
+  const discoveredAgentPaths = Object.keys(normalizedFiles).filter(isPortableAgentMarkdownPath);
+  const discoveredProjectPaths = Object.keys(normalizedFiles).filter(isPortableProjectMarkdownPath);
+  const discoveredTaskPaths = Object.keys(normalizedFiles).filter(isPortableTaskMarkdownPath);
+  const discoveredSkillPaths = Object.keys(normalizedFiles).filter(isPortableSkillMarkdownPath);
   const agentPaths = Array.from(new Set([...referencedAgentPaths, ...discoveredAgentPaths])).sort();
   const projectPaths = Array.from(new Set([...referencedProjectPaths, ...discoveredProjectPaths])).sort();
   const taskPaths = Array.from(new Set([...referencedTaskPaths, ...discoveredTaskPaths])).sort();
@@ -4408,9 +4421,6 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
           warnings.push(`Task ${manifestIssue.slug} references workspace key ${manifestIssue.projectWorkspaceKey}, but that workspace was not imported.`);
         }
         if (manifestIssue.recurring) {
-          if (!projectId) {
-            throw unprocessable(`Recurring task ${manifestIssue.slug} is missing the project required to create a routine.`);
-          }
           const resolvedRoutine = resolvePortableRoutineDefinition(manifestIssue, parsed?.frontmatter.schedule);
           if (resolvedRoutine.errors.length > 0) {
             throw unprocessable(`Recurring task ${manifestIssue.slug} could not be imported as a routine: ${resolvedRoutine.errors.join("; ")}`);
