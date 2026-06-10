@@ -389,6 +389,7 @@ async function runPnpm(args: string[], options: {
       env: options.env ?? process.env,
       cwd: options.cwd,
       shell: process.platform === "win32",
+      windowsHide: true,
     });
 
     const stdoutBuffer = createCapturedOutputBuffer();
@@ -597,7 +598,7 @@ async function startServerChild() {
   child = spawn(
     pnpmBin,
     ["--filter", "@paperclipai/server", serverScript, ...forwardedArgs],
-    { stdio: "inherit", env, shell: process.platform === "win32" },
+    { stdio: "inherit", env, shell: process.platform === "win32", windowsHide: true },
   );
 
   childExitPromise = new Promise((resolve, reject) => {

@@ -56,6 +56,7 @@ export function spawnCrewRun(
       OPENAI_API_KEY: opts.env?.OPENAI_API_KEY ?? process.env.OPENAI_API_KEY ?? "",
     },
     stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
   });
 
   let stdout = "";

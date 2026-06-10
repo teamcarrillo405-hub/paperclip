@@ -180,6 +180,7 @@ async function runCuratedCommand(
   const child = spawn(definition.command, definition.args, {
     cwd,
     stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
   });
 
   let stdout = "";

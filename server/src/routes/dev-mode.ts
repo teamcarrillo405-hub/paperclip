@@ -81,6 +81,7 @@ function runTypecheck(): Promise<{ code: number; stdout: string; stderr: string 
       cwd: process.cwd(),
       env: process.env,
       shell: false,
+      windowsHide: true,
     });
     let stdout = "";
     let stderr = "";

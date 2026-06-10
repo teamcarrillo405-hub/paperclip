@@ -169,6 +169,7 @@ function sameRunLock(checkoutRunId: string | null, actorRunId: string | null) {
 }
 
 const TERMINAL_HEARTBEAT_RUN_STATUSES = new Set(["succeeded", "failed", "cancelled", "timed_out"]);
+const OPEN_ISSUE_STATUSES = ["backlog", "todo", "in_progress", "in_review", "blocked"] as const;
 const ISSUE_LIST_DESCRIPTION_MAX_CHARS = 1200;
 const ISSUE_LIST_DESCRIPTION_MAX_BYTES = ISSUE_LIST_DESCRIPTION_MAX_CHARS * 4;
 
@@ -210,6 +211,32 @@ function appendAcceptanceCriteriaToDescription(description: string | null | unde
   const base = description?.trim() ?? "";
   const criteriaMarkdown = ["## Acceptance Criteria", "", ...criteria.map((item) => `- ${item}`)].join("\n");
   return base ? `${base}\n\n${criteriaMarkdown}` : criteriaMarkdown;
+}
+
+function isBoardActionIssue(data: Pick<IssueCreateInput, "title" | "description">) {
+  const title = data.title.trim().toLowerCase();
+  const description = data.description?.trim().toLowerCase() ?? "";
+  return (
+    title.startsWith("[board action required]") ||
+    title.includes("board action required") ||
+    description.includes("## board action needed") ||
+    description.includes("board action needed")
+  );
+}
+
+function shouldDedupeManualBoardActionIssue(data: IssueCreateInput) {
+  const originKind = data.originKind ?? "manual";
+  return (
+    originKind === "manual" &&
+    Boolean(data.createdByAgentId) &&
+    !data.parentId &&
+    !data.assigneeAgentId &&
+    !data.assigneeUserId &&
+    !data.labelIds?.length &&
+    data.blockedByIssueIds === undefined &&
+    !data.inheritExecutionWorkspaceFromIssueId &&
+    isBoardActionIssue(data)
+  );
 }
 
 function createIssueDependencyReadiness(issueId: string): IssueDependencyReadiness {
@@ -1210,8 +1237,22 @@ export function issueService(db: Db) {
     actorRunId: string;
     expectedCheckoutRunId: string;
   }) {
-    const stale = await isTerminalOrMissingHeartbeatRun(input.expectedCheckoutRunId);
-    if (!stale) return null;
+    const run = await db
+      .select({ status: heartbeatRuns.status, startedAt: heartbeatRuns.startedAt })
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.id, input.expectedCheckoutRunId))
+      .then((rows) => rows[0] ?? null);
+
+    // Allow adoption if the run is terminal/missing, or if it has been "running"
+    // for more than 15 minutes without completing (stale session that didn't clean up).
+    const SAME_AGENT_STALE_THRESHOLD_MS = 15 * 60 * 1000;
+    const isTerminalOrMissing = !run || TERMINAL_HEARTBEAT_RUN_STATUSES.has(run.status);
+    const isStaleRunning =
+      run?.status === "running" &&
+      run.startedAt != null &&
+      Date.now() - new Date(run.startedAt).getTime() > SAME_AGENT_STALE_THRESHOLD_MS;
+
+    if (!isTerminalOrMissing && !isStaleRunning) return null;
 
     const now = new Date();
     const adopted = await db
@@ -1935,6 +1976,28 @@ export function issueService(db: Db) {
         }
         if (executionWorkspaceId) {
           await assertValidExecutionWorkspace(companyId, issueData.projectId, executionWorkspaceId, tx);
+        }
+        if (shouldDedupeManualBoardActionIssue(data)) {
+          const existingConditions = [
+            eq(issues.companyId, companyId),
+            eq(issues.createdByAgentId, issueData.createdByAgentId!),
+            eq(issues.originKind, "manual"),
+            eq(issues.title, issueData.title),
+            issueData.description == null ? isNull(issues.description) : eq(issues.description, issueData.description),
+            isNull(issues.hiddenAt),
+            inArray(issues.status, [...OPEN_ISSUE_STATUSES]),
+          ];
+          const existing = await tx
+            .select()
+            .from(issues)
+            .where(and(...existingConditions))
+            .orderBy(asc(issues.createdAt), asc(issues.id))
+            .limit(1)
+            .then((rows) => rows[0] ?? null);
+          if (existing) {
+            const [enriched] = await withIssueLabels(tx, [existing]);
+            return enriched;
+          }
         }
         // Self-correcting counter: use MAX(issue_number) + 1 if the counter
         // has drifted below the actual max, preventing identifier collisions.

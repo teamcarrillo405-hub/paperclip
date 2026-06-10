@@ -293,6 +293,7 @@ async function runPgDumpBackup(opts: {
         ...process.env,
         PGCONNECT_TIMEOUT: String(opts.connectTimeout),
       },
+      windowsHide: true,
     },
   );
 
@@ -322,6 +323,7 @@ async function restoreWithPsql(opts: RunDatabaseRestoreOptions, connectTimeout: 
         ...process.env,
         PGCONNECT_TIMEOUT: String(connectTimeout),
       },
+      windowsHide: true,
     },
   );
 

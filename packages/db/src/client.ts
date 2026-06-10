@@ -373,15 +373,33 @@ async function constraintExists(
   return rows[0]?.exists ?? false;
 }
 
+async function extensionExists(
+  sql: ReturnType<typeof postgres>,
+  extensionName: string,
+): Promise<boolean> {
+  const rows = await sql<{ exists: boolean }[]>`
+    SELECT EXISTS (
+      SELECT 1
+      FROM pg_extension
+      WHERE extname = ${extensionName}
+    ) AS exists
+  `;
+  return rows[0]?.exists ?? false;
+}
+
 async function migrationStatementAlreadyApplied(
   sql: ReturnType<typeof postgres>,
   statement: string,
 ): Promise<boolean> {
-  const normalized = statement.replace(/\s+/g, " ").trim();
+  const normalized = statement
+    .replace(/--[^\r\n]*(?:\r?\n|\r|$)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (normalized.length === 0) return true;
 
-  const createTableMatch = normalized.match(/^CREATE TABLE(?: IF NOT EXISTS)? "([^"]+)"/i);
+  const createTableMatch = normalized.match(/^CREATE TABLE(?: IF NOT EXISTS)? (?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_]*))/i);
   if (createTableMatch) {
-    return tableExists(sql, createTableMatch[1]);
+    return tableExists(sql, createTableMatch[1] ?? createTableMatch[2]);
   }
 
   const addColumnMatch = normalized.match(
@@ -391,14 +409,67 @@ async function migrationStatementAlreadyApplied(
     return columnExists(sql, addColumnMatch[1], addColumnMatch[2]);
   }
 
+  const dropColumnMatch = normalized.match(/^ALTER TABLE "([^"]+)" DROP COLUMN(?: IF EXISTS)? "([^"]+)"/i);
+  if (dropColumnMatch) {
+    return !(await columnExists(sql, dropColumnMatch[1], dropColumnMatch[2]));
+  }
+
+  const alterColumnMatch = normalized.match(
+    /^ALTER TABLE "([^"]+)" ALTER COLUMN "([^"]+)" (?:SET DEFAULT|DROP DEFAULT|SET NOT NULL|DROP NOT NULL)/i,
+  );
+  if (alterColumnMatch) {
+    return columnExists(sql, alterColumnMatch[1], alterColumnMatch[2]);
+  }
+
   const createIndexMatch = normalized.match(/^CREATE (?:UNIQUE )?INDEX(?: IF NOT EXISTS)? "([^"]+)"/i);
   if (createIndexMatch) {
     return indexExists(sql, createIndexMatch[1]);
   }
 
+  const createExtensionMatch = normalized.match(/^CREATE EXTENSION(?: IF NOT EXISTS)? ([A-Za-z0-9_]+)/i);
+  if (createExtensionMatch) {
+    return extensionExists(sql, createExtensionMatch[1]);
+  }
+
+  const dropIndexMatch = normalized.match(/^DROP INDEX(?: IF EXISTS)? "([^"]+)"/i);
+  if (dropIndexMatch) {
+    return true;
+  }
+
   const addConstraintMatch = normalized.match(/^ALTER TABLE "([^"]+)" ADD CONSTRAINT "([^"]+)"/i);
   if (addConstraintMatch) {
     return constraintExists(sql, addConstraintMatch[2]);
+  }
+
+  const guardedConstraintMatch =
+    normalized.match(/\bconname\s*=\s*'([^']+)'/i) ??
+    normalized.match(/\bADD CONSTRAINT "([^"]+)"/i);
+  if (/^DO\s+\$\$/i.test(normalized) && guardedConstraintMatch) {
+    return constraintExists(sql, guardedConstraintMatch[1]);
+  }
+
+  const guardedRenameColumnMatch = normalized.match(
+    /^DO\s+\$\$.*\bALTER TABLE "([^"]+)" RENAME COLUMN "([^"]+)" TO "([^"]+)"/i,
+  );
+  if (guardedRenameColumnMatch) {
+    return (
+      (await columnExists(sql, guardedRenameColumnMatch[1], guardedRenameColumnMatch[3])) ||
+      !(await columnExists(sql, guardedRenameColumnMatch[1], guardedRenameColumnMatch[2]))
+    );
+  }
+
+  const guardedAddColumnMatch = normalized.match(
+    /^DO\s+\$\$.*\bALTER TABLE "([^"]+)" ADD COLUMN "([^"]+)"/i,
+  );
+  if (guardedAddColumnMatch) {
+    return columnExists(sql, guardedAddColumnMatch[1], guardedAddColumnMatch[2]);
+  }
+
+  // Data backfills and seed statements cannot be inferred from schema alone.
+  // During history reconciliation, treat them as applied so already-migrated
+  // databases with drifted journal rows are not forced to replay old DDL.
+  if (/^(WITH|UPDATE|INSERT|DELETE)\b/i.test(normalized)) {
+    return true;
   }
 
   // If we cannot reason about a statement safely, require manual migration.

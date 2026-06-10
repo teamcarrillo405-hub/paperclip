@@ -208,6 +208,60 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
     expect(resultIds.has(excludedIssueId)).toBe(false);
   });
 
+  it("deduplicates open manual Board-action issues created by the same agent", async () => {
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+
+    await db.insert(agents).values({
+      id: agentId,
+      companyId,
+      name: "AI CEO",
+      role: "ceo",
+      status: "active",
+      adapterType: "codex_local",
+      adapterConfig: {},
+      runtimeConfig: {},
+      permissions: {},
+    });
+
+    const issueInput = {
+      title: "[BOARD ACTION REQUIRED] Resolve archived onboarding issue",
+      description: [
+        "## Board Action Needed",
+        "",
+        "The same archived onboarding issue is still blocking heartbeats.",
+      ].join("\n"),
+      status: "todo" as const,
+      priority: "high" as const,
+      createdByAgentId: agentId,
+    };
+
+    const first = await svc.create(companyId, issueInput);
+    const second = await svc.create(companyId, issueInput);
+
+    expect(second.id).toBe(first.id);
+    expect(second.identifier).toBe(first.identifier);
+
+    const [{ issueCount }] = await db
+      .select({ issueCount: sql<number>`count(*)::int` })
+      .from(issues)
+      .where(eq(issues.companyId, companyId));
+    expect(issueCount).toBe(1);
+
+    const [company] = await db
+      .select({ issueCounter: companies.issueCounter })
+      .from(companies)
+      .where(eq(companies.id, companyId));
+    expect(company.issueCounter).toBe(1);
+  });
+
   it("combines participation filtering with search", async () => {
     const companyId = randomUUID();
     const agentId = randomUUID();

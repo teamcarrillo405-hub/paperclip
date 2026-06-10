@@ -575,6 +575,13 @@
       "when": 1778300000000,
       "tag": "0081_image_jobs",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1778400000000,
+      "tag": "0082_gusto_oauth_tokens",
+      "breakpoints": true
     }
   ]
 }

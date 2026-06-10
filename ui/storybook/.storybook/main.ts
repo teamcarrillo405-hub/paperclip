@@ -5,11 +5,15 @@ import tailwindcss from "@tailwindcss/vite";
 import { mergeConfig } from "vite";
 
 const storybookConfigDir = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(storybookConfigDir, "../..");
 
 const config: StorybookConfig = {
-  stories: ["../stories/**/*.stories.@(ts|tsx|mdx)"],
+  stories: [
+    "../stories/**/*.stories.tsx",
+    "../../src/**/*.stories.tsx",
+  ],
   staticDirs: ["../../public"],
-  addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
+  addons: ["@storybook/addon-docs", "@storybook/addon-a11y", "@storybook/addon-vitest"],
   framework: {
     name: "@storybook/react-vite",
     options: {},
@@ -19,11 +23,12 @@ const config: StorybookConfig = {
   },
   viteFinal: async (baseConfig) =>
     mergeConfig(baseConfig, {
+      root: process.env.VITEST ? projectRoot : baseConfig.root,
       plugins: [tailwindcss()],
       resolve: {
         alias: {
-          "@": path.resolve(storybookConfigDir, "../../src"),
-          lexical: path.resolve(storybookConfigDir, "../../node_modules/lexical/Lexical.mjs"),
+          "@": path.resolve(projectRoot, "src"),
+          lexical: path.resolve(projectRoot, "node_modules/lexical/Lexical.mjs"),
         },
       },
     }),

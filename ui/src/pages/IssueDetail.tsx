@@ -1413,11 +1413,19 @@ export function IssueDetail() {
   }, [updateChildIssue]);
 
   const approvalDecision = useMutation({
-    mutationFn: async ({ approvalId, action }: { approvalId: string; action: "approve" | "reject" }) => {
+    mutationFn: async ({
+      approvalId,
+      action,
+      decisionNote,
+    }: {
+      approvalId: string;
+      action: "approve" | "reject";
+      decisionNote?: string;
+    }) => {
       if (action === "approve") {
         return approvalsApi.approve(approvalId);
       }
-      return approvalsApi.reject(approvalId);
+      return approvalsApi.reject(approvalId, decisionNote ?? "");
     },
     onMutate: ({ approvalId, action }) => {
       setPendingApprovalAction({ approvalId, action });
@@ -2985,6 +2993,12 @@ export function IssueDetail() {
               pendingApprovalAction={pendingApprovalAction}
               handoffFocusSignal={handoffFocusSignal}
               onApprovalAction={(approvalId, action) => {
+                if (action === "reject") {
+                  const decisionNote = window.prompt("Required rejection note");
+                  if (!decisionNote?.trim()) return;
+                  approvalDecision.mutate({ approvalId, action, decisionNote: decisionNote.trim() });
+                  return;
+                }
                 approvalDecision.mutate({ approvalId, action });
               }}
             />

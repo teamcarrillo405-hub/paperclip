@@ -11,6 +11,7 @@ import { boardMutationGuard } from "./middleware/board-mutation-guard.js";
 import { privateHostnameGuard, resolvePrivateHostnameAllowSet } from "./middleware/private-hostname-guard.js";
 import { referralCookieMiddleware } from "./middleware/referral-cookie.js";
 import { healthRoutes } from "./routes/health.js";
+import { signedReviewRoutes } from "./routes/signed-review.js";
 import { brandRoutes } from "./routes/brand.js";
 import { companyRoutes } from "./routes/companies.js";
 import { companySkillRoutes } from "./routes/company-skills.js";
@@ -229,6 +230,7 @@ export async function createApp(
 
   // Mount API routes
   const api = Router();
+  api.use(signedReviewRoutes(db));
   api.use(boardMutationGuard());
   const guardianConfig = await loadGuardianConfig();
   const guardianScheduler = createGuardianScheduler(db, guardianConfig);

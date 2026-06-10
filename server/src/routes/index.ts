@@ -1,4 +1,5 @@
 export { healthRoutes } from "./health.js";
+export { signedReviewRoutes } from "./signed-review.js";
 export { companyRoutes } from "./companies.js";
 export { companySkillRoutes } from "./company-skills.js";
 export { agentRoutes } from "./agents.js";

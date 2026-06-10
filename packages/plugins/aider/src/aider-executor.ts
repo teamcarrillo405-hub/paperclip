@@ -49,6 +49,7 @@ export async function runAider(
     const child = spawn("aider", args, {
       cwd: options.cwd,
       env: process.env,
+      windowsHide: true,
     });
 
     const stdoutChunks: Buffer[] = [];

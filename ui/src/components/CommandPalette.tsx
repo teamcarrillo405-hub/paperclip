@@ -263,8 +263,8 @@ export function CommandPalette() {
   });
 
   const { data: pendingApprovals = [] } = useQuery({
-    queryKey: queryKeys.approvals.list(selectedCompanyId!, "pending"),
-    queryFn: () => approvalsApi.list(selectedCompanyId!, "pending"),
+    queryKey: queryKeys.approvals.list(selectedCompanyId!),
+    queryFn: () => approvalsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId && open,
   });
 
@@ -291,7 +291,8 @@ export function CommandPalette() {
   });
 
   const rejectApprovalMutation = useMutation({
-    mutationFn: (id: string) => approvalsApi.reject(id),
+    mutationFn: ({ id, decisionNote }: { id: string; decisionNote: string }) =>
+      approvalsApi.reject(id, decisionNote),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
     },
@@ -645,7 +646,11 @@ export function CommandPalette() {
                     <CommandItem
                       onSelect={() =>
                         runAction(`reject-${approval.id}`, `Reject — ${subject}`, () =>
-                          rejectApprovalMutation.mutate(approval.id),
+                          (() => {
+                            const decisionNote = window.prompt("Required rejection note");
+                            if (!decisionNote?.trim()) return;
+                            rejectApprovalMutation.mutate({ id: approval.id, decisionNote: decisionNote.trim() });
+                          })(),
                         )
                       }
                     >

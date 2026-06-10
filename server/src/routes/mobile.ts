@@ -126,7 +126,10 @@ export function mobileRoutes(db: Db) {
     }
 
     const actor = getActorInfo(req);
-    const decisionNote = typeof reason === "string" ? reason : null;
+    const decisionNote = typeof reason === "string" && reason.trim().length > 0 ? reason.trim() : null;
+    if (!approved && !decisionNote) {
+      throw badRequest("A note is required to reject an approval.");
+    }
 
     const result = approved
       ? await approvalsSvc.approve(id, actor.actorId, decisionNote)

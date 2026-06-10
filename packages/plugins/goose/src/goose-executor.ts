@@ -41,6 +41,7 @@ export function spawnGooseTask(
     child = spawn(binary, args, {
       env: opts.env ?? process.env,
       stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
     });
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;

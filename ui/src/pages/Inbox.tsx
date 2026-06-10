@@ -1360,7 +1360,8 @@ export function Inbox() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: string) => approvalsApi.reject(id),
+    mutationFn: ({ id, decisionNote }: { id: string; decisionNote: string }) =>
+      approvalsApi.reject(id, decisionNote),
     onSuccess: () => {
       setActionError(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
@@ -2412,7 +2413,11 @@ export function Inbox() {
                           selected={isSelected}
                           requesterName={agentName(item.approval.requestedByAgentId)}
                           onApprove={() => approveMutation.mutate(item.approval.id)}
-                          onReject={() => rejectMutation.mutate(item.approval.id)}
+                          onReject={() => {
+                            const decisionNote = window.prompt("Required rejection note");
+                            if (!decisionNote?.trim()) return;
+                            rejectMutation.mutate({ id: item.approval.id, decisionNote: decisionNote.trim() });
+                          }}
                           isPending={approveMutation.isPending || rejectMutation.isPending}
                           unreadState={nonIssueUnreadState(approvalKey)}
                           onMarkRead={() => handleMarkNonIssueRead(approvalKey)}

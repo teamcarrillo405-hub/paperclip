@@ -162,6 +162,7 @@ export class WondaService {
         cwd: options.cwd,
         env,
         stdio: ["ignore", "pipe", "pipe"],
+        windowsHide: true,
       });
 
       const stdoutChunks: string[] = [];

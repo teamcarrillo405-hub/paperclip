@@ -62,7 +62,7 @@ vi.mock("@/plugins/slots", () => ({
 describe("CommentThread", () => {
   let container: HTMLDivElement;
   let writeTextMock: ReturnType<typeof vi.fn>;
-  let execCommandMock: ReturnType<typeof vi.fn>;
+  let execCommandMock: ReturnType<typeof vi.fn<Document["execCommand"]>>;
 
   beforeEach(() => {
     container = document.createElement("div");

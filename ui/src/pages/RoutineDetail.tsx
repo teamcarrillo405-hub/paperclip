@@ -141,6 +141,10 @@ function buildRoutineMutationPayload(input: {
   };
 }
 
+function normalizeRoutineVariables(value: unknown): RoutineVariable[] {
+  return Array.isArray(value) ? value : [];
+}
+
 function TriggerEditor({
   trigger,
   onSave,
@@ -364,7 +368,7 @@ export function RoutineDetail() {
             priority: routine.priority,
             concurrencyPolicy: routine.concurrencyPolicy,
             catchUpPolicy: routine.catchUpPolicy,
-            variables: routine.variables,
+            variables: normalizeRoutineVariables(routine.variables),
           }
         : null,
     [routine],
@@ -1140,7 +1144,7 @@ export function RoutineDetail() {
         projects={projects ?? []}
         defaultProjectId={routine.projectId}
         defaultAssigneeAgentId={routine.assigneeAgentId}
-        variables={routine.variables ?? []}
+        variables={normalizeRoutineVariables(routine.variables)}
         isPending={runRoutine.isPending}
         onSubmit={(data) => runRoutine.mutate(data)}
       />

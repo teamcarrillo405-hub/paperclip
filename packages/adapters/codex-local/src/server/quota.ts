@@ -410,7 +410,7 @@ class CodexRpcClient {
   private proc = spawn(
     "codex",
     ["-s", "read-only", "-a", "untrusted", "app-server"],
-    { stdio: ["pipe", "pipe", "pipe"], env: process.env },
+    { stdio: ["pipe", "pipe", "pipe"], env: process.env, windowsHide: true },
   );
 
   private nextId = 1;

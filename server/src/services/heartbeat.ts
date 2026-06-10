@@ -166,7 +166,11 @@ function resolveCodexTransientFallbackMode(attempt: number): CodexTransientFallb
   if (attempt === 3) return "fresh_session";
   return "fresh_session_safer_invocation";
 }
-const RUNNING_ISSUE_WAKE_REASONS_REQUIRING_FOLLOWUP = new Set(["approval_approved"]);
+const RUNNING_ISSUE_WAKE_REASONS_REQUIRING_FOLLOWUP = new Set([
+  "approval_approved",
+  "approval_rejected",
+  "approval_revision_requested",
+]);
 const SESSIONED_LOCAL_ADAPTERS = new Set([
   "claude_local",
   "codex_local",
@@ -481,6 +485,7 @@ async function ensureManagedProjectWorkspace(input: {
     await execFile("git", ["clone", input.repoUrl, cwd], {
       env: sanitizeRuntimeServiceBaseEnv(process.env),
       timeout: MANAGED_WORKSPACE_GIT_CLONE_TIMEOUT_MS,
+      windowsHide: true,
     });
     return { cwd, warning: null };
   } catch (error) {
@@ -3970,6 +3975,7 @@ export function heartbeatService(db: Db) {
           executionRunId: null,
           executionAgentNameKey: null,
           executionLockedAt: null,
+          checkoutRunId: null,
           updatedAt: new Date(),
         })
         .where(inArray(issues.executionRunId, staleRunIds));
@@ -6079,6 +6085,7 @@ export function heartbeatService(db: Db) {
             executionRunId: null,
             executionAgentNameKey: null,
             executionLockedAt: null,
+            checkoutRunId: null,
             updatedAt: new Date(),
           })
           .where(eq(issues.id, issue.id));

@@ -147,6 +147,10 @@ function buildRoutineMutationPayload(input: {
   };
 }
 
+function normalizeRoutineVariables(value: unknown): RoutineVariable[] {
+  return Array.isArray(value) ? value : [];
+}
+
 export function buildRoutineGroups(
   routines: RoutineListItem[],
   groupByValue: RoutineGroupBy,
@@ -1117,7 +1121,7 @@ export function Routines() {
         projects={projects ?? []}
         defaultProjectId={runDialogRoutine?.projectId ?? null}
         defaultAssigneeAgentId={runDialogRoutine?.assigneeAgentId ?? null}
-        variables={runDialogRoutine?.variables ?? []}
+        variables={normalizeRoutineVariables(runDialogRoutine?.variables)}
         isPending={runRoutine.isPending}
         onSubmit={(data) => {
           if (!runDialogRoutine) return;

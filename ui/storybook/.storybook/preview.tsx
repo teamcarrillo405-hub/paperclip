@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { Preview } from "@storybook/react-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import MockDate from "mockdate";
+import { initialize, mswLoader } from "msw-storybook-addon";
 import { MemoryRouter } from "@/lib/router";
 import { BreadcrumbProvider } from "@/context/BreadcrumbContext";
 import { CompanyProvider } from "@/context/CompanyContext";
@@ -11,143 +13,12 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import {
-  storybookAgents,
-  storybookApprovals,
-  storybookAuthSession,
-  storybookCompanies,
-  storybookDashboardSummary,
-  storybookIssues,
-  storybookLiveRuns,
-  storybookProjects,
-  storybookSidebarBadges,
-} from "../fixtures/paperclipData";
+import { mswHandlers } from "./msw-handlers";
 import "@mdxeditor/editor/style.css";
 import "./tailwind-entry.css";
 import "./styles.css";
 
-function installStorybookApiFixtures() {
-  if (typeof window === "undefined") return;
-  const currentWindow = window as typeof window & {
-    __paperclipStorybookFetchInstalled?: boolean;
-  };
-  if (currentWindow.__paperclipStorybookFetchInstalled) return;
-
-  const originalFetch = window.fetch.bind(window);
-  currentWindow.__paperclipStorybookFetchInstalled = true;
-
-  window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-    const rawUrl =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-          ? input.href
-          : input.url;
-    const url = new URL(rawUrl, window.location.origin);
-
-    if (url.pathname === "/api/auth/get-session") {
-      return Response.json(storybookAuthSession);
-    }
-
-    if (url.pathname === "/api/companies") {
-      return Response.json(storybookCompanies);
-    }
-
-    if (url.pathname === "/api/companies/company-storybook/user-directory") {
-      return Response.json({
-        users: [
-          {
-            principalId: "user-board",
-            status: "active",
-            user: {
-              id: "user-board",
-              email: "board@paperclip.local",
-              name: "Board Operator",
-              image: null,
-            },
-          },
-          {
-            principalId: "user-product",
-            status: "active",
-            user: {
-              id: "user-product",
-              email: "product@paperclip.local",
-              name: "Product Lead",
-              image: null,
-            },
-          },
-        ],
-      });
-    }
-
-    if (url.pathname === "/api/instance/settings/experimental") {
-      return Response.json({
-        enableIsolatedWorkspaces: true,
-        autoRestartDevServerWhenIdle: false,
-      });
-    }
-
-    if (url.pathname === "/api/plugins/ui-contributions") {
-      return Response.json([]);
-    }
-
-    const companyResourceMatch = url.pathname.match(/^\/api\/companies\/([^/]+)\/([^/]+)$/);
-    if (companyResourceMatch) {
-      const [, companyId, resource] = companyResourceMatch;
-      if (resource === "agents") {
-        return Response.json(companyId === "company-storybook" ? storybookAgents : []);
-      }
-      if (resource === "projects") {
-        return Response.json(companyId === "company-storybook" ? storybookProjects : []);
-      }
-      if (resource === "approvals") {
-        return Response.json(companyId === "company-storybook" ? storybookApprovals : []);
-      }
-      if (resource === "dashboard") {
-        return Response.json({
-          ...storybookDashboardSummary,
-          companyId,
-        });
-      }
-      if (resource === "heartbeat-runs") {
-        return Response.json([]);
-      }
-      if (resource === "live-runs") {
-        return Response.json(companyId === "company-storybook" ? storybookLiveRuns : []);
-      }
-      if (resource === "inbox-dismissals") {
-        return Response.json([]);
-      }
-      if (resource === "sidebar-badges") {
-        return Response.json(
-          companyId === "company-storybook"
-            ? storybookSidebarBadges
-            : { inbox: 0, approvals: 0, failedRuns: 0, joinRequests: 0 },
-        );
-      }
-      if (resource === "join-requests") {
-        return Response.json([]);
-      }
-      if (resource === "issues") {
-        const query = url.searchParams.get("q")?.trim().toLowerCase();
-        const issues = companyId === "company-storybook" ? storybookIssues : [];
-        return Response.json(
-          query
-            ? issues.filter((issue) =>
-                `${issue.identifier ?? ""} ${issue.title} ${issue.description ?? ""}`.toLowerCase().includes(query),
-              )
-            : issues,
-        );
-      }
-    }
-
-    if (url.pathname.startsWith("/api/invites/") && url.pathname.endsWith("/logo")) {
-      return new Response(null, { status: 204 });
-    }
-
-    return originalFetch(input, init);
-  };
-}
+initialize({ onUnhandledRequest: "bypass" });
 
 function applyStorybookTheme(theme: "light" | "dark") {
   if (typeof document === "undefined") return;
@@ -176,7 +47,6 @@ function StorybookProviders({
 
   useEffect(() => {
     applyStorybookTheme(theme);
-    installStorybookApiFixtures();
   }, [theme]);
 
   return (
@@ -215,6 +85,7 @@ const preview: Preview = {
       );
     },
   ],
+  loaders: [mswLoader],
   globalTypes: {
     theme: {
       description: "Paperclip color mode",
@@ -232,6 +103,9 @@ const preview: Preview = {
   },
   parameters: {
     actions: { argTypesRegex: "^on[A-Z].*" },
+    msw: {
+      handlers: mswHandlers,
+    },
     a11y: {
       test: "error",
     },
@@ -265,6 +139,10 @@ const preview: Preview = {
         },
       },
     },
+  },
+  async beforeEach() {
+    window.localStorage.setItem("paperclip.theme", "dark");
+    MockDate.set("2026-04-20T12:00:00Z");
   },
 };
 

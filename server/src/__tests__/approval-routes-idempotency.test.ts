@@ -23,6 +23,10 @@ const mockIssueApprovalService = vi.hoisted(() => ({
   linkManyForApproval: vi.fn(),
 }));
 
+const mockIssueService = vi.hoisted(() => ({
+  addComment: vi.fn(),
+}));
+
 const mockSecretService = vi.hoisted(() => ({
   normalizeHireApprovalPayloadForPersistence: vi.fn(),
 }));
@@ -34,6 +38,7 @@ function registerModuleMocks() {
     approvalService: () => mockApprovalService,
     heartbeatService: () => mockHeartbeatService,
     issueApprovalService: () => mockIssueApprovalService,
+    issueService: () => mockIssueService,
     logActivity: mockLogActivity,
     secretService: () => mockSecretService,
   }));
@@ -105,10 +110,12 @@ describe("approval routes idempotent retries", () => {
     mockHeartbeatService.wakeup.mockReset();
     mockIssueApprovalService.listIssuesForApproval.mockReset();
     mockIssueApprovalService.linkManyForApproval.mockReset();
+    mockIssueService.addComment.mockReset();
     mockSecretService.normalizeHireApprovalPayloadForPersistence.mockReset();
     mockLogActivity.mockReset();
     mockHeartbeatService.wakeup.mockResolvedValue({ id: "wake-1" });
     mockIssueApprovalService.listIssuesForApproval.mockResolvedValue([{ id: "issue-1" }]);
+    mockIssueService.addComment.mockResolvedValue(undefined);
     mockLogActivity.mockResolvedValue(undefined);
   });
 
@@ -164,10 +171,46 @@ describe("approval routes idempotent retries", () => {
 
     const res = await request(await createApp())
       .post("/api/approvals/approval-1/reject")
-      .send({});
+      .send({ decisionNote: "Already rejected" });
 
     expect(res.status).toBe(200);
     expect(mockLogActivity).not.toHaveBeenCalled();
+  });
+
+  it("requires a note when rejecting an approval", async () => {
+    mockApprovalService.getById.mockResolvedValue({
+      id: "approval-blank-reject",
+      companyId: "company-1",
+      type: "hire_agent",
+      status: "pending",
+      payload: {},
+    });
+
+    const res = await request(await createApp())
+      .post("/api/approvals/approval-blank-reject/reject")
+      .send({ decisionNote: "   " });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain("note is required");
+    expect(mockApprovalService.reject).not.toHaveBeenCalled();
+  });
+
+  it("requires a note when requesting approval revisions", async () => {
+    mockApprovalService.getById.mockResolvedValue({
+      id: "approval-blank-revision",
+      companyId: "company-1",
+      type: "hire_agent",
+      status: "pending",
+      payload: {},
+    });
+
+    const res = await request(await createApp())
+      .post("/api/approvals/approval-blank-revision/request-revision")
+      .send({ decisionNote: "" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain("note is required");
+    expect(mockApprovalService.requestRevision).not.toHaveBeenCalled();
   });
 
   it("rejects approval decisions for companies outside the caller scope", async () => {
@@ -285,6 +328,11 @@ describe("approval routes idempotent retries", () => {
       "approval-6",
       "user-1",
       "Need changes",
+    );
+    expect(mockIssueService.addComment).toHaveBeenCalledWith(
+      "issue-1",
+      "Board changes requested on approval approval-6. Need changes",
+      { userId: "user-1" },
     );
   });
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { approvalsApi } from "../api/approvals";
@@ -13,7 +13,7 @@ import { PageSkeleton } from "../components/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, ChevronRight, Sparkles, AlertCircle } from "lucide-react";
+import { CheckCircle2, ChevronRight, Sparkles, AlertCircle, Link2, ExternalLink } from "lucide-react";
 import type { ApprovalComment } from "@paperclipai/shared";
 import { MarkdownBody } from "../components/MarkdownBody";
 
@@ -28,6 +28,10 @@ export function ApprovalDetail() {
   const [error, setError] = useState<string | null>(null);
   const [showRawPayload, setShowRawPayload] = useState(false);
   const [confirmDeleteAgentOpen, setConfirmDeleteAgentOpen] = useState(false);
+  const [signedReviewUrl, setSignedReviewUrl] = useState<string | null>(null);
+  const [signedReviewCopied, setSignedReviewCopied] = useState(false);
+  const [decisionDialog, setDecisionDialog] = useState<"reject" | "revision" | null>(null);
+  const [decisionNote, setDecisionNote] = useState("");
 
   const { data: approval, isLoading } = useQuery({
     queryKey: queryKeys.approvals.detail(approvalId!),
@@ -72,7 +76,7 @@ export function ApprovalDetail() {
     ]);
   }, [setBreadcrumbs, approval, approvalId]);
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     if (!approvalId) return;
     queryClient.invalidateQueries({ queryKey: queryKeys.approvals.detail(approvalId) });
     queryClient.invalidateQueries({ queryKey: queryKeys.approvals.comments(approvalId) });
@@ -84,7 +88,21 @@ export function ApprovalDetail() {
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(approval.companyId) });
     }
-  };
+  }, [approval?.companyId, approvalId, queryClient]);
+
+  useEffect(() => {
+    if (!approvalId) return;
+    function handleApprovalDecisionMessage(event: MessageEvent) {
+      if (!event.data || typeof event.data !== "object") return;
+      const data = event.data as { approvalId?: string; type?: string };
+      if (data.type !== "hcc-approval-decision") return;
+      if (data.approvalId && data.approvalId !== approvalId) return;
+      refresh();
+    }
+
+    window.addEventListener("message", handleApprovalDecisionMessage);
+    return () => window.removeEventListener("message", handleApprovalDecisionMessage);
+  }, [approvalId, refresh]);
 
   const approveMutation = useMutation({
     mutationFn: () => approvalsApi.approve(approvalId!),
@@ -97,18 +115,22 @@ export function ApprovalDetail() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: () => approvalsApi.reject(approvalId!),
+    mutationFn: (note: string) => approvalsApi.reject(approvalId!, note),
     onSuccess: () => {
       setError(null);
+      setDecisionDialog(null);
+      setDecisionNote("");
       refresh();
     },
     onError: (err) => setError(err instanceof Error ? err.message : "Reject failed"),
   });
 
   const revisionMutation = useMutation({
-    mutationFn: () => approvalsApi.requestRevision(approvalId!),
+    mutationFn: (note: string) => approvalsApi.requestRevision(approvalId!, note),
     onSuccess: () => {
       setError(null);
+      setDecisionDialog(null);
+      setDecisionNote("");
       refresh();
     },
     onError: (err) => setError(err instanceof Error ? err.message : "Revision request failed"),
@@ -131,6 +153,23 @@ export function ApprovalDetail() {
       refresh();
     },
     onError: (err) => setError(err instanceof Error ? err.message : "Comment failed"),
+  });
+
+  const signedReviewLinkMutation = useMutation({
+    mutationFn: () => approvalsApi.createSignedReviewLink(approvalId!),
+    onSuccess: async ({ url }) => {
+      setSignedReviewUrl(url);
+      setSignedReviewCopied(false);
+      setError(null);
+      try {
+        await navigator.clipboard.writeText(url);
+        setSignedReviewCopied(true);
+        window.setTimeout(() => setSignedReviewCopied(false), 3000);
+      } catch {
+        setError("Signed review link created, but the browser blocked clipboard access.");
+      }
+    },
+    onError: (err) => setError(err instanceof Error ? err.message : "Signed review link failed"),
   });
 
   const deleteAgentMutation = useMutation({
@@ -271,6 +310,24 @@ export function ApprovalDetail() {
           </div>
         )}
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => signedReviewLinkMutation.mutate()}
+            disabled={signedReviewLinkMutation.isPending}
+            aria-busy={signedReviewLinkMutation.isPending}
+          >
+            <Link2 className="h-4 w-4" />
+            {signedReviewCopied ? "Signed link copied" : "Copy signed review link"}
+          </Button>
+          {signedReviewUrl && (
+            <Button size="sm" variant="ghost" asChild>
+              <a href={signedReviewUrl} target="_blank" rel="noreferrer">
+                <ExternalLink className="h-4 w-4" />
+                Open signed review
+              </a>
+            </Button>
+          )}
           {isActionable && !isBudgetApproval && (
             <>
               <Button
@@ -285,7 +342,10 @@ export function ApprovalDetail() {
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => rejectMutation.mutate()}
+                onClick={() => {
+                  setDecisionDialog("reject");
+                  setDecisionNote("");
+                }}
                 disabled={rejectMutation.isPending}
                 aria-busy={rejectMutation.isPending}
               >
@@ -302,7 +362,10 @@ export function ApprovalDetail() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => revisionMutation.mutate()}
+              onClick={() => {
+                setDecisionDialog("revision");
+                setDecisionNote("");
+              }}
               disabled={revisionMutation.isPending}
               aria-busy={revisionMutation.isPending}
             >
@@ -359,6 +422,65 @@ export function ApprovalDetail() {
           )}
         </div>
       </div>
+
+      <Dialog
+        open={decisionDialog !== null}
+        onOpenChange={(open) => {
+          if (rejectMutation.isPending || revisionMutation.isPending) return;
+          if (!open) {
+            setDecisionDialog(null);
+            setDecisionNote("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {decisionDialog === "revision" ? "Request revision" : "Reject approval"}
+            </DialogTitle>
+            <DialogDescription>
+              Add notes for the agent. Use this to explain whether the task should be revised, rerouted, or cancelled.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={decisionNote}
+            onChange={(event) => setDecisionNote(event.target.value)}
+            placeholder="Required notes..."
+            rows={5}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDecisionDialog(null);
+                setDecisionNote("");
+              }}
+              disabled={rejectMutation.isPending || revisionMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={decisionDialog === "reject" ? "destructive" : "default"}
+              onClick={() => {
+                const note = decisionNote.trim();
+                if (!note) {
+                  setError("A note is required for this decision.");
+                  return;
+                }
+                if (decisionDialog === "revision") revisionMutation.mutate(note);
+                else rejectMutation.mutate(note);
+              }}
+              disabled={!decisionNote.trim() || rejectMutation.isPending || revisionMutation.isPending}
+              aria-busy={rejectMutation.isPending || revisionMutation.isPending}
+            >
+              {decisionDialog === "revision"
+                ? revisionMutation.isPending ? "Requesting..." : "Request revision"
+                : rejectMutation.isPending ? "Rejecting..." : "Reject"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="border border-border rounded-lg p-4 space-y-3">
         <h3 className="text-sm font-medium">Comments ({comments?.length ?? 0})</h3>

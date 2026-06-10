@@ -1,4 +1,16 @@
-import { UserPlus, Lightbulb, ShieldAlert, ShieldCheck } from "lucide-react";
+import {
+  ExternalLink,
+  FileText,
+  Image as ImageIcon,
+  Lightbulb,
+  ListChecks,
+  MessageSquareText,
+  Share2,
+  ShieldAlert,
+  ShieldCheck,
+  UserPlus,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { formatCents } from "../lib/utils";
 
 export const typeLabel: Record<string, string> = {
@@ -53,6 +65,138 @@ function PayloadField({ label, value }: { label: string; value: unknown }) {
       <span>{String(value)}</span>
     </div>
   );
+}
+
+function StringList({
+  label,
+  values,
+  icon,
+}: {
+  label: string;
+  values: unknown;
+  icon?: ReactNode;
+}) {
+  if (!Array.isArray(values)) return null;
+  const items = values
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (items.length === 0) return null;
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-background/60 px-3.5 py-3">
+      <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+        {icon}
+        {label}
+      </p>
+      <ul className="mt-2 space-y-1.5 text-sm text-foreground/90">
+        {items.map((item) => (
+          <li key={item} className="flex items-start gap-2">
+            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/60" />
+            <span className="leading-6">{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function stringRecord(value: unknown): Record<string, string> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const entries = Object.entries(value)
+    .filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1].trim().length > 0)
+    .map(([key, text]) => [key.trim(), text.trim()] as const)
+    .filter(([key]) => key.length > 0);
+  if (entries.length === 0) return null;
+  return Object.fromEntries(entries);
+}
+
+function PlatformCopies({ values }: { values: unknown }) {
+  const copies = stringRecord(values);
+  if (!copies) return null;
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-background/60 px-3.5 py-3">
+      <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+        <MessageSquareText className="h-3.5 w-3.5" />
+        Post copy
+      </p>
+      <div className="mt-3 space-y-3">
+        {Object.entries(copies).map(([platform, text]) => (
+          <div key={platform} className="rounded-md border border-border/60 bg-muted/30 px-3 py-2.5">
+            <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+              {platform.replaceAll("_", " ").replaceAll("-", " ")}
+            </p>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LinkButton({
+  href,
+  label,
+  icon,
+}: {
+  href: string | null;
+  label: string;
+  icon: ReactNode;
+}) {
+  if (!href) return null;
+  const keepOpenerForLocalReview =
+    href.startsWith("http://127.0.0.1:") ||
+    href.startsWith("http://localhost:") ||
+    href.startsWith("/");
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel={keepOpenerForLocalReview ? undefined : "noreferrer"}
+      className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+    >
+      {icon}
+      {label}
+      <ExternalLink className="h-3 w-3 text-muted-foreground" />
+    </a>
+  );
+}
+
+function hccRouteId(value: string | null, route: "doc" | "img" | "review") {
+  if (!value) return null;
+  try {
+    const baseOrigin = typeof window === "undefined" ? "http://localhost" : window.location.origin;
+    const parsed = value.startsWith("/") ? new URL(value, baseOrigin) : new URL(value);
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    if (parts[0] !== route || !parts[1]) return null;
+    return decodeURIComponent(parts[1]);
+  } catch {
+    return null;
+  }
+}
+
+function hccDocumentUrl(value: string | null) {
+  const id = hccRouteId(value, "doc");
+  return id ? `/doc/${encodeURIComponent(id)}` : value;
+}
+
+function hccImageUrl(value: string | null) {
+  const id = hccRouteId(value, "img");
+  return id ? `/img/${encodeURIComponent(id)}` : value;
+}
+
+function hccSignedReviewUrl(value: string | null) {
+  if (!value) return null;
+  const id = hccRouteId(value, "review");
+  if (!id) return value;
+  try {
+    const baseOrigin = typeof window === "undefined" ? "http://localhost" : window.location.origin;
+    const parsed = value.startsWith("/") ? new URL(value, baseOrigin) : new URL(value);
+    return parsed.searchParams.has("token") ? `/review/${encodeURIComponent(id)}?${parsed.searchParams.toString()}` : null;
+  } catch {
+    return null;
+  }
 }
 
 function SkillList({ values }: { values: unknown }) {
@@ -173,9 +317,44 @@ function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unkn
   const recommendedAction = firstNonEmptyString(payload.recommendedAction);
   const nextActionOnApproval = firstNonEmptyString(payload.nextActionOnApproval);
   const proposedComment = firstNonEmptyString(payload.proposedComment);
+  const reviewKind = firstNonEmptyString(payload.reviewKind, payload.contentType);
+  const contentFamily = firstNonEmptyString(payload.contentFamily);
+  const department = firstNonEmptyString(payload.department);
+  const fullDocumentUrl = hccDocumentUrl(firstNonEmptyString(payload.fullDocumentUrl));
+  const hccReviewUrl = hccSignedReviewUrl(firstNonEmptyString(payload.hccReviewUrl));
+  const imageUrl = hccImageUrl(firstNonEmptyString(payload.imageUrl));
+  const liveArticleUrl = firstNonEmptyString(payload.liveArticleUrl);
+  const socialDistributionRequired = payload.socialDistributionRequired === true;
+  const sameImageForSocial = payload.sameImageForSocial === true;
+  const assetStatus = firstNonEmptyString(payload.assetStatus);
+  const seoGeoAeoValueSummary = firstNonEmptyString(payload.seoGeoAeoValueSummary);
 
   return (
     <div className="mt-4 space-y-3.5 text-sm">
+      {(reviewKind || contentFamily || department) && (
+        <div className="flex flex-wrap gap-2">
+          {reviewKind && (
+            <span className="rounded-full border border-border/70 bg-background px-2.5 py-1 text-xs font-medium text-foreground">
+              {reviewKind}
+            </span>
+          )}
+          {contentFamily && (
+            <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
+              {contentFamily}
+            </span>
+          )}
+          {department && (
+            <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
+              {department}
+            </span>
+          )}
+          {assetStatus && assetStatus !== "complete" && (
+            <span className="rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-300">
+              {assetStatus.replaceAll("_", " ")}
+            </span>
+          )}
+        </div>
+      )}
       {title && (
         <div className="space-y-1">
           <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">Title</p>
@@ -186,6 +365,32 @@ function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unkn
         <div className="space-y-1">
           <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">Summary</p>
           <p className="leading-6 text-foreground/90">{summary}</p>
+        </div>
+      )}
+      {(fullDocumentUrl || imageUrl || hccReviewUrl || liveArticleUrl) && (
+        <div className="flex flex-wrap gap-2">
+          <LinkButton
+            href={fullDocumentUrl}
+            label="Open full HTML"
+            icon={<FileText className="h-3.5 w-3.5" />}
+          />
+          <LinkButton
+            href={imageUrl}
+            label="Open image"
+            icon={<ImageIcon className="h-3.5 w-3.5" />}
+          />
+          {hccReviewUrl && hccReviewUrl !== fullDocumentUrl && (
+            <LinkButton
+              href={hccReviewUrl}
+              label="Review page"
+              icon={<ShieldCheck className="h-3.5 w-3.5" />}
+            />
+          )}
+          <LinkButton
+            href={liveArticleUrl}
+            label="Live article"
+            icon={<ExternalLink className="h-3.5 w-3.5" />}
+          />
         </div>
       )}
       {recommendedAction && (
@@ -202,6 +407,72 @@ function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unkn
           <p className="mt-1 leading-6 text-foreground">{nextActionOnApproval}</p>
         </div>
       )}
+      {socialDistributionRequired && (
+        <div className="rounded-lg border border-sky-500/20 bg-sky-500/10 px-3.5 py-3">
+          <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.08em] text-sky-700 dark:text-sky-300">
+            <Share2 className="h-3.5 w-3.5" />
+            Social distribution required
+          </p>
+          <p className="mt-1 leading-6 text-foreground">
+            After the article is approved, Social Media must create posts for the channels in the plan.
+            {sameImageForSocial ? " Use the same approved image unless a replacement image gets separate approval." : ""}
+          </p>
+        </div>
+      )}
+      {seoGeoAeoValueSummary && (
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-3">
+          <p className="text-xs font-medium uppercase tracking-[0.08em] text-emerald-700 dark:text-emerald-300">
+            SEO / GEO / AEO impact
+          </p>
+          <p className="mt-1 leading-6 text-foreground">{seoGeoAeoValueSummary}</p>
+        </div>
+      )}
+      <PlatformCopies values={payload.platform_copies ?? payload.platformCopies} />
+      <StringList
+        label="Brand visibility targets"
+        values={payload.brandVisibilityTargets}
+        icon={<ListChecks className="h-3.5 w-3.5" />}
+      />
+      <StringList
+        label="SEO keywords"
+        values={payload.seoKeywords}
+        icon={<ListChecks className="h-3.5 w-3.5" />}
+      />
+      <StringList
+        label="GEO citation entities"
+        values={payload.geoEntities}
+        icon={<ListChecks className="h-3.5 w-3.5" />}
+      />
+      <StringList
+        label="AEO questions"
+        values={payload.aeoQuestions}
+        icon={<ListChecks className="h-3.5 w-3.5" />}
+      />
+      <StringList
+        label="LinkedIn hashtags"
+        values={payload.linkedinHashtags}
+        icon={<Share2 className="h-3.5 w-3.5" />}
+      />
+      <StringList
+        label="Included platforms"
+        values={payload.platforms}
+        icon={<Share2 className="h-3.5 w-3.5" />}
+      />
+      <StringList
+        label="Publishing notes"
+        values={payload.publishingNotes}
+        icon={<ListChecks className="h-3.5 w-3.5" />}
+      />
+      <StringList
+        label="Approval checklist"
+        values={payload.approvalChecklist}
+        icon={<ListChecks className="h-3.5 w-3.5" />}
+      />
+      <StringList
+        label="Social distribution plan"
+        values={payload.socialDistributionPlan}
+        icon={<Share2 className="h-3.5 w-3.5" />}
+      />
       {risks.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">Risks</p>

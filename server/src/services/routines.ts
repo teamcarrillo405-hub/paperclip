@@ -206,7 +206,8 @@ function assertRoutineVariableDefinitions(variables: RoutineVariable[]) {
 function sanitizeRoutineVariableInputs(
   variables: Array<Partial<RoutineVariable> & Pick<RoutineVariable, "name">> | null | undefined,
 ): RoutineVariable[] {
-  return (variables ?? []).map((variable) => ({
+  if (!Array.isArray(variables)) return [];
+  return variables.map((variable) => ({
     name: variable.name,
     label: variable.label ?? null,
     type: variable.type ?? "text",
@@ -214,6 +215,10 @@ function sanitizeRoutineVariableInputs(
     required: variable.required ?? true,
     options: variable.options ?? [],
   }));
+}
+
+function normalizeRoutineVariableDefinitions(value: unknown): RoutineVariable[] {
+  return Array.isArray(value) ? value : [];
 }
 
 function assertScheduleCompatibleVariables(variables: RoutineVariable[]) {
@@ -352,7 +357,8 @@ function createRoutineDispatchFingerprint(input: {
 }
 
 function routineUsesWorkspaceBranch(routine: typeof routines.$inferSelect) {
-  return (routine.variables ?? []).some((variable) => variable.name === WORKSPACE_BRANCH_ROUTINE_VARIABLE)
+  return normalizeRoutineVariableDefinitions(routine.variables)
+    .some((variable) => variable.name === WORKSPACE_BRANCH_ROUTINE_VARIABLE)
     || extractRoutineVariableNames([routine.title, routine.description]).includes(WORKSPACE_BRANCH_ROUTINE_VARIABLE);
 }
 
@@ -787,7 +793,7 @@ export function routineService(db: Db, deps: { heartbeat?: IssueAssignmentWakeup
         automaticVariables[WORKSPACE_BRANCH_ROUTINE_VARIABLE] = branchName;
       }
     }
-    const resolvedVariables = resolveRoutineVariableValues(input.routine.variables ?? [], {
+    const resolvedVariables = resolveRoutineVariableValues(normalizeRoutineVariableDefinitions(input.routine.variables), {
       ...input,
       automaticVariables,
     });
@@ -1238,7 +1244,7 @@ export function routineService(db: Db, deps: { heartbeat?: IssueAssignmentWakeup
       let nextRunAt: Date | null = null;
 
       if (input.kind === "schedule") {
-        assertScheduleCompatibleVariables(routine.variables ?? []);
+        assertScheduleCompatibleVariables(normalizeRoutineVariableDefinitions(routine.variables));
         const timeZone = input.timezone || "UTC";
         assertTimeZone(timeZone);
         const error = validateCron(input.cronExpression);
@@ -1311,7 +1317,7 @@ export function routineService(db: Db, deps: { heartbeat?: IssueAssignmentWakeup
           nextRunAt = nextCronTickInTimeZone(cronExpression, timezone, new Date());
         }
         if ((patch.enabled ?? existing.enabled) === true) {
-          assertScheduleCompatibleVariables(routine.variables ?? []);
+          assertScheduleCompatibleVariables(normalizeRoutineVariableDefinitions(routine.variables));
         }
       }
 

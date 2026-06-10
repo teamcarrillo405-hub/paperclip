@@ -3,11 +3,13 @@ node_modules/
 **/node_modules
 **/node_modules/
 dist/
+server/ui-dist/
 .env
 *.tsbuildinfo
 drizzle/meta/
 .vite/
 coverage/
+ui/public/mockServiceWorker.js
 .DS_Store
 data/
 .paperclip/

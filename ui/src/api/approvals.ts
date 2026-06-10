@@ -1,6 +1,12 @@
 import type { Approval, ApprovalComment, Issue } from "@paperclipai/shared";
 import { api } from "./client";
 
+export type SignedReviewLinkResponse = {
+  url: string;
+  token: string;
+  expiresAt: string;
+};
+
 export const approvalsApi = {
   list: (companyId: string, status?: string) =>
     api.get<Approval[]>(
@@ -17,6 +23,8 @@ export const approvalsApi = {
     api.post<Approval>(`/approvals/${id}/request-revision`, { decisionNote }),
   resubmit: (id: string, payload?: Record<string, unknown>) =>
     api.post<Approval>(`/approvals/${id}/resubmit`, { payload }),
+  createSignedReviewLink: (id: string, ttlMs?: number) =>
+    api.post<SignedReviewLinkResponse>(`/review-links/approvals/${id}`, ttlMs ? { ttlMs } : {}),
   listComments: (id: string) => api.get<ApprovalComment[]>(`/approvals/${id}/comments`),
   addComment: (id: string, body: string) =>
     api.post<ApprovalComment>(`/approvals/${id}/comments`, { body }),

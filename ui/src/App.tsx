@@ -62,6 +62,8 @@ import { AuthPage } from "./pages/Auth";
 import { BoardClaimPage } from "./pages/BoardClaim";
 import { CliAuthPage } from "./pages/CliAuth";
 import { InviteLandingPage } from "./pages/InviteLanding";
+import { SignedReviewPage } from "./pages/SignedReview";
+import { PublicReviewDocumentPage, PublicReviewImagePage } from "./pages/PublicReviewDocument";
 import { JoinRequestQueue } from "./pages/JoinRequestQueue";
 import { NotFoundPage } from "./pages/NotFound";
 import { SocialMediaPage } from "./pages/SocialMediaPage";
@@ -132,6 +134,7 @@ function boardRoutes() {
       <Route path="goals/:goalId" element={<GoalDetail />} />
       <Route path="approvals" element={<Navigate to="/approvals/pending" replace />} />
       <Route path="approvals/pending" element={<Approvals />} />
+      <Route path="approvals/revision_requested" element={<Approvals />} />
       <Route path="approvals/all" element={<Approvals />} />
       <Route path="approvals/:approvalId" element={<ApprovalDetail />} />
       <Route path="costs" element={<Costs />} />
@@ -323,6 +326,10 @@ export function App() {
         <Route path="board-claim/:token" element={<BoardClaimPage />} />
         <Route path="cli-auth/:id" element={<CliAuthPage />} />
         <Route path="invite/:token" element={<InviteLandingPage />} />
+        <Route path="review/:reviewId" element={<SignedReviewPage />} />
+        <Route path="review/:kind/:reviewId" element={<SignedReviewPage />} />
+        <Route path="doc/:reviewId" element={<PublicReviewDocumentPage />} />
+        <Route path="img/:reviewId" element={<PublicReviewImagePage />} />
 
         <Route element={<CloudAccessGate />}>
           <Route index element={<CompanyRootRedirect />} />

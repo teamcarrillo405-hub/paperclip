@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+﻿import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { approvalsApi } from "../api/approvals";
@@ -16,8 +16,10 @@ import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { useCompanyLiveEvents } from "../hooks/useCompanyLiveEvents";
 import { FirstRunBanner } from "../components/FirstRunBanner";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
-type StatusFilter = "pending" | "all";
+type StatusFilter = "pending" | "revision_requested" | "all";
 
 export function Approvals() {
   const { selectedCompanyId } = useCompany();
@@ -26,7 +28,12 @@ export function Approvals() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathSegment = location.pathname.split("/").pop() ?? "pending";
-  const statusFilter: StatusFilter = pathSegment === "all" ? "all" : "pending";
+  const statusFilter: StatusFilter =
+    pathSegment === "all"
+      ? "all"
+      : pathSegment === "revision_requested"
+        ? "revision_requested"
+        : "pending";
   const [actionError, setActionError] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [isBulkApproving, setIsBulkApproving] = useState(false);
@@ -39,6 +46,8 @@ export function Approvals() {
   const [processingApprovalId, setProcessingApprovalId] = useState<string | null>(null);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const [agentFilter, setAgentFilter] = useState<string>("all");
+  const [rejectDialog, setRejectDialog] = useState<{ ids: string[]; title: string } | null>(null);
+  const [rejectNote, setRejectNote] = useState("");
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -57,7 +66,7 @@ export function Approvals() {
 
   useEffect(() => {
     if (!lastEvent || !selectedCompanyId) return;
-    queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId) });
+    queryClient.invalidateQueries({ queryKey: ["approvals", selectedCompanyId] });
   }, [lastEvent, queryClient, selectedCompanyId]);
 
   useEffect(() => {
@@ -77,6 +86,21 @@ export function Approvals() {
     enabled: !!selectedCompanyId,
   });
 
+  useEffect(() => {
+    if (!selectedCompanyId) return;
+    const companyId = selectedCompanyId;
+    function handleApprovalDecisionMessage(event: MessageEvent) {
+      if (!event.data || typeof event.data !== "object") return;
+      const data = event.data as { type?: string };
+      if (data.type !== "hcc-approval-decision") return;
+      queryClient.invalidateQueries({ queryKey: ["approvals", companyId] });
+      void refetch();
+    }
+
+    window.addEventListener("message", handleApprovalDecisionMessage);
+    return () => window.removeEventListener("message", handleApprovalDecisionMessage);
+  }, [queryClient, refetch, selectedCompanyId]);
+
   const { data: agents } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
@@ -93,7 +117,7 @@ export function Approvals() {
       setProcessingApprovalId(null);
       setActionError(null);
       setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: ["approvals", selectedCompanyId!] });
       navigate(`/approvals/${id}?resolved=approved`);
     },
     onError: (err, id) => {
@@ -104,18 +128,19 @@ export function Approvals() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: string) => approvalsApi.reject(id),
-    onMutate: (id) => {
+    mutationFn: ({ id, decisionNote }: { id: string; decisionNote: string }) =>
+      approvalsApi.reject(id, decisionNote),
+    onMutate: ({ id }) => {
       setProcessingApprovalId(id);
       setOptimisticStatus((prev) => ({ ...prev, [id]: "rejected" }));
     },
-    onSuccess: (_data, id) => {
+    onSuccess: (_data, { id }) => {
       setProcessingApprovalId(null);
       setActionError(null);
       setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: ["approvals", selectedCompanyId!] });
     },
-    onError: (err, id) => {
+    onError: (err, { id }) => {
       setProcessingApprovalId(null);
       setOptimisticStatus((prev) => { const next = { ...prev }; delete next[id]; return next; });
       setActionError(err instanceof Error ? err.message : "Failed to reject");
@@ -131,7 +156,7 @@ export function Approvals() {
     onSuccess: (_data, { id }) => {
       setProcessingApprovalId(null);
       setActionError(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: ["approvals", selectedCompanyId!] });
     },
     onError: (err) => {
       setProcessingApprovalId(null);
@@ -148,9 +173,7 @@ export function Approvals() {
   }
 
   const filtered = (data ?? [])
-    .filter(
-      (a) => statusFilter === "all" || a.status === "pending" || a.status === "revision_requested",
-    )
+    .filter((a) => statusFilter === "all" || a.status === statusFilter)
     .sort((a, b) => {
       const urgencyDiff = urgencyScore(b) - urgencyScore(a);
       if (urgencyDiff !== 0) return urgencyDiff;
@@ -172,20 +195,24 @@ export function Approvals() {
       ? filtered
       : filtered.filter((a) => a.requestedByAgentId === agentFilter);
 
-  const pendingItems = (data ?? []).filter(
+  const pendingItems = (data ?? []).filter((a) => a.status === "pending");
+  const revisionItems = (data ?? []).filter((a) => a.status === "revision_requested");
+  const actionableItems = (data ?? []).filter(
     (a) => a.status === "pending" || a.status === "revision_requested",
   );
   const pendingCount = pendingItems.length;
+  const revisionCount = revisionItems.length;
+  const actionCount = actionableItems.length;
 
   useEffect(() => {
     const prev = document.title;
-    if (pendingCount > 0) {
-      document.title = `(${pendingCount}) Approvals — Avero`;
+    if (actionCount > 0) {
+      document.title = `(${actionCount}) Approvals - Avero`;
     } else {
-      document.title = "Approvals — Avero";
+      document.title = "Approvals â€” Avero";
     }
     return () => { document.title = prev; };
-  }, [pendingCount]);
+  }, [actionCount]);
 
   // J/K keyboard navigation + A/R approve/reject shortcuts
   const handleKeyDown = useCallback(
@@ -220,7 +247,8 @@ export function Approvals() {
         const item = filtered[focusedIndex];
         if (item && (item.status === "pending" || item.status === "revision_requested") && !isBulkOperating) {
           e.preventDefault();
-          rejectMutation.mutate(item.id);
+          setRejectDialog({ ids: [item.id], title: "Reject approval" });
+          setRejectNote("");
         }
       }
     },
@@ -238,9 +266,12 @@ export function Approvals() {
   }, [statusFilter]);
 
   async function handleBulkApprove() {
+    const visibleActionableItems = agentFiltered.filter(
+      (item) => item.status === "pending" || item.status === "revision_requested",
+    );
     const targets = selectedIds.size > 0
-      ? pendingItems.filter((item) => selectedIds.has(item.id))
-      : pendingItems;
+      ? visibleActionableItems.filter((item) => selectedIds.has(item.id))
+      : visibleActionableItems;
     setIsBulkApproving(true);
     setBulkProgress({ done: 0, total: targets.length });
     setActionError(null);
@@ -250,7 +281,7 @@ export function Approvals() {
         setBulkProgress((prev) => prev ? { ...prev, done: prev.done + 1 } : null);
       }
       setSelectedIds(new Set());
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: ["approvals", selectedCompanyId!] });
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Bulk approve failed");
     } finally {
@@ -259,20 +290,40 @@ export function Approvals() {
     }
   }
 
-  async function handleBulkReject() {
+  function handleBulkReject() {
+    const visibleActionableItems = agentFiltered.filter(
+      (item) => item.status === "pending" || item.status === "revision_requested",
+    );
     const targets = selectedIds.size > 0
-      ? pendingItems.filter((item) => selectedIds.has(item.id))
-      : pendingItems;
+      ? visibleActionableItems.filter((item) => selectedIds.has(item.id))
+      : visibleActionableItems;
+    if (targets.length === 0) return;
+    setRejectDialog({
+      ids: targets.map((item) => item.id),
+      title: targets.length === 1 ? "Reject approval" : `Reject ${targets.length} approvals`,
+    });
+    setRejectNote("");
+  }
+
+  async function handleConfirmReject() {
+    const note = rejectNote.trim();
+    if (!rejectDialog || !note) {
+      setActionError("A note is required to reject an approval.");
+      return;
+    }
+    const targets = rejectDialog.ids;
     setIsBulkRejecting(true);
     setBulkProgress({ done: 0, total: targets.length });
     setActionError(null);
     try {
-      for (const item of targets) {
-        await approvalsApi.reject(item.id);
+      for (const id of targets) {
+        await approvalsApi.reject(id, note);
         setBulkProgress((prev) => prev ? { ...prev, done: prev.done + 1 } : null);
       }
       setSelectedIds(new Set());
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      setRejectDialog(null);
+      setRejectNote("");
+      queryClient.invalidateQueries({ queryKey: ["approvals", selectedCompanyId!] });
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Bulk reject failed");
     } finally {
@@ -289,7 +340,10 @@ export function Approvals() {
     return <PageSkeleton variant="approvals" title="Approvals" />;
   }
 
-  const allPendingSelected = pendingItems.length > 0 && pendingItems.every((a) => selectedIds.has(a.id));
+  const visibleActionableItems = agentFiltered.filter(
+    (a) => a.status === "pending" || a.status === "revision_requested",
+  );
+  const allPendingSelected = visibleActionableItems.length > 0 && visibleActionableItems.every((a) => selectedIds.has(a.id));
 
   return (
     <div className="space-y-4">
@@ -297,7 +351,7 @@ export function Approvals() {
       <FirstRunBanner
         storageKey={`avero:firstrun:approvals:${selectedCompanyId}`}
         title="How Approvals work"
-        description="Your AI agents request approval before taking high-stakes actions. Review each request and approve or reject it — agents wait for your decision."
+        description="Your AI agents request approval before taking high-stakes actions. Review each request and approve or reject it â€” agents wait for your decision."
       />
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -309,6 +363,14 @@ export function Approvals() {
                   "bg-yellow-500/20 text-yellow-500"
                 )}>
                   {pendingCount}
+                </span>
+              )}</> },
+              { value: "revision_requested", label: <>Revision requested{revisionCount > 0 && (
+                <span className={cn(
+                  "ml-1.5 rounded-full px-1.5 py-0.5 text-xs font-medium",
+                  "bg-amber-500/20 text-amber-500"
+                )}>
+                  {revisionCount}
                 </span>
               )}</> },
               { value: "all", label: "All" },
@@ -340,22 +402,22 @@ export function Approvals() {
           )}
         </div>
 
-        {/* Bulk approve/reject — only on Pending tab */}
-        {statusFilter === "pending" && pendingCount > 0 && (
+        {/* Bulk approve/reject - only on actionable tabs */}
+        {statusFilter !== "all" && visibleActionableItems.length > 0 && (
           <div className="flex items-center gap-2">
-            {pendingCount > 1 && (
+            {visibleActionableItems.length > 1 && (
               <button
                 type="button"
                 aria-label={allPendingSelected ? "Deselect all pending approvals" : "Select all pending approvals"}
                 aria-pressed={allPendingSelected}
-                onClick={() => toggleSelectAll(pendingItems.map((a) => a.id))}
+                onClick={() => toggleSelectAll(visibleActionableItems.map((a) => a.id))}
                 className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-foreground/60 border border-border hover:bg-accent/50 transition-colors"
               >
                 <span className={cn(
                   "flex h-3.5 w-3.5 items-center justify-center border border-border rounded-sm",
-                  pendingItems.every((a) => selectedIds.has(a.id)) && "bg-foreground border-foreground",
+                  visibleActionableItems.every((a) => selectedIds.has(a.id)) && "bg-foreground border-foreground",
                 )}>
-                  {pendingItems.every((a) => selectedIds.has(a.id)) && (
+                  {visibleActionableItems.every((a) => selectedIds.has(a.id)) && (
                     <svg className="h-2 w-2 text-background" viewBox="0 0 10 10" fill="none">
                       <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -409,13 +471,13 @@ export function Approvals() {
         )}
       </div>
 
-      {/* Keyboard shortcut legend — only shown on Pending tab where shortcuts apply and items exist */}
-      {statusFilter === "pending" && agentFiltered.length > 0 && (
+      {/* Keyboard shortcut legend - only shown on actionable tabs where shortcuts apply and items exist */}
+      {statusFilter !== "all" && agentFiltered.length > 0 && (
         <div className="flex items-center gap-3 flex-wrap">
           {[
             { keys: ["J", "K"], label: "navigate" },
             { keys: ["A"], label: "approve" },
-            { keys: ["R"], label: "reject" },
+            { keys: ["R"], label: "reject with note" },
           ].map(({ keys, label }) => (
             <span key={label} className="flex items-center gap-1.5 text-xs text-foreground/60">
               <span className="flex items-center gap-0.5">
@@ -447,7 +509,7 @@ export function Approvals() {
             disabled={isRefetching}
             onClick={() => refetch()}
           >
-            {isRefetching ? "Retrying…" : "Retry"}
+            {isRefetching ? "Retryingâ€¦" : "Retry"}
           </Button>
         </div>
       )}
@@ -472,7 +534,11 @@ export function Approvals() {
         <div role="status" className="flex flex-col items-center justify-center py-16 text-center">
           <ShieldCheck className="h-8 w-8 text-foreground/40 mb-3" aria-hidden="true" />
           <p className="text-sm text-foreground/60">
-            {statusFilter === "pending" ? "No pending approvals." : "No approvals yet."}
+            {statusFilter === "pending"
+              ? "No pending approvals."
+              : statusFilter === "revision_requested"
+                ? "No revision-requested approvals."
+                : "No approvals yet."}
           </p>
         </div>
       )}
@@ -533,7 +599,7 @@ export function Approvals() {
                       approval={approval}
                       requesterAgent={approval.requestedByAgentId ? (agents ?? []).find((a) => a.id === approval.requestedByAgentId) ?? null : null}
                       onApprove={() => approveMutation.mutate(approval.id)}
-                      onReject={() => rejectMutation.mutate(approval.id)}
+                      onReject={() => { setRejectDialog({ ids: [approval.id], title: "Reject approval" }); setRejectNote(""); }}
                       onRequestRevision={(decisionNote) => requestRevisionMutation.mutate({ id: approval.id, decisionNote })}
                       detailLink={`/approvals/${approval.id}`}
                       isPending={processingApprovalId === approval.id}
@@ -587,7 +653,7 @@ export function Approvals() {
                   approval={approval}
                   requesterAgent={approval.requestedByAgentId ? (agents ?? []).find((a) => a.id === approval.requestedByAgentId) ?? null : null}
                   onApprove={() => approveMutation.mutate(approval.id)}
-                  onReject={() => rejectMutation.mutate(approval.id)}
+                  onReject={() => { setRejectDialog({ ids: [approval.id], title: "Reject approval" }); setRejectNote(""); }}
                   onRequestRevision={(decisionNote) => requestRevisionMutation.mutate({ id: approval.id, decisionNote })}
                   detailLink={`/approvals/${approval.id}`}
                   isPending={processingApprovalId === approval.id}
@@ -602,6 +668,52 @@ export function Approvals() {
           })}
         </div>
       )}
+      <Dialog
+        open={Boolean(rejectDialog)}
+        onOpenChange={(open) => {
+          if (isBulkRejecting) return;
+          if (!open) {
+            setRejectDialog(null);
+            setRejectNote("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{rejectDialog?.title ?? "Reject approval"}</DialogTitle>
+            <DialogDescription>
+              Add notes for the agent. Use this to explain whether the task should be revised, rerouted, or cancelled.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={rejectNote}
+            onChange={(event) => setRejectNote(event.target.value)}
+            placeholder="Required notes..."
+            rows={5}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRejectDialog(null);
+                setRejectNote("");
+              }}
+              disabled={isBulkRejecting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmReject}
+              disabled={!rejectNote.trim() || isBulkRejecting}
+              aria-busy={isBulkRejecting}
+            >
+              {isBulkRejecting ? "Rejecting..." : "Reject"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
