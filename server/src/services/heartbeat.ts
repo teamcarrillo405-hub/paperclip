@@ -923,6 +923,16 @@ function didAutomaticRecoveryFail(
   );
 }
 
+function wasAutomaticRecoveryAttempt(
+  latestRun: Pick<typeof heartbeatRuns.$inferSelect, "contextSnapshot"> | null,
+  expectedRetryReason: "assignment_recovery" | "issue_continuation_needed",
+) {
+  if (!latestRun) return false;
+
+  const latestContext = parseObject(latestRun.contextSnapshot);
+  return readNonEmptyString(latestContext.retryReason) === expectedRetryReason;
+}
+
 function normalizeLedgerBillingType(value: unknown): BillingType {
   const raw = readNonEmptyString(value);
   switch (raw) {
@@ -4381,6 +4391,10 @@ export function heartbeatService(db: Db) {
         }
         continue;
       }
+      if (wasAutomaticRecoveryAttempt(latestRun, "issue_continuation_needed")) {
+        result.skipped += 1;
+        continue;
+      }
 
       const queued = await enqueueStrandedIssueRecovery({
         issueId: issue.id,
@@ -6065,6 +6079,7 @@ export function heartbeatService(db: Db) {
           assigneeAgentId: issues.assigneeAgentId,
           assigneeUserId: issues.assigneeUserId,
           executionRunId: issues.executionRunId,
+          checkoutRunId: issues.checkoutRunId,
         })
         .from(issues)
         .where(
@@ -6293,6 +6308,7 @@ export function heartbeatService(db: Db) {
           .update(issues)
           .set({
             status: "blocked",
+            checkoutRunId: issue.status === "in_progress" ? run.id : issue.checkoutRunId,
             updatedAt: new Date(),
           })
           .where(eq(issues.id, issue.id));

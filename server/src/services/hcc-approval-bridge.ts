@@ -6,8 +6,20 @@ type HccApprovalLike = {
 };
 
 function hccQueueId(payload: Record<string, unknown> | null): string | null {
-  const value = payload?.hcc_queue_id;
-  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+  const candidates = [
+    payload?.hcc_queue_id,
+    payload?.hccQueueId,
+    payload?.queue_id,
+    payload?.queueId,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+
+  return null;
 }
 
 function endpointFor(action: HccBridgeAction): string {

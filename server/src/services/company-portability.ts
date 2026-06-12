@@ -624,6 +624,10 @@ const ADAPTER_DEFAULT_RULES_BY_TYPE: Record<string, Array<{ path: string[]; valu
     { path: ["timeoutSec"], value: 0 },
     { path: ["graceSec"], value: 15 },
   ],
+  ollama_local: [
+    { path: ["baseUrl"], value: "http://127.0.0.1:11434" },
+    { path: ["timeoutSec"], value: 900 },
+  ],
   opencode_local: [
     { path: ["timeoutSec"], value: 0 },
     { path: ["graceSec"], value: 15 },

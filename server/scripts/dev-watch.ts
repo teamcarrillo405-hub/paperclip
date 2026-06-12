@@ -16,6 +16,7 @@ const child = spawn(
     cwd: serverRoot,
     env: process.env,
     stdio: "inherit",
+    windowsHide: true,
   },
 );
 

@@ -23,6 +23,7 @@ const ENABLED_INVITE_ADAPTERS = new Set([
   "claude_local",
   "codex_local",
   "gemini_local",
+  "ollama_local",
   "opencode_local",
   "pi_local",
   "cursor",

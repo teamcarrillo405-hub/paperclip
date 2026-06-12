@@ -69,6 +69,11 @@ const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
     description: "Local Gemini agent",
     icon: Gem,
   },
+  ollama_local: {
+    label: "Ollama",
+    description: "Local zero-API-cost model",
+    icon: Cpu,
+  },
   opencode_local: {
     label: "OpenCode",
     description: "Local multi-provider agent",
