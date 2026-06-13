@@ -23,11 +23,14 @@ Use when:
 Don't use when:
 - The task needs browser automation, filesystem editing, shell commands, API publishing, or external platform actions
 - The task is final legal, reputational, board-facing, or brand-critical copy without human or stronger-model review
-- Ollama is not running on the machine that runs Paperclip
+- Ollama is not installed on the machine that runs Paperclip
 
 Core fields:
 - baseUrl (string, optional): Ollama server URL. Defaults to http://127.0.0.1:11434
 - model (string, optional): Ollama model tag. Defaults to llama3.1:8b
+- autoStart (boolean, optional): start the local Ollama server automatically for loopback URLs. Defaults to true
+- ollamaPath (string, optional): full path to the Ollama executable when it is not on PATH
+- startupTimeoutSec (number, optional): seconds to wait for auto-start. Defaults to 20
 - instructionsFilePath (string, optional): absolute path to a markdown instructions file prepended to the system prompt
 - promptTemplate (string, optional): run prompt template
 - temperature (number, optional): generation temperature
@@ -35,6 +38,7 @@ Core fields:
 - timeoutSec (number, optional): request timeout in seconds. Defaults to 900
 
 Notes:
+- For loopback URLs, the adapter checks /api/tags first. If Ollama is not reachable and autoStart is true, it starts the Ollama server as a hidden detached process and waits for the API before running the agent.
 - Runs call Ollama's /api/chat endpoint with stream=false.
 - This adapter is intentionally tool-free. It should produce text and structured handoff notes, not mutate files or publish externally.
 - Use Codex for Substack/Reddit publishing, API operations, browser work, and technical implementation.

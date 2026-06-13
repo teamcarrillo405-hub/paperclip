@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import type { AdapterExecutionContext, AdapterExecutionResult } from "@paperclipai/adapter-utils";
 import {
+  asBoolean,
   asNumber,
   asString,
   DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
@@ -16,6 +17,7 @@ import {
   DEFAULT_OLLAMA_LOCAL_BASE_URL,
   DEFAULT_OLLAMA_LOCAL_MODEL,
 } from "../index.js";
+import { ensureOllamaServerRunning } from "./ollama-server.js";
 
 type OllamaChatResponse = {
   message?: {
@@ -54,6 +56,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const baseUrl = normalizeBaseUrl(asString(config.baseUrl, DEFAULT_OLLAMA_LOCAL_BASE_URL));
   const model = asString(config.model, DEFAULT_OLLAMA_LOCAL_MODEL).trim() || DEFAULT_OLLAMA_LOCAL_MODEL;
   const cwd = asString(config.cwd, process.cwd());
+  const autoStart = asBoolean(config.autoStart, true);
+  const ollamaPath = asString(config.ollamaPath, "");
+  const startupTimeoutSec = Math.max(1, asNumber(config.startupTimeoutSec, 20));
   await ensureAbsoluteDirectory(cwd, { createIfMissing: true });
 
   const promptTemplate = asString(
@@ -81,12 +86,39 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutSec * 1000);
 
+  let startupMessage = "";
+  try {
+    const startup = await ensureOllamaServerRunning({
+      baseUrl,
+      autoStart,
+      ollamaPath,
+      startupTimeoutMs: startupTimeoutSec * 1_000,
+    });
+    startupMessage = startup.message;
+    await onLog("stdout", `${JSON.stringify({ type: "ollama_startup", ...startup })}\n`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await onLog("stderr", `${JSON.stringify({ type: "error", message })}\n`);
+    return {
+      exitCode: 1,
+      signal: null,
+      timedOut: false,
+      errorMessage: message,
+      errorCode: "ollama_start_failed",
+      provider: "ollama",
+      biller: "local",
+      model,
+      billingType: "fixed",
+      costUsd: 0,
+    };
+  }
+
   await onMeta?.({
     adapterType: "ollama_local",
     command: "ollama-http",
     cwd,
     commandArgs: ["POST", `${baseUrl}/api/chat`],
-    commandNotes: ["Local Ollama HTTP API; no external model billing"],
+    commandNotes: ["Local Ollama HTTP API; no external model billing", startupMessage],
     prompt: userPrompt,
     promptMetrics: {
       characters: userPrompt.length,

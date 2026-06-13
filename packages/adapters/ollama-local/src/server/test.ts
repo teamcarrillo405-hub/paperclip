@@ -3,12 +3,13 @@ import type {
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
 } from "@paperclipai/adapter-utils";
-import { asString, parseObject } from "@paperclipai/adapter-utils/server-utils";
+import { asBoolean, asNumber, asString, parseObject } from "@paperclipai/adapter-utils/server-utils";
 import {
   DEFAULT_OLLAMA_LOCAL_BASE_URL,
   DEFAULT_OLLAMA_LOCAL_MODEL,
 } from "../index.js";
 import { discoverOllamaModels } from "./models.js";
+import { ensureOllamaServerRunning } from "./ollama-server.js";
 
 function summarizeStatus(checks: AdapterEnvironmentCheck[]): AdapterEnvironmentTestResult["status"] {
   if (checks.some((check) => check.level === "error")) return "fail";
@@ -27,10 +28,25 @@ export async function testEnvironment(
   const config = parseObject(ctx.config);
   const baseUrl = normalizeBaseUrl(asString(config.baseUrl, DEFAULT_OLLAMA_LOCAL_BASE_URL));
   const model = asString(config.model, DEFAULT_OLLAMA_LOCAL_MODEL).trim();
+  const autoStart = asBoolean(config.autoStart, true);
+  const ollamaPath = asString(config.ollamaPath, "");
+  const startupTimeoutSec = Math.max(1, asNumber(config.startupTimeoutSec, 20));
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5_000);
   try {
+    const startup = await ensureOllamaServerRunning({
+      baseUrl,
+      autoStart,
+      ollamaPath,
+      startupTimeoutMs: startupTimeoutSec * 1_000,
+    });
+    checks.push({
+      code: `ollama_${startup.status}`,
+      level: startup.status === "disabled" || startup.status === "skipped_non_loopback" ? "warn" : "info",
+      message: startup.message,
+      hint: startup.status === "disabled" ? "Enable autoStart or start Ollama before running this adapter." : undefined,
+    });
     const discovered = await discoverOllamaModels({ baseUrl, signal: controller.signal });
     checks.push({
       code: "ollama_server_reachable",
@@ -60,7 +76,7 @@ export async function testEnvironment(
       level: "error",
       message: `Ollama is not reachable at ${baseUrl}`,
       detail: err instanceof Error ? err.message : String(err),
-      hint: "Start Ollama and verify `ollama list` or GET /api/tags succeeds.",
+      hint: "The adapter attempted auto-start for loopback URLs. Verify Ollama is installed, or set ollamaPath to the full ollama executable path.",
     });
   } finally {
     clearTimeout(timeout);
