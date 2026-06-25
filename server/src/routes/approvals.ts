@@ -2,7 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { Router, type Request } from "express";
-import type { Db } from "@paperclipai/db";
+import { eq } from "drizzle-orm";
+import { agents, gstackRunMetadata, type Db } from "@paperclipai/db";
 import {
   addApprovalCommentSchema,
   createApprovalSchema,
@@ -402,6 +403,64 @@ export function approvalRoutes(db: Db) {
               error: err instanceof Error ? err.message : String(err),
             },
           });
+        }
+      }
+
+      // Approach A: trigger next agent in pipeline if the requesting agent has on_approval_trigger configured
+      if (approval.gstackRunId && approval.requestedByAgentId) {
+        try {
+          const [requestingAgent] = await db
+            .select({ onApprovalTrigger: agents.onApprovalTrigger })
+            .from(agents)
+            .where(eq(agents.id, approval.requestedByAgentId));
+
+          const trigger = requestingAgent?.onApprovalTrigger;
+          if (trigger?.agentId) {
+            const [meta] = await db
+              .select({ artifactJson: gstackRunMetadata.artifactJson })
+              .from(gstackRunMetadata)
+              .where(eq(gstackRunMetadata.heartbeatRunId, approval.gstackRunId));
+
+            const triggerRun = await heartbeat.wakeup(trigger.agentId, {
+              source: "automation",
+              triggerDetail: "approval_trigger",
+              reason: "approval_approved",
+              payload: {
+                sourceApprovalId: approval.id,
+                sourceRunId: approval.gstackRunId,
+                skill: trigger.skill ?? null,
+              },
+              requestedByActorType: "user",
+              requestedByActorId: req.actor.userId ?? "board",
+              contextSnapshot: {
+                source: "approval.trigger",
+                artifactJson: meta?.artifactJson ?? null,
+                skill: trigger.skill ?? null,
+                approvalId: approval.id,
+                sourceRunId: approval.gstackRunId,
+              },
+            });
+
+            await logActivity(db, {
+              companyId: approval.companyId,
+              actorType: "user",
+              actorId: req.actor.userId ?? "board",
+              action: "approval.trigger_wakeup_queued",
+              entityType: "approval",
+              entityId: approval.id,
+              details: {
+                targetAgentId: trigger.agentId,
+                triggerRunId: triggerRun?.id ?? null,
+                sourceRunId: approval.gstackRunId,
+                skill: trigger.skill ?? null,
+              },
+            });
+          }
+        } catch (err) {
+          logger.warn(
+            { err, approvalId: approval.id, gstackRunId: approval.gstackRunId },
+            "failed to queue approval trigger wakeup",
+          );
         }
       }
 

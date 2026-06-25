@@ -58,6 +58,10 @@ export const createAgentSchema = z.object({
   budgetMonthlyCents: z.number().int().nonnegative().optional().default(0),
   permissions: agentPermissionsSchema.optional(),
   metadata: z.record(z.unknown()).optional().nullable(),
+  onApprovalTrigger: z.object({
+    agentId: z.string().uuid(),
+    skill: z.string().optional(),
+  }).nullable().optional(),
 });
 
 export type CreateAgent = z.infer<typeof createAgentSchema>;

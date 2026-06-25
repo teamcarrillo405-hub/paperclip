@@ -582,6 +582,27 @@
       "when": 1778400000000,
       "tag": "0082_gusto_oauth_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1778500000000,
+      "tag": "0083_gstack_run_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1778600000000,
+      "tag": "0084_agent_on_approval_trigger",
+      "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1778700000000,
+      "tag": "0085_approval_gstack_run_id",
+      "breakpoints": true
     }
   ]
 }
