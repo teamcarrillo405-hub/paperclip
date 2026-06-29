@@ -89,7 +89,7 @@ describe("run liveness continuations", () => {
     });
   });
 
-  it("enqueues the second empty_response continuation", () => {
+  it("does not enqueue a second empty_response continuation", () => {
     const decision = decideRunLivenessContinuation({
       run: run({ continuationAttempt: 1 }),
       issue: issue(),
@@ -101,14 +101,14 @@ describe("run liveness continuations", () => {
       idempotentWakeExists: false,
     });
 
-    expect(decision.kind).toBe("enqueue");
-    if (decision.kind !== "enqueue") return;
-    expect(decision.nextAttempt).toBe(2);
+    expect(decision.kind).toBe("exhausted");
+    if (decision.kind !== "exhausted") return;
+    expect(decision.comment).toContain("Attempts used: 1/1");
   });
 
-  it("does not enqueue a third continuation and returns an exhaustion comment", () => {
+  it("does not enqueue after continuation is exhausted", () => {
     const decision = decideRunLivenessContinuation({
-      run: run({ continuationAttempt: 2 }),
+      run: run({ continuationAttempt: 1 }),
       issue: issue(),
       agent: agent(),
       livenessState: "plan_only",
@@ -121,7 +121,7 @@ describe("run liveness continuations", () => {
     expect(decision.kind).toBe("exhausted");
     if (decision.kind !== "exhausted") return;
     expect(decision.comment).toContain("Bounded liveness continuation exhausted");
-    expect(decision.comment).toContain("Attempts used: 2/2");
+    expect(decision.comment).toContain("Attempts used: 1/1");
   });
 
   it("skips non-actionable and guarded issues", () => {

@@ -63,7 +63,7 @@ vi.mock("../adapters/index.ts", async () => {
   };
 });
 
-import { heartbeatService } from "../services/heartbeat.ts";
+import { heartbeatService, normalizeHeartbeatRunExitCode } from "../services/heartbeat.ts";
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
@@ -72,6 +72,21 @@ if (!embeddedPostgresSupport.supported) {
     `Skipping embedded Postgres heartbeat recovery tests on this host: ${embeddedPostgresSupport.reason ?? "unsupported environment"}`,
   );
 }
+
+describe("normalizeHeartbeatRunExitCode", () => {
+  it("maps unsigned Windows process exit codes into PostgreSQL int range", () => {
+    expect(normalizeHeartbeatRunExitCode(0)).toBe(0);
+    expect(normalizeHeartbeatRunExitCode(1)).toBe(1);
+    expect(normalizeHeartbeatRunExitCode(3_221_225_786)).toBe(-1_073_741_510);
+    expect(normalizeHeartbeatRunExitCode(4_294_967_295)).toBe(-1);
+  });
+
+  it("drops non-finite or out-of-range exit codes", () => {
+    expect(normalizeHeartbeatRunExitCode(null)).toBeNull();
+    expect(normalizeHeartbeatRunExitCode(Number.NaN)).toBeNull();
+    expect(normalizeHeartbeatRunExitCode(4_294_967_296)).toBeNull();
+  });
+});
 
 function spawnAliveProcess() {
   return spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], {
@@ -361,6 +376,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     processGroupId?: number | null;
     processLossRetryCount?: number;
     includeIssue?: boolean;
+    issueStatus?: "todo" | "in_progress" | "done" | "cancelled";
     runErrorCode?: string | null;
     runError?: string | null;
   }) {
@@ -423,17 +439,20 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     });
 
     if (input?.includeIssue !== false) {
+      const issueStatus = input?.issueStatus ?? "in_progress";
       await db.insert(issues).values({
         id: issueId,
         companyId,
         title: "Recover local adapter after lost process",
-        status: "in_progress",
+        status: issueStatus,
         priority: "medium",
         assigneeAgentId: agentId,
         checkoutRunId: runId,
         executionRunId: runId,
         issueNumber: 1,
         identifier: `${issuePrefix}-1`,
+        completedAt: issueStatus === "done" ? now : null,
+        cancelledAt: issueStatus === "cancelled" ? now : null,
       });
     }
 
@@ -621,7 +640,9 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     });
     const heartbeat = heartbeatService(db);
 
-    const result = await heartbeat.reapOrphanedRuns();
+    const result = await heartbeat.reapOrphanedRuns({
+      detachedProcessStaleThresholdMs: Number.MAX_SAFE_INTEGER,
+    });
     expect(result.reaped).toBe(0);
 
     const run = await heartbeat.getRun(runId);
@@ -635,6 +656,72 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       .where(eq(agentWakeupRequests.id, wakeupRequestId))
       .then((rows) => rows[0] ?? null);
     expect(wakeup?.status).toBe("claimed");
+  });
+
+  it("keeps the issue execution lock while a detached local pid is alive but not stale", async () => {
+    const child = spawnAliveProcess();
+    childProcesses.add(child);
+    expect(child.pid).toBeTypeOf("number");
+
+    const { runId, issueId } = await seedRunFixture({
+      processPid: child.pid ?? null,
+    });
+    const heartbeat = heartbeatService(db);
+
+    const result = await heartbeat.reapOrphanedRuns({
+      detachedProcessStaleThresholdMs: Number.MAX_SAFE_INTEGER,
+    });
+    expect(result.reaped).toBe(0);
+
+    const run = await heartbeat.getRun(runId);
+    expect(run?.status).toBe("running");
+
+    const issue = await db
+      .select()
+      .from(issues)
+      .where(eq(issues.id, issueId))
+      .then((rows) => rows[0] ?? null);
+    expect(issue?.executionRunId).toBe(runId);
+    expect(issue?.checkoutRunId).toBe(runId);
+  });
+
+  it("reaps a detached local pid after the detached staleness window expires", async () => {
+    const child = spawnAliveProcess();
+    childProcesses.add(child);
+    expect(child.pid).toBeTypeOf("number");
+
+    const { agentId, runId, issueId } = await seedRunFixture({
+      processPid: child.pid ?? null,
+    });
+    const heartbeat = heartbeatService(db);
+
+    const result = await heartbeat.reapOrphanedRuns({
+      detachedProcessStaleThresholdMs: 0,
+    });
+    expect(result.reaped).toBe(1);
+    expect(result.runIds).toEqual([runId]);
+    expect(await waitForPidExit(child.pid ?? null, 2_000)).toBe(true);
+
+    const runs = await db
+      .select()
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.agentId, agentId));
+    expect(runs).toHaveLength(2);
+
+    const failedRun = runs.find((row) => row.id === runId);
+    const retryRun = runs.find((row) => row.id !== runId);
+    expect(failedRun?.status).toBe("failed");
+    expect(failedRun?.errorCode).toBe("process_lost");
+    expect(failedRun?.error).toContain("remained alive without activity");
+    expect(retryRun?.status).toBe("queued");
+    expect(retryRun?.processLossRetryCount).toBe(1);
+
+    const issue = await db
+      .select()
+      .from(issues)
+      .where(eq(issues.id, issueId))
+      .then((rows) => rows[0] ?? null);
+    expect(issue?.executionRunId).toBe(retryRun?.id ?? null);
   });
 
   it("queues exactly one retry when the recorded local pid is dead", async () => {
@@ -676,6 +763,45 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(issue?.executionRunId).toBe(retryRun?.id ?? null);
     expect(issue?.checkoutRunId).toBe(runId);
   });
+
+  it.each(["done", "cancelled"] as const)(
+    "does not queue a process-loss retry for a terminal %s issue",
+    async (issueStatus) => {
+      const { agentId, runId, issueId } = await seedRunFixture({
+        processPid: 999_999_999,
+        issueStatus,
+      });
+      const heartbeat = heartbeatService(db);
+
+      const result = await heartbeat.reapOrphanedRuns();
+      expect(result.reaped).toBe(1);
+      expect(result.runIds).toEqual([runId]);
+
+      const runs = await db
+        .select()
+        .from(heartbeatRuns)
+        .where(eq(heartbeatRuns.agentId, agentId));
+      expect(runs).toHaveLength(1);
+      expect(runs[0]?.status).toBe("failed");
+      expect(runs[0]?.errorCode).toBe("process_lost");
+      expect(runs[0]?.error).not.toContain("retrying once");
+
+      const wakeups = await db
+        .select()
+        .from(agentWakeupRequests)
+        .where(eq(agentWakeupRequests.agentId, agentId));
+      expect(wakeups).toHaveLength(1);
+      expect(wakeups[0]?.status).toBe("failed");
+
+      const issue = await db
+        .select()
+        .from(issues)
+        .where(eq(issues.id, issueId))
+        .then((rows) => rows[0] ?? null);
+      expect(issue?.status).toBe(issueStatus);
+      expect(issue?.executionRunId).toBeNull();
+    },
+  );
 
   it.skipIf(process.platform === "win32")("reaps orphaned descendant process groups when the parent pid is already gone", async () => {
     const orphan = await spawnOrphanedProcessGroup();
@@ -802,6 +928,28 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
     const comments = await db.select().from(issueComments).where(eq(issueComments.issueId, issueId));
     expect(comments).toHaveLength(0);
+  });
+
+  it("normalizes unsigned Windows exit codes when persisting adapter results", async () => {
+    mockAdapterExecute.mockResolvedValueOnce({
+      exitCode: 4_294_967_295,
+      signal: null,
+      timedOut: false,
+      errorCode: "adapter_failed",
+      errorMessage: "Windows process was forcibly terminated.",
+      provider: "test",
+      model: "test-model",
+    });
+
+    const { runId } = await seedQueuedIssueRunFixture();
+    const heartbeat = heartbeatService(db);
+
+    await heartbeat.resumeQueuedRuns();
+    await waitForRunToSettle(heartbeat, runId);
+
+    const run = await heartbeat.getRun(runId);
+    expect(run?.status).toBe("failed");
+    expect(run?.exitCode).toBe(-1);
   });
 
   it("clears the detached warning when the run reports activity again", async () => {

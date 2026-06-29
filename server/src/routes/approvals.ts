@@ -423,7 +423,7 @@ export function approvalRoutes(db: Db) {
 
             const triggerRun = await heartbeat.wakeup(trigger.agentId, {
               source: "automation",
-              triggerDetail: "approval_trigger",
+              triggerDetail: "system",
               reason: "approval_approved",
               payload: {
                 sourceApprovalId: approval.id,

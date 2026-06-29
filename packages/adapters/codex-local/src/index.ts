@@ -1,6 +1,8 @@
 export const type = "codex_local";
 export const label = "Codex (local)";
 export const DEFAULT_CODEX_LOCAL_MODEL = "gpt-5.3-codex";
+export const CODEX_LOCAL_CHATGPT_FALLBACK_MODEL = "gpt-5.3-codex-spark";
+export const CODEX_LOCAL_CHATGPT_UNSUPPORTED_MODELS = ["gpt-5.3-codex", "gpt-5-mini", "gpt-5-nano"] as const;
 export const DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX = true;
 export const CODEX_LOCAL_FAST_MODE_SUPPORTED_MODELS = ["gpt-5.4"] as const;
 
@@ -9,6 +11,22 @@ export function isCodexLocalFastModeSupported(model: string | null | undefined):
   return CODEX_LOCAL_FAST_MODE_SUPPORTED_MODELS.includes(
     normalizedModel as (typeof CODEX_LOCAL_FAST_MODE_SUPPORTED_MODELS)[number],
   );
+}
+
+export function resolveCodexLocalModelForBilling(
+  model: string | null | undefined,
+  billingType: "api" | "subscription",
+): string {
+  const normalizedModel = typeof model === "string" ? model.trim() : "";
+  if (
+    billingType === "subscription" &&
+    CODEX_LOCAL_CHATGPT_UNSUPPORTED_MODELS.includes(
+      normalizedModel as (typeof CODEX_LOCAL_CHATGPT_UNSUPPORTED_MODELS)[number],
+    )
+  ) {
+    return CODEX_LOCAL_CHATGPT_FALLBACK_MODEL;
+  }
+  return normalizedModel;
 }
 
 export const models = [

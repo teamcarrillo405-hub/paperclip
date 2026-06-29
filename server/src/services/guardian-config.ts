@@ -23,9 +23,9 @@ export interface GuardianConfig {
 export const defaultGuardianConfig: GuardianConfig = {
   enabled: true,
   watchdogOne: {
-    enabled: true,
+    enabled: false,
     stallThresholdMinutes: 15,
-    maxContinuationAttempts: 3,
+    maxContinuationAttempts: 1,
     checkIntervalMs: 60_000,
   },
   watchdogTwo: {

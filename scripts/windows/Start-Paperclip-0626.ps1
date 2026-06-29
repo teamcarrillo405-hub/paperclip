@@ -8,8 +8,10 @@ $Url = "http://127.0.0.1:$Port"
 $LogDir = Join-Path $PaperclipHome "instances\default\logs"
 $OutLog = Join-Path $LogDir "paperclip-0626.out.log"
 $ErrLog = Join-Path $LogDir "paperclip-0626.err.log"
+$LauncherLog = Join-Path $LogDir "paperclip-0626.launcher.log"
 
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
+Add-Content -LiteralPath $LauncherLog -Value "[$(Get-Date -Format o)] Paperclip 0626 launcher starting (url=$Url)"
 
 function Test-Health {
   param([string]$TargetUrl)
@@ -26,7 +28,7 @@ function Open-Paperclip {
   try {
     Start-Process -FilePath "explorer.exe" -ArgumentList $TargetUrl
   } catch {
-    Add-Content -LiteralPath $ErrLog -Value "[$(Get-Date -Format o)] Could not open browser automatically: $($_.Exception.Message)"
+    Add-Content -LiteralPath $LauncherLog -Value "[$(Get-Date -Format o)] Could not open browser automatically: $($_.Exception.Message)"
   }
 }
 
@@ -60,6 +62,7 @@ function Stop-PaperclipDevProcesses {
   Get-CimInstance Win32_Process | ForEach-Object {
     $commandLine = [string]$_.CommandLine
     if ($_.ProcessId -eq $currentPid) { return }
+    if ($_.Name -ne "node.exe") { return }
     $isPaperclipDev =
       $commandLine -like "*$RepoRoot*" -and (
         $commandLine -like "*scripts/dev-watch.ts*" -or
@@ -104,7 +107,7 @@ if ($owner) {
   $ownerProcess = Get-Process -Id $owner.OwningProcess -ErrorAction SilentlyContinue
   $message = "Port $Port is already in use by PID $($owner.OwningProcess)"
   if ($ownerProcess) { $message += " ($($ownerProcess.ProcessName))" }
-  Add-Content -LiteralPath $ErrLog -Value "[$(Get-Date -Format o)] $message"
+  Add-Content -LiteralPath $LauncherLog -Value "[$(Get-Date -Format o)] $message"
   Add-Type -AssemblyName System.Windows.Forms
   [System.Windows.Forms.MessageBox]::Show($message, "Paperclip 0626 cannot start", "OK", "Error") | Out-Null
   exit 1
@@ -118,41 +121,51 @@ try {
   Pop-Location
 }
 
-$psi = New-Object System.Diagnostics.ProcessStartInfo
-$psi.FileName = $node
-$psi.WorkingDirectory = $ServerRoot
-$psi.Arguments = "`"$tsx`" scripts/dev-watch.ts"
-$psi.UseShellExecute = $false
-$psi.CreateNoWindow = $true
-$psi.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
-$psi.RedirectStandardOutput = $true
-$psi.RedirectStandardError = $true
-$psi.Environment["PORT"] = [string]$Port
-$psi.Environment["PAPERCLIP_LISTEN_PORT"] = [string]$Port
-$psi.Environment["PAPERCLIP_HOME"] = $PaperclipHome
-$psi.Environment["PAPERCLIP_MIGRATION_PROMPT"] = "never"
-$psi.Environment["PAPERCLIP_MIGRATION_AUTO_APPLY"] = "true"
+$env:PORT = [string]$Port
+$env:HOST = "127.0.0.1"
+$env:PAPERCLIP_LISTEN_PORT = [string]$Port
+$env:PAPERCLIP_HOME = $PaperclipHome
+$env:PAPERCLIP_MIGRATION_PROMPT = "never"
+$env:PAPERCLIP_MIGRATION_AUTO_APPLY = "true"
+$env:PAPERCLIP_AUTH_BASE_URL_MODE = "explicit"
+$env:BETTER_AUTH_BASE_URL = $Url
+$env:BETTER_AUTH_URL = $Url
+$env:PAPERCLIP_AUTH_PUBLIC_BASE_URL = $Url
 
-$process = [System.Diagnostics.Process]::Start($psi)
-$process.BeginOutputReadLine()
-$process.BeginErrorReadLine()
-$process.add_OutputDataReceived({
-  if ($EventArgs.Data) { Add-Content -LiteralPath $OutLog -Value $EventArgs.Data }
-})
-$process.add_ErrorDataReceived({
-  if ($EventArgs.Data) { Add-Content -LiteralPath $ErrLog -Value $EventArgs.Data }
-})
+try {
+  $process = Start-Process `
+    -FilePath $node `
+    -ArgumentList @($tsx, "scripts/dev-watch.ts") `
+    -WorkingDirectory $ServerRoot `
+    -WindowStyle Hidden `
+    -RedirectStandardOutput $OutLog `
+    -RedirectStandardError $ErrLog `
+    -PassThru
+  Add-Content -LiteralPath $LauncherLog -Value "[$(Get-Date -Format o)] Started Paperclip 0626 node process PID $($process.Id)"
+} catch {
+  Add-Content -LiteralPath $LauncherLog -Value "[$(Get-Date -Format o)] Failed to start Paperclip 0626: $($_.Exception.Message)"
+  Add-Type -AssemblyName System.Windows.Forms
+  [System.Windows.Forms.MessageBox]::Show("Paperclip 0626 could not start. Check $ErrLog.", "Paperclip 0626 startup failed", "OK", "Error") | Out-Null
+  exit 1
+}
 
 $deadline = (Get-Date).AddSeconds(45)
 while ((Get-Date) -lt $deadline) {
+  if ($process.HasExited) {
+    Add-Content -LiteralPath $LauncherLog -Value "[$(Get-Date -Format o)] Paperclip 0626 process exited before health check passed (exitCode=$($process.ExitCode))."
+    Add-Type -AssemblyName System.Windows.Forms
+    [System.Windows.Forms.MessageBox]::Show("Paperclip 0626 exited before it became healthy. Check $ErrLog.", "Paperclip 0626 startup failed", "OK", "Error") | Out-Null
+    exit 1
+  }
   if (Test-Health -TargetUrl $Url) {
+    Add-Content -LiteralPath $LauncherLog -Value "[$(Get-Date -Format o)] Paperclip 0626 healthy; opening $Url"
     Open-Paperclip -TargetUrl $Url
     exit 0
   }
   Start-Sleep -Seconds 1
 }
 
-Add-Content -LiteralPath $ErrLog -Value "[$(Get-Date -Format o)] Paperclip did not become healthy on $Url within 45 seconds."
+Add-Content -LiteralPath $LauncherLog -Value "[$(Get-Date -Format o)] Paperclip did not become healthy on $Url within 45 seconds."
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.MessageBox]::Show("Paperclip started but did not become healthy on $Url within 45 seconds. Check $ErrLog.", "Paperclip 0626 startup timeout", "OK", "Warning") | Out-Null
 exit 2

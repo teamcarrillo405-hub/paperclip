@@ -154,6 +154,11 @@ const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_JITTER_RATIO = 0.25;
 const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON = "transient_failure";
 const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_WAKE_REASON = "transient_failure_retry";
 const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS = BOUNDED_TRANSIENT_HEARTBEAT_RETRY_DELAYS_MS.length;
+const POSTGRES_INT_MIN = -2_147_483_648;
+const POSTGRES_INT_MAX = 2_147_483_647;
+const UINT32_MAX = 4_294_967_295;
+const UINT32_RANGE = 4_294_967_296;
+const DETACHED_PROCESS_STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 type CodexTransientFallbackMode =
   | "same_session"
   | "safer_invocation"
@@ -905,6 +910,46 @@ function summarizeRunFailureForIssueComment(
   if (errorCode) return ` Latest retry failure: \`${errorCode}\`.`;
   if (summary) return ` Latest retry failure: ${summary}.`;
   return null;
+}
+
+function isNonRetryableRunFailure(
+  run: Pick<typeof heartbeatRuns.$inferSelect, "status" | "error" | "errorCode"> | null | undefined,
+) {
+  if (!run || !UNSUCCESSFUL_HEARTBEAT_RUN_TERMINAL_STATUSES.includes(
+    run.status as (typeof UNSUCCESSFUL_HEARTBEAT_RUN_TERMINAL_STATUSES)[number],
+  )) {
+    return false;
+  }
+
+  const errorCode = readNonEmptyString(run.errorCode)?.toLowerCase() ?? "";
+  const error = readNonEmptyString(run.error)?.toLowerCase() ?? "";
+  if (errorCode === "budget_hard_stop" || errorCode === "budget_exceeded") return true;
+  if (errorCode !== "adapter_failed" && errorCode !== "claude_failed" && errorCode !== "codex_failed") {
+    return false;
+  }
+
+  return [
+    "usage limit",
+    "monthly spend limit",
+    "over quota",
+    "quota",
+    "not supported when using codex with a chatgpt account",
+    "model is not supported",
+    "unsupported model",
+    "try again at",
+  ].some((needle) => error.includes(needle));
+}
+
+function buildNonRetryableRecoveryComment(input: {
+  status: "todo" | "in_progress";
+  latestRun: Pick<typeof heartbeatRuns.$inferSelect, "error" | "errorCode"> | null | undefined;
+}) {
+  const failureSummary = summarizeRunFailureForIssueComment(input.latestRun);
+  const action = input.status === "todo" ? "dispatch" : "continuation";
+  return (
+    `Paperclip did not auto-retry ${action} because the latest run failed with a non-retryable quota, account, budget, or model-compatibility error.` +
+    `${failureSummary ?? ""} Moving it to \`blocked\` so a model route or quota fix can be applied before another run is started.`
+  );
 }
 
 function didAutomaticRecoveryFail(
@@ -1713,6 +1758,17 @@ function isProcessAlive(pid: number | null | undefined) {
   }
 }
 
+function hasLiveTrackedLocalChildProcess(
+  adapterType: string,
+  run: Pick<typeof heartbeatRuns.$inferSelect, "processPid" | "processGroupId">,
+) {
+  if (!isTrackedLocalChildProcessAdapter(adapterType)) return false;
+  return Boolean(
+    (run.processPid && isProcessAlive(run.processPid)) ||
+      (run.processGroupId && isProcessGroupAlive(run.processGroupId)),
+  );
+}
+
 async function terminateHeartbeatRunProcess(input: {
   pid: number | null | undefined;
   processGroupId: number | null | undefined;
@@ -1751,6 +1807,68 @@ function buildProcessLossMessage(run: {
     return `Process lost -- process group ${run.processGroupId} is no longer running`;
   }
   return "Process lost -- server may have restarted";
+}
+
+export function normalizeHeartbeatRunExitCode(value: number | null | undefined) {
+  if (value == null) return null;
+  if (!Number.isFinite(value) || !Number.isInteger(value)) return null;
+  if (value >= POSTGRES_INT_MIN && value <= POSTGRES_INT_MAX) return value;
+  if (value >= 0 && value <= UINT32_MAX) return value - UINT32_RANGE;
+  return null;
+}
+
+function buildStaleDetachedProcessMessage(run: {
+  processPid: number | null;
+  processGroupId: number | null;
+}) {
+  if (run.processPid && run.processGroupId) {
+    return `Process lost -- detached child pid ${run.processPid} and process group ${run.processGroupId} remained alive without activity and were terminated`;
+  }
+  if (run.processPid) {
+    return `Process lost -- detached child pid ${run.processPid} remained alive without activity and was terminated`;
+  }
+  if (run.processGroupId) {
+    return `Process lost -- detached process group ${run.processGroupId} remained alive without activity and was terminated`;
+  }
+  return "Process lost -- detached local process remained alive without activity and was terminated";
+}
+
+function latestDate(...values: unknown[]) {
+  let latest: Date | null = null;
+  for (const value of values) {
+    if (!value) continue;
+    const date = value instanceof Date ? value : new Date(String(value));
+    if (Number.isNaN(date.getTime())) continue;
+    if (!latest || date.getTime() > latest.getTime()) latest = date;
+  }
+  return latest;
+}
+
+async function latestMeaningfulRunEventAt(db: Db, run: Pick<typeof heartbeatRuns.$inferSelect, "id" | "companyId">) {
+  const [eventStats] = await db
+    .select({
+      latestAt: sql<Date | null>`max(${heartbeatRunEvents.createdAt}) filter (where ${heartbeatRunEvents.eventType} not in ('lifecycle', 'adapter.invoke', 'error'))`,
+    })
+    .from(heartbeatRunEvents)
+    .where(and(eq(heartbeatRunEvents.companyId, run.companyId), eq(heartbeatRunEvents.runId, run.id)));
+  return eventStats?.latestAt ?? null;
+}
+
+async function isStaleDetachedRun(input: {
+  db: Db;
+  run: typeof heartbeatRuns.$inferSelect;
+  now: Date;
+  staleThresholdMs: number;
+}) {
+  const latestEventAt = await latestMeaningfulRunEventAt(input.db, input.run);
+  const latestActivityAt = latestDate(
+    latestEventAt,
+    input.run.lastUsefulActionAt,
+    input.run.startedAt,
+    input.run.createdAt,
+  );
+  const latestActivityMs = latestActivityAt ? new Date(latestActivityAt).getTime() : 0;
+  return input.now.getTime() - latestActivityMs >= input.staleThresholdMs;
 }
 
 function truncateDisplayId(value: string | null | undefined, max = 128) {
@@ -2523,9 +2641,13 @@ export function heartbeatService(db: Db) {
     status: string,
     patch?: Partial<typeof heartbeatRuns.$inferInsert>,
   ) {
+    const normalizedPatch =
+      patch && Object.prototype.hasOwnProperty.call(patch, "exitCode")
+        ? { ...patch, exitCode: normalizeHeartbeatRunExitCode(patch.exitCode) }
+        : patch;
     const updated = await db
       .update(heartbeatRuns)
-      .set({ status, ...patch, updatedAt: new Date() })
+      .set({ status, ...normalizedPatch, updatedAt: new Date() })
       .where(eq(heartbeatRuns.id, runId))
       .returning()
       .then((rows) => rows[0] ?? null);
@@ -3826,8 +3948,10 @@ export function heartbeatService(db: Db) {
       .then((rows) => rows[0] ?? null);
   }
 
-  async function reapOrphanedRuns(opts?: { staleThresholdMs?: number }) {
+  async function reapOrphanedRuns(opts?: { staleThresholdMs?: number; detachedProcessStaleThresholdMs?: number }) {
     const staleThresholdMs = opts?.staleThresholdMs ?? 0;
+    const detachedProcessStaleThresholdMs =
+      opts?.detachedProcessStaleThresholdMs ?? DETACHED_PROCESS_STALE_THRESHOLD_MS;
     const now = new Date();
 
     // Find all runs stuck in "running" state (queued runs are legitimately waiting; resumeQueuedRuns handles them)
@@ -3855,8 +3979,20 @@ export function heartbeatService(db: Db) {
       const tracksLocalChild = isTrackedLocalChildProcessAdapter(adapterType);
       const processPidAlive = tracksLocalChild && run.processPid && isProcessAlive(run.processPid);
       const processGroupAlive = tracksLocalChild && run.processGroupId && isProcessGroupAlive(run.processGroupId);
+      let staleDetachedCleanup = false;
       if (processPidAlive) {
-        if (run.errorCode !== DETACHED_PROCESS_ERROR_CODE) {
+        staleDetachedCleanup = await isStaleDetachedRun({
+          db,
+          run,
+          now,
+          staleThresholdMs: detachedProcessStaleThresholdMs,
+        });
+        if (staleDetachedCleanup) {
+          await terminateHeartbeatRunProcess({
+            pid: run.processPid,
+            processGroupId: run.processGroupId,
+          });
+        } else if (run.errorCode !== DETACHED_PROCESS_ERROR_CODE) {
           const detachedMessage = `Lost in-memory process handle, but child pid ${run.processPid} is still alive`;
           const detachedRun = await setRunStatus(run.id, "running", {
             error: detachedMessage,
@@ -3874,11 +4010,11 @@ export function heartbeatService(db: Db) {
             });
           }
         }
-        continue;
+        if (!staleDetachedCleanup) continue;
       }
 
       let descendantOnlyCleanup = false;
-      if (processGroupAlive) {
+      if (!staleDetachedCleanup && processGroupAlive) {
         descendantOnlyCleanup = true;
         await terminateHeartbeatRunProcess({
           pid: run.processPid,
@@ -3886,8 +4022,33 @@ export function heartbeatService(db: Db) {
         });
       }
 
-      const shouldRetry = tracksLocalChild && (!!run.processPid || !!run.processGroupId) && (run.processLossRetryCount ?? 0) < 1;
-      const baseMessage = buildProcessLossMessage(run, descendantOnlyCleanup ? { descendantOnly: true } : undefined);
+      const issueId = readNonEmptyString(parseObject(run.contextSnapshot).issueId);
+      const retryIssue = await db
+        .select({ status: issues.status })
+        .from(issues)
+        .where(
+          and(
+            eq(issues.companyId, run.companyId),
+            issueId
+              ? or(eq(issues.id, issueId), eq(issues.executionRunId, run.id))
+              : eq(issues.executionRunId, run.id),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows[0] ?? null);
+      const issueAllowsRetry = !retryIssue || (retryIssue.status !== "done" && retryIssue.status !== "cancelled");
+
+      const currentRun = await getRun(run.id);
+      if (!currentRun || currentRun.status !== "running") continue;
+
+      const shouldRetry =
+        tracksLocalChild &&
+        issueAllowsRetry &&
+        (!!run.processPid || !!run.processGroupId) &&
+        (run.processLossRetryCount ?? 0) < 1;
+      const baseMessage = staleDetachedCleanup
+        ? buildStaleDetachedProcessMessage(run)
+        : buildProcessLossMessage(run, descendantOnlyCleanup ? { descendantOnly: true } : undefined);
 
       let finalizedRun = await setRunStatus(run.id, "failed", {
         error: shouldRetry ? `${baseMessage}; retrying once` : baseMessage,
@@ -3954,22 +4115,29 @@ export function heartbeatService(db: Db) {
       ...runningProcesses.keys(),
       ...activeRunExecutions.keys(),
     ];
-    const staleLockedIssues = await db
+    const staleLockedIssueCandidates = await db
       .select({
         issueId: issues.id,
         executionRunId: issues.executionRunId,
+        processPid: heartbeatRuns.processPid,
+        processGroupId: heartbeatRuns.processGroupId,
+        adapterType: agents.adapterType,
       })
       .from(issues)
       .innerJoin(heartbeatRuns, eq(issues.executionRunId, heartbeatRuns.id))
+      .innerJoin(agents, eq(heartbeatRuns.agentId, agents.id))
       .where(
         and(
           isNotNull(issues.executionRunId),
           eq(heartbeatRuns.status, "running"),
           inMemoryRunIds.length > 0
             ? notInArray(heartbeatRuns.id, inMemoryRunIds)
-            : sql`true`,
+          : sql`true`,
         ),
       );
+    const staleLockedIssues = staleLockedIssueCandidates.filter((candidate) =>
+      !hasLiveTrackedLocalChildProcess(candidate.adapterType, candidate)
+    );
 
     if (staleLockedIssues.length > 0) {
       const staleRunIds = staleLockedIssues
@@ -6298,12 +6466,13 @@ export function heartbeatService(db: Db) {
       const shouldBlockImmediately =
         !recoveryAgentInvokable ||
         !recoveryAgent ||
+        isNonRetryableRunFailure(run) ||
         didAutomaticRecoveryFail(run, issue.status === "todo" ? "assignment_recovery" : "issue_continuation_needed");
       if (shouldBlockImmediately) {
-        const comment = buildImmediateExecutionPathRecoveryComment({
-          status: issue.status as "todo" | "in_progress",
-          latestRun: run,
-        });
+        const status = issue.status as "todo" | "in_progress";
+        const comment = isNonRetryableRunFailure(run)
+          ? buildNonRetryableRecoveryComment({ status, latestRun: run })
+          : buildImmediateExecutionPathRecoveryComment({ status, latestRun: run });
         await tx
           .update(issues)
           .set({
