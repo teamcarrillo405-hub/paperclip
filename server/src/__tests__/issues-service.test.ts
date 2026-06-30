@@ -845,6 +845,57 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
     );
   });
 
+  it("pages comments after an anchor comment without binding Date cursor values", async () => {
+    const companyId = randomUUID();
+    const issueId = randomUUID();
+    const olderCommentId = randomUUID();
+    const anchorCommentId = randomUUID();
+    const newerCommentId = randomUUID();
+
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+
+    await db.insert(issues).values({
+      id: issueId,
+      companyId,
+      title: "Paginated comments",
+      status: "todo",
+      priority: "medium",
+    });
+
+    await db.execute(sql`
+      INSERT INTO issue_comments (id, company_id, issue_id, body, created_at, updated_at)
+      VALUES
+        (${olderCommentId}, ${companyId}, ${issueId}, 'Older comment', ${"2026-03-26T10:00:00.000001Z"}::timestamptz, ${"2026-03-26T10:00:00.000001Z"}::timestamptz),
+        (${anchorCommentId}, ${companyId}, ${issueId}, 'Anchor comment', ${"2026-03-26T11:00:00.000123Z"}::timestamptz, ${"2026-03-26T11:00:00.000123Z"}::timestamptz),
+        (${newerCommentId}, ${companyId}, ${issueId}, 'Newer comment', ${"2026-03-26T12:00:00.000001Z"}::timestamptz, ${"2026-03-26T12:00:00.000001Z"}::timestamptz)
+    `);
+
+    await expect(
+      svc.listComments(issueId, {
+        afterCommentId: anchorCommentId,
+        order: "asc",
+      }),
+    ).resolves.toMatchObject([{ id: newerCommentId }]);
+
+    await expect(
+      svc.listComments(issueId, {
+        afterCommentId: anchorCommentId,
+        order: "desc",
+      }),
+    ).resolves.toMatchObject([{ id: olderCommentId }]);
+
+    const ascendingPage = await svc.listComments(issueId, {
+      afterCommentId: anchorCommentId,
+      order: "asc",
+    });
+    expect(ascendingPage.map((comment) => comment.id)).not.toContain(anchorCommentId);
+  });
+
   it("trims list payload fields that can grow large on issue index routes", async () => {
     const companyId = randomUUID();
     const issueId = randomUUID();

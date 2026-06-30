@@ -2612,22 +2612,23 @@ export function issueService(db: Db) {
         const anchor = await db
           .select({
             id: issueComments.id,
-            createdAt: issueComments.createdAt,
+            createdAt: sql<string>`${issueComments.createdAt}::text`,
           })
           .from(issueComments)
           .where(and(eq(issueComments.issueId, issueId), eq(issueComments.id, afterCommentId)))
           .then((rows) => rows[0] ?? null);
 
         if (!anchor) return [];
+        const anchorCreatedAt = anchor.createdAt;
         conditions.push(
           order === "asc"
             ? sql<boolean>`(
-                ${issueComments.createdAt} > ${anchor.createdAt}
-                OR (${issueComments.createdAt} = ${anchor.createdAt} AND ${issueComments.id} > ${anchor.id})
+                ${issueComments.createdAt} > ${anchorCreatedAt}::timestamptz
+                OR (${issueComments.createdAt} = ${anchorCreatedAt}::timestamptz AND ${issueComments.id} > ${anchor.id})
               )`
             : sql<boolean>`(
-                ${issueComments.createdAt} < ${anchor.createdAt}
-                OR (${issueComments.createdAt} = ${anchor.createdAt} AND ${issueComments.id} < ${anchor.id})
+                ${issueComments.createdAt} < ${anchorCreatedAt}::timestamptz
+                OR (${issueComments.createdAt} = ${anchorCreatedAt}::timestamptz AND ${issueComments.id} < ${anchor.id})
               )`,
         );
       }

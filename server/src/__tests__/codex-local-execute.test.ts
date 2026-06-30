@@ -38,6 +38,34 @@ process.exit(1);
   await fs.chmod(commandPath, 0o755);
 }
 
+async function writeRetryingResumeCodexCommand(commandPath: string): Promise<void> {
+  const script = `#!/usr/bin/env node
+const fs = require("node:fs");
+
+const statePath = process.env.PAPERCLIP_TEST_STATE_PATH;
+const argv = process.argv.slice(2);
+const previous = statePath && fs.existsSync(statePath)
+  ? JSON.parse(fs.readFileSync(statePath, "utf8"))
+  : [];
+previous.push(argv);
+if (statePath) {
+  fs.writeFileSync(statePath, JSON.stringify(previous), "utf8");
+}
+
+if (argv.includes("resume")) {
+  process.stderr.write("Error: ");
+  process.stderr.write("thread/resume: thread/resume failed: no rollout found for thread id fd0634a1-7948-4c67-a9a9-2eb943eac2c1 (code -32600)\\n");
+  process.exit(1);
+}
+
+console.log(JSON.stringify({ type: "thread.started", thread_id: "codex-session-fresh" }));
+console.log(JSON.stringify({ type: "item.completed", item: { type: "agent_message", text: "recovered" } }));
+console.log(JSON.stringify({ type: "turn.completed", usage: { input_tokens: 3, cached_input_tokens: 1, output_tokens: 2 } }));
+`;
+  await fs.writeFile(commandPath, script, "utf8");
+  await fs.chmod(commandPath, 0o755);
+}
+
 type CapturePayload = {
   argv: string[];
   prompt: string;
@@ -420,6 +448,79 @@ describe("codex execute", () => {
       expect(result.exitCode).toBe(1);
       expect(result.errorCode).toBe("codex_transient_upstream");
       expect(result.errorMessage).toContain("high demand");
+    } finally {
+      if (previousHome === undefined) delete process.env.HOME;
+      else process.env.HOME = previousHome;
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("retries with a fresh session when Codex resume fails with the missing-rollout thread error", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-execute-missing-rollout-"));
+    const workspace = path.join(root, "workspace");
+    const commandPath = path.join(root, "codex");
+    const statePath = path.join(root, "invocations.json");
+    await fs.mkdir(workspace, { recursive: true });
+    await writeRetryingResumeCodexCommand(commandPath);
+
+    const previousHome = process.env.HOME;
+    process.env.HOME = root;
+
+    const logs: LogEntry[] = [];
+    try {
+      const result = await execute({
+        runId: "run-missing-rollout-retry",
+        agent: {
+          id: "agent-1",
+          companyId: "company-1",
+          name: "Codex Coder",
+          adapterType: "codex_local",
+          adapterConfig: {},
+        },
+        runtime: {
+          sessionId: null,
+          sessionParams: {
+            sessionId: "codex-session-stale",
+            cwd: workspace,
+          },
+          sessionDisplayId: "codex-session-stale",
+          taskKey: null,
+        },
+        config: {
+          command: commandPath,
+          cwd: workspace,
+          env: {
+            PAPERCLIP_TEST_STATE_PATH: statePath,
+          },
+          promptTemplate: "Follow the paperclip heartbeat.",
+        },
+        context: {},
+        authToken: "run-jwt-token",
+        onLog: async (stream, chunk) => {
+          logs.push({ stream, chunk });
+        },
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.errorMessage).toBeNull();
+      expect(result.sessionId).toBe("codex-session-fresh");
+      expect(result.sessionParams).toMatchObject({
+        sessionId: "codex-session-fresh",
+        cwd: workspace,
+      });
+      expect(result.summary).toBe("recovered");
+      expect(logs).toContainEqual(
+        expect.objectContaining({
+          stream: "stdout",
+          chunk: expect.stringContaining('Codex resume session "codex-session-stale" is unavailable; retrying with a fresh session.'),
+        }),
+      );
+
+      const invocations = JSON.parse(await fs.readFile(statePath, "utf8")) as string[][];
+      expect(invocations).toHaveLength(2);
+      expect(invocations[0]).toEqual(expect.arrayContaining(["resume", "codex-session-stale", "-"]));
+      expect(invocations[1]).toEqual(expect.arrayContaining(["exec", "--json", "-"]));
+      expect(invocations[1]).not.toContain("resume");
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
