@@ -133,6 +133,12 @@ const WAKE_COMMENT_IDS_KEY = "wakeCommentIds";
 const PAPERCLIP_WAKE_PAYLOAD_KEY = "paperclipWake";
 const PAPERCLIP_HARNESS_CHECKOUT_KEY = "paperclipHarnessCheckedOut";
 const DETACHED_PROCESS_ERROR_CODE = "process_detached";
+type OrphanedRunSweepSource = "startup" | "periodic";
+type OrphanedRunRecoveryKind =
+  | "process_missing"
+  | "detached_process_exited"
+  | "detached_process_stale_cleanup"
+  | "descendant_process_group_cleanup";
 const startLocksByAgent = new Map<string, Promise<void>>();
 const REPO_ONLY_CWD_SENTINEL = "/__paperclip_repo_only__";
 const MANAGED_WORKSPACE_GIT_CLONE_TIMEOUT_MS = 10 * 60 * 1000;
@@ -748,7 +754,7 @@ export function compactRunLogChunk(chunk: string, maxChars = MAX_PERSISTED_LOG_C
 function normalizeMaxConcurrentRuns(value: unknown) {
   const parsed = Math.floor(asNumber(value, HEARTBEAT_MAX_CONCURRENT_RUNS_DEFAULT));
   if (!Number.isFinite(parsed)) return HEARTBEAT_MAX_CONCURRENT_RUNS_DEFAULT;
-  return Math.max(HEARTBEAT_MAX_CONCURRENT_RUNS_DEFAULT, Math.min(HEARTBEAT_MAX_CONCURRENT_RUNS_MAX, parsed));
+  return Math.max(1, Math.min(HEARTBEAT_MAX_CONCURRENT_RUNS_MAX, parsed));
 }
 
 async function withAgentStartLock<T>(agentId: string, fn: () => Promise<T>) {
@@ -3250,6 +3256,10 @@ export function heartbeatService(db: Db) {
     run: typeof heartbeatRuns.$inferSelect,
     agent: typeof agents.$inferSelect,
     now: Date,
+    options?: {
+      sweepSource?: OrphanedRunSweepSource;
+      recoveryKind?: OrphanedRunRecoveryKind;
+    },
   ) {
     const contextSnapshot = parseObject(run.contextSnapshot);
     const issueId = readNonEmptyString(contextSnapshot.issueId);
@@ -3260,6 +3270,8 @@ export function heartbeatService(db: Db) {
       retryOfRunId: run.id,
       wakeReason: "process_lost_retry",
       retryReason: "process_lost",
+      ...(options?.sweepSource ? { processLossSweepSource: options.sweepSource } : {}),
+      ...(options?.recoveryKind ? { processLossRecoveryKind: options.recoveryKind } : {}),
     };
 
     const queued = await db.transaction(async (tx) => {
@@ -3274,6 +3286,8 @@ export function heartbeatService(db: Db) {
           payload: {
             ...(issueId ? { issueId } : {}),
             retryOfRunId: run.id,
+            ...(options?.sweepSource ? { processLossSweepSource: options.sweepSource } : {}),
+            ...(options?.recoveryKind ? { processLossRecoveryKind: options.recoveryKind } : {}),
           },
           status: "queued",
           requestedByActorType: "system",
@@ -3343,6 +3357,8 @@ export function heartbeatService(db: Db) {
       message: "Queued automatic retry after orphaned child process was confirmed dead",
       payload: {
         retryOfRunId: run.id,
+        ...(options?.sweepSource ? { processLossSweepSource: options.sweepSource } : {}),
+        ...(options?.recoveryKind ? { processLossRecoveryKind: options.recoveryKind } : {}),
       },
     });
 
@@ -3948,10 +3964,15 @@ export function heartbeatService(db: Db) {
       .then((rows) => rows[0] ?? null);
   }
 
-  async function reapOrphanedRuns(opts?: { staleThresholdMs?: number; detachedProcessStaleThresholdMs?: number }) {
+  async function reapOrphanedRuns(opts?: {
+    staleThresholdMs?: number;
+    detachedProcessStaleThresholdMs?: number;
+    sweepSource?: OrphanedRunSweepSource;
+  }) {
     const staleThresholdMs = opts?.staleThresholdMs ?? 0;
     const detachedProcessStaleThresholdMs =
       opts?.detachedProcessStaleThresholdMs ?? DETACHED_PROCESS_STALE_THRESHOLD_MS;
+    const sweepSource = opts?.sweepSource ?? (staleThresholdMs > 0 ? "periodic" : "startup");
     const now = new Date();
 
     // Find all runs stuck in "running" state (queued runs are legitimately waiting; resumeQueuedRuns handles them)
@@ -4046,6 +4067,13 @@ export function heartbeatService(db: Db) {
         issueAllowsRetry &&
         (!!run.processPid || !!run.processGroupId) &&
         (run.processLossRetryCount ?? 0) < 1;
+      const recoveryKind: OrphanedRunRecoveryKind = staleDetachedCleanup
+        ? "detached_process_stale_cleanup"
+        : descendantOnlyCleanup
+          ? "descendant_process_group_cleanup"
+          : run.errorCode === DETACHED_PROCESS_ERROR_CODE
+            ? "detached_process_exited"
+            : "process_missing";
       const baseMessage = staleDetachedCleanup
         ? buildStaleDetachedProcessMessage(run)
         : buildProcessLossMessage(run, descendantOnlyCleanup ? { descendantOnly: true } : undefined);
@@ -4058,7 +4086,12 @@ export function heartbeatService(db: Db) {
           { adapterType, adapterConfig },
           "failed",
           {
-            resultJson: parseObject(run.resultJson),
+            resultJson: {
+              ...parseObject(run.resultJson),
+              orphanedRunSweepSource: sweepSource,
+              orphanedRunRecoveryKind: recoveryKind,
+              orphanedRunObservedDetachedProcess: run.errorCode === DETACHED_PROCESS_ERROR_CODE,
+            },
             errorCode: "process_lost",
             errorMessage: shouldRetry ? `${baseMessage}; retrying once` : baseMessage,
           },
@@ -4076,7 +4109,10 @@ export function heartbeatService(db: Db) {
       if (shouldRetry) {
         const agent = await getAgent(run.agentId);
         if (agent) {
-          retriedRun = await enqueueProcessLossRetry(finalizedRun, agent, now);
+          retriedRun = await enqueueProcessLossRetry(finalizedRun, agent, now, {
+            sweepSource,
+            recoveryKind,
+          });
         }
       } else {
         await releaseIssueExecutionAndPromote(finalizedRun);
@@ -4093,6 +4129,9 @@ export function heartbeatService(db: Db) {
           ...(run.processPid ? { processPid: run.processPid } : {}),
           ...(run.processGroupId ? { processGroupId: run.processGroupId } : {}),
           ...(descendantOnlyCleanup ? { descendantOnlyCleanup: true } : {}),
+          orphanedRunSweepSource: sweepSource,
+          orphanedRunRecoveryKind: recoveryKind,
+          orphanedRunObservedDetachedProcess: run.errorCode === DETACHED_PROCESS_ERROR_CODE,
           ...(retriedRun ? { retryRunId: retriedRun.id } : {}),
         },
       });

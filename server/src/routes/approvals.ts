@@ -53,11 +53,30 @@ function requireDecisionNote(value: unknown, action: "reject" | "request revisio
   return note;
 }
 
-async function readHccQueue() {
-  const raw = await fs.readFile(hccQueuePath(), "utf8");
-  const parsed = JSON.parse(raw.replace(/^\uFEFF/, "")) as unknown;
-  if (!Array.isArray(parsed)) return [];
-  return parsed.filter((item): item is HccQueueItem => !!item && typeof item === "object");
+// The HCC queue file can be tens of MB. The approvals list redacts every
+// approval concurrently (Promise.all), and each redact previously re-read +
+// re-parsed the whole file \u2014 N concurrent copies of a 49MB parse blew the heap
+// (OOM -> dropped connection -> client "failed to fetch"). Memoize with a short
+// TTL and in-flight dedup so a burst of concurrent reads collapses to one parse.
+let hccQueueCache: { at: number; promise: Promise<HccQueueItem[]> } | null = null;
+const HCC_QUEUE_CACHE_TTL_MS = 5000;
+async function readHccQueue(): Promise<HccQueueItem[]> {
+  const now = Date.now();
+  if (hccQueueCache && now - hccQueueCache.at < HCC_QUEUE_CACHE_TTL_MS) {
+    return hccQueueCache.promise;
+  }
+  const promise = (async () => {
+    const raw = await fs.readFile(hccQueuePath(), "utf8");
+    const parsed = JSON.parse(raw.replace(/^\uFEFF/, "")) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is HccQueueItem => !!item && typeof item === "object");
+  })();
+  hccQueueCache = { at: now, promise };
+  // On failure, drop the cache so the next call retries instead of caching the error.
+  promise.catch(() => {
+    if (hccQueueCache?.promise === promise) hccQueueCache = null;
+  });
+  return promise;
 }
 
 async function findHccQueueItemForApproval(approvalId: string, payload: Record<string, unknown>) {

@@ -713,8 +713,17 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(failedRun?.status).toBe("failed");
     expect(failedRun?.errorCode).toBe("process_lost");
     expect(failedRun?.error).toContain("remained alive without activity");
+    expect(failedRun?.resultJson).toMatchObject({
+      orphanedRunSweepSource: "startup",
+      orphanedRunRecoveryKind: "detached_process_stale_cleanup",
+      orphanedRunObservedDetachedProcess: false,
+    });
     expect(retryRun?.status).toBe("queued");
     expect(retryRun?.processLossRetryCount).toBe(1);
+    expect(retryRun?.contextSnapshot as Record<string, unknown> | undefined).toMatchObject({
+      processLossSweepSource: "startup",
+      processLossRecoveryKind: "detached_process_stale_cleanup",
+    });
 
     const issue = await db
       .select()
@@ -750,10 +759,17 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       stopReason: "process_lost",
       timeoutConfigured: false,
       timeoutFired: false,
+      orphanedRunSweepSource: "startup",
+      orphanedRunRecoveryKind: "process_missing",
+      orphanedRunObservedDetachedProcess: false,
     });
     expect(retryRun?.status).toBe("queued");
     expect(retryRun?.retryOfRunId).toBe(runId);
     expect(retryRun?.processLossRetryCount).toBe(1);
+    expect(retryRun?.contextSnapshot as Record<string, unknown> | undefined).toMatchObject({
+      processLossSweepSource: "startup",
+      processLossRecoveryKind: "process_missing",
+    });
 
     const issue = await db
       .select()
@@ -840,6 +856,35 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       .where(eq(issues.id, issueId))
       .then((rows) => rows[0] ?? null);
     expect(issue?.executionRunId).toBe(retryRun?.id ?? null);
+  });
+
+  it("records detached-process exit metadata when a previously detached pid is later reaped", async () => {
+    const { agentId, runId } = await seedRunFixture({
+      includeIssue: false,
+      processPid: 999_999_999,
+      processLossRetryCount: 1,
+      runErrorCode: "process_detached",
+      runError: "Lost in-memory process handle, but child pid 999999999 is still alive",
+    });
+    const heartbeat = heartbeatService(db);
+
+    const result = await heartbeat.reapOrphanedRuns();
+    expect(result.reaped).toBe(1);
+    expect(result.runIds).toEqual([runId]);
+
+    const runs = await db
+      .select()
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.agentId, agentId));
+    expect(runs).toHaveLength(1);
+
+    expect(runs[0]?.status).toBe("failed");
+    expect(runs[0]?.errorCode).toBe("process_lost");
+    expect(runs[0]?.resultJson).toMatchObject({
+      orphanedRunSweepSource: "startup",
+      orphanedRunRecoveryKind: "detached_process_exited",
+      orphanedRunObservedDetachedProcess: true,
+    });
   });
 
   it("blocks the issue when process-loss retry is exhausted and the immediate continuation recovery also fails", async () => {
@@ -950,6 +995,110 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const run = await heartbeat.getRun(runId);
     expect(run?.status).toBe("failed");
     expect(run?.exitCode).toBe(-1);
+  });
+
+  it("does not start another run when the agent is already at its configured concurrency limit", async () => {
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+    const runningRunId = randomUUID();
+    const queuedRunId = randomUUID();
+    const runningWakeId = randomUUID();
+    const queuedWakeId = randomUUID();
+    const now = new Date("2026-03-19T00:00:00.000Z");
+    const heartbeat = heartbeatService(db);
+
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+
+    await db.insert(agents).values({
+      id: agentId,
+      companyId,
+      name: "CodexCoder",
+      role: "engineer",
+      status: "active",
+      adapterType: "codex_local",
+      adapterConfig: {},
+      runtimeConfig: {
+        heartbeat: {
+          wakeOnDemand: true,
+          maxConcurrentRuns: 1,
+        },
+      },
+      permissions: {},
+    });
+
+    await db.insert(agentWakeupRequests).values([
+      {
+        id: runningWakeId,
+        companyId,
+        agentId,
+        source: "assignment",
+        triggerDetail: "system",
+        reason: "issue_assigned",
+        payload: {},
+        status: "claimed",
+        runId: runningRunId,
+        requestedAt: now,
+        updatedAt: now,
+      },
+      {
+        id: queuedWakeId,
+        companyId,
+        agentId,
+        source: "assignment",
+        triggerDetail: "system",
+        reason: "issue_assigned",
+        payload: {},
+        status: "queued",
+        runId: queuedRunId,
+        requestedAt: now,
+        updatedAt: now,
+      },
+    ]);
+
+    await db.insert(heartbeatRuns).values([
+      {
+        id: runningRunId,
+        companyId,
+        agentId,
+        invocationSource: "assignment",
+        triggerDetail: "system",
+        status: "running",
+        wakeupRequestId: runningWakeId,
+        startedAt: now,
+        contextSnapshot: {
+          wakeReason: "issue_assigned",
+        },
+        updatedAt: now,
+        createdAt: now,
+      },
+      {
+        id: queuedRunId,
+        companyId,
+        agentId,
+        invocationSource: "assignment",
+        triggerDetail: "system",
+        status: "queued",
+        wakeupRequestId: queuedWakeId,
+        contextSnapshot: {
+          wakeReason: "issue_assigned",
+        },
+        updatedAt: now,
+        createdAt: new Date(now.getTime() + 1_000),
+      },
+    ]);
+
+    mockAdapterExecute.mockClear();
+
+    await heartbeat.resumeQueuedRuns();
+
+    const queuedRun = await heartbeat.getRun(queuedRunId);
+    expect(queuedRun?.status).toBe("queued");
+    expect(mockAdapterExecute).not.toHaveBeenCalled();
   });
 
   it("clears the detached warning when the run reports activity again", async () => {

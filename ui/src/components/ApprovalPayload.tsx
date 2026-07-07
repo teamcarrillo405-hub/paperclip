@@ -324,6 +324,10 @@ function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unkn
   const hccReviewUrl = hccSignedReviewUrl(firstNonEmptyString(payload.hccReviewUrl));
   const imageUrl = hccImageUrl(firstNonEmptyString(payload.imageUrl));
   const liveArticleUrl = firstNonEmptyString(payload.liveArticleUrl);
+  const isVideoApproval =
+    Boolean(firstNonEmptyString(payload.videoPath, payload.video_path)) ||
+    /\bvideo\b/i.test(String(reviewKind ?? ""));
+  const videoUrl = isVideoApproval ? fullDocumentUrl : null;
   const socialDistributionRequired = payload.socialDistributionRequired === true;
   const sameImageForSocial = payload.sameImageForSocial === true;
   const assetStatus = firstNonEmptyString(payload.assetStatus);
@@ -392,6 +396,21 @@ function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unkn
             icon={<ExternalLink className="h-3.5 w-3.5" />}
           />
         </div>
+      )}
+      {videoUrl && (
+        <video
+          src={videoUrl}
+          controls
+          preload="metadata"
+          className="mt-2 w-full max-h-[28rem] rounded-lg border border-border/60 bg-black"
+        />
+      )}
+      {!videoUrl && imageUrl && (
+        <img
+          src={imageUrl}
+          alt="Approval visual"
+          className="mt-2 w-full max-h-[28rem] rounded-lg border border-border/60 bg-muted/30 object-contain"
+        />
       )}
       {recommendedAction && (
         <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3.5 py-3">

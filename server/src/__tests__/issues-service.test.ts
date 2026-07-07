@@ -2117,3 +2117,175 @@ describeEmbeddedPostgres("issueService.clearExecutionRunIfTerminal", () => {
     expect(row).toEqual({ executionRunId: null, executionLockedAt: null });
   });
 });
+
+describeEmbeddedPostgres("issueService.assertCheckoutOwner stale routine closeouts", () => {
+  let db!: ReturnType<typeof createDb>;
+  let svc!: ReturnType<typeof issueService>;
+  let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
+
+  beforeAll(async () => {
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-stale-routine-closeout-");
+    db = createDb(tempDb.connectionString);
+    svc = issueService(db);
+  }, 20_000);
+
+  afterEach(async () => {
+    await db.delete(issueComments);
+    await db.delete(issueRelations);
+    await db.delete(issueInboxArchives);
+    await db.delete(activityLog);
+    await db.delete(issues);
+    await db.delete(heartbeatRuns);
+    await db.delete(executionWorkspaces);
+    await db.delete(projectWorkspaces);
+    await db.delete(projects);
+    await db.delete(goals);
+    await db.delete(agents);
+    await db.delete(instanceSettings);
+    await db.delete(companies);
+  });
+
+  afterAll(async () => {
+    await tempDb?.cleanup();
+  });
+
+  async function seedRoutineCloseoutConflictFixture(input: {
+    staleCheckoutOwned: boolean;
+    staleExecutionOwned: boolean;
+  }) {
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+    const staleIssueId = randomUUID();
+    const liveIssueId = randomUUID();
+    const staleRunId = randomUUID();
+    const liveRunId = randomUUID();
+    const replayRunId = randomUUID();
+    const routineId = `routine:${randomUUID()}`;
+    const fingerprint = "editorial-returned-work";
+
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+    await db.insert(agents).values({
+      id: agentId,
+      companyId,
+      name: "Editorial Director",
+      role: "engineer",
+      status: "active",
+      adapterType: "codex_local",
+      adapterConfig: {},
+      runtimeConfig: {},
+      permissions: {},
+    });
+    await db.insert(heartbeatRuns).values([
+      {
+        id: staleRunId,
+        companyId,
+        agentId,
+        status: "succeeded",
+        invocationSource: "routine",
+      },
+      {
+        id: liveRunId,
+        companyId,
+        agentId,
+        status: "running",
+        invocationSource: "routine",
+      },
+      {
+        id: replayRunId,
+        companyId,
+        agentId,
+        status: "running",
+        invocationSource: "manual",
+      },
+    ]);
+    await db.insert(issues).values([
+      {
+        id: staleIssueId,
+        companyId,
+        title: "Older Editorial routine copy",
+        status: "in_progress",
+        priority: "medium",
+        assigneeAgentId: agentId,
+        checkoutRunId: input.staleCheckoutOwned ? staleRunId : null,
+        executionRunId: input.staleExecutionOwned ? staleRunId : null,
+        originKind: "routine_execution",
+        originId: routineId,
+        originFingerprint: fingerprint,
+      },
+      {
+        id: liveIssueId,
+        companyId,
+        title: "Current Editorial routine copy",
+        status: "in_progress",
+        priority: "medium",
+        assigneeAgentId: agentId,
+        checkoutRunId: liveRunId,
+        executionRunId: liveRunId,
+        originKind: "routine_execution",
+        originId: routineId,
+        originFingerprint: fingerprint,
+      },
+    ]);
+
+    return { agentId, staleIssueId, replayRunId };
+  }
+
+  it("adopts stale checked-out routine copies for closeout without reclaiming the execution slot", async () => {
+    const { agentId, staleIssueId, replayRunId } = await seedRoutineCloseoutConflictFixture({
+      staleCheckoutOwned: true,
+      staleExecutionOwned: false,
+    });
+
+    await expect(svc.assertCheckoutOwner(staleIssueId, agentId, replayRunId)).resolves.toMatchObject({
+      checkoutRunId: replayRunId,
+      adoptedFromRunId: expect.any(String),
+    });
+
+    const adoptedRow = await db
+      .select({ checkoutRunId: issues.checkoutRunId, executionRunId: issues.executionRunId })
+      .from(issues)
+      .where(eq(issues.id, staleIssueId))
+      .then((rows) => rows[0]);
+    expect(adoptedRow).toEqual({
+      checkoutRunId: replayRunId,
+      executionRunId: null,
+    });
+
+    await expect(svc.update(staleIssueId, { status: "done" })).resolves.toMatchObject({
+      id: staleIssueId,
+      status: "done",
+    });
+  });
+
+  it("adopts unowned stale routine copies for closeout without reclaiming the execution slot", async () => {
+    const { agentId, staleIssueId, replayRunId } = await seedRoutineCloseoutConflictFixture({
+      staleCheckoutOwned: false,
+      staleExecutionOwned: false,
+    });
+
+    await expect(svc.assertCheckoutOwner(staleIssueId, agentId, replayRunId)).resolves.toMatchObject({
+      checkoutRunId: replayRunId,
+      adoptedFromRunId: null,
+    });
+
+    const adoptedRow = await db
+      .select({ checkoutRunId: issues.checkoutRunId, executionRunId: issues.executionRunId })
+      .from(issues)
+      .where(eq(issues.id, staleIssueId))
+      .then((rows) => rows[0]);
+    expect(adoptedRow).toEqual({
+      checkoutRunId: replayRunId,
+      executionRunId: null,
+    });
+
+    await expect(svc.update(staleIssueId, { status: "done" })).resolves.toMatchObject({
+      id: staleIssueId,
+      status: "done",
+    });
+  });
+});

@@ -205,6 +205,15 @@ function decodeDatabaseTextPreview(value: string | null | undefined, maxChars: n
   return truncateByCodePoint(Buffer.from(value, "base64").toString("utf8"), maxChars);
 }
 
+function stripNullBytes(value: string): string {
+  return value.replace(/\x00/g, "");
+}
+
+function stripNullBytesNullable(value: string | null | undefined): string | null | undefined {
+  if (value == null) return value;
+  return stripNullBytes(value);
+}
+
 function appendAcceptanceCriteriaToDescription(description: string | null | undefined, acceptanceCriteria: string[] | undefined) {
   const criteria = (acceptanceCriteria ?? []).map((item) => item.trim()).filter(Boolean);
   if (criteria.length === 0) return description ?? null;
@@ -1236,7 +1245,7 @@ export function issueService(db: Db) {
     actorAgentId: string;
     actorRunId: string;
     expectedCheckoutRunId: string;
-  }) {
+  }, options?: { claimExecutionRun?: boolean }) {
     const run = await db
       .select({ status: heartbeatRuns.status, startedAt: heartbeatRuns.startedAt })
       .from(heartbeatRuns)
@@ -1255,14 +1264,17 @@ export function issueService(db: Db) {
     if (!isTerminalOrMissing && !isStaleRunning) return null;
 
     const now = new Date();
+    const patch: Partial<typeof issues.$inferInsert> = {
+      checkoutRunId: input.actorRunId,
+      executionLockedAt: now,
+      updatedAt: now,
+    };
+    if (options?.claimExecutionRun !== false) {
+      patch.executionRunId = input.actorRunId;
+    }
     const adopted = await db
       .update(issues)
-      .set({
-        checkoutRunId: input.actorRunId,
-        executionRunId: input.actorRunId,
-        executionLockedAt: now,
-        updatedAt: now,
-      })
+      .set(patch)
       .where(
         and(
           eq(issues.id, input.issueId),
@@ -1287,16 +1299,19 @@ export function issueService(db: Db) {
     issueId: string;
     actorAgentId: string;
     actorRunId: string;
-  }) {
+  }, options?: { claimExecutionRun?: boolean }) {
     const now = new Date();
+    const patch: Partial<typeof issues.$inferInsert> = {
+      checkoutRunId: input.actorRunId,
+      executionLockedAt: now,
+      updatedAt: now,
+    };
+    if (options?.claimExecutionRun !== false) {
+      patch.executionRunId = input.actorRunId;
+    }
     const adopted = await db
       .update(issues)
-      .set({
-        checkoutRunId: input.actorRunId,
-        executionRunId: input.actorRunId,
-        executionLockedAt: now,
-        updatedAt: now,
-      })
+      .set(patch)
       .where(
         and(
           eq(issues.id, input.issueId),
@@ -2020,6 +2035,8 @@ export function issueService(db: Db) {
 
         const values = {
           ...issueData,
+          title: stripNullBytes(issueData.title),
+          description: stripNullBytesNullable(issueData.description),
           originKind: issueData.originKind ?? "manual",
           goalId: resolveIssueGoalId({
             projectId: issueData.projectId,
@@ -2103,6 +2120,8 @@ export function issueService(db: Db) {
 
       const patch: Partial<typeof issues.$inferInsert> = {
         ...issueData,
+        ...(issueData.title !== undefined ? { title: stripNullBytes(issueData.title) } : {}),
+        ...(issueData.description !== undefined ? { description: stripNullBytesNullable(issueData.description) } : {}),
         updatedAt: new Date(),
       };
 
@@ -2426,7 +2445,7 @@ export function issueService(db: Db) {
           issueId: id,
           actorAgentId,
           actorRunId,
-        });
+        }, { claimExecutionRun: false });
 
         if (adopted) {
           return {
@@ -2443,12 +2462,15 @@ export function issueService(db: Db) {
         current.checkoutRunId &&
         current.checkoutRunId !== actorRunId
       ) {
+        // Mutation-time lock adoption must not re-claim executionRunId for a stale
+        // routine copy, or it can collide with the newer live routine execution
+        // that already owns the open-routine unique slot.
         const adopted = await adoptStaleCheckoutRun({
           issueId: id,
           actorAgentId,
           actorRunId,
           expectedCheckoutRunId: current.checkoutRunId,
-        });
+        }, { claimExecutionRun: false });
 
         if (adopted) {
           return {
@@ -2724,7 +2746,7 @@ export function issueService(db: Db) {
       const currentUserRedactionOptions = {
         enabled: (await instanceSettings.getGeneral()).censorUsernameInLogs,
       };
-      const redactedBody = redactCurrentUserText(body, currentUserRedactionOptions);
+      const redactedBody = redactCurrentUserText(stripNullBytes(body), currentUserRedactionOptions);
       const [comment] = await db
         .insert(issueComments)
         .values({
