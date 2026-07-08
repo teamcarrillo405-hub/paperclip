@@ -2311,12 +2311,7 @@ export function agentRoutes(db: Db) {
     }
     assertCompanyAccess(req, agent.companyId);
 
-    if (req.actor.type === "agent") {
-      if (req.actor.agentId !== id) {
-        res.status(403).json({ error: "Agent can only invoke itself" });
-        return;
-      }
-    } else {
+    if (req.actor.type !== "agent") {
       await assertBoardCanManageAgentsForCompany(req, agent.companyId);
     }
 
@@ -2367,8 +2362,12 @@ export function agentRoutes(db: Db) {
 
     if (req.actor.type === "agent") {
       if (req.actor.agentId !== id) {
-        res.status(403).json({ error: "Agent can only invoke itself" });
-        return;
+        const actorAgent = req.actor.agentId ? await svc.getById(req.actor.agentId) : null;
+        const canInvoke = actorAgent != null && (actorAgent.role === "ceo" || canCreateAgents(actorAgent));
+        if (!canInvoke) {
+          res.status(403).json({ error: "Agent can only invoke itself" });
+          return;
+        }
       }
     } else {
       await assertBoardCanManageAgentsForCompany(req, agent.companyId);
