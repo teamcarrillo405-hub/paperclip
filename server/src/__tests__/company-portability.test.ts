@@ -1637,6 +1637,89 @@ describe("company portability", () => {
     expect(issueSvc.create).not.toHaveBeenCalled();
   });
 
+  it("preserves the HCC 30-minute heartbeat mesh when legacy hourly recurrences are imported", async () => {
+    const portability = companyPortabilityService({} as any);
+
+    companySvc.create.mockResolvedValue({
+      id: "company-imported",
+      name: "Imported Paperclip",
+    });
+    accessSvc.ensureMembership.mockResolvedValue(undefined);
+    agentSvc.create.mockResolvedValue({
+      id: "agent-created",
+      name: "Operations",
+    });
+    projectSvc.create.mockResolvedValue({
+      id: "project-created",
+      name: "Heartbeat Mesh",
+      urlKey: "heartbeat-mesh",
+    });
+    agentSvc.list.mockResolvedValue([]);
+    projectSvc.list.mockResolvedValue([]);
+
+    const heartbeatFixtures = [
+      { slug: "communications-review", name: "Returned Work and Inbox Review - Communications and Search Director", startsAt: "2026-07-06T00:02:00-05:00", cron: "2,32 * * * *" },
+      { slug: "creative-review", name: "Returned Work and Inbox Review - Creative Director", startsAt: "2026-07-06T00:04:00-05:00", cron: "4,34 * * * *" },
+      { slug: "editorial-review", name: "Returned Work and Inbox Review - Editorial Director", startsAt: "2026-07-06T00:06:00-05:00", cron: "6,36 * * * *" },
+      { slug: "engagement-review", name: "Returned Work and Inbox Review - Engagement and Community Manager", startsAt: "2026-07-06T00:08:00-05:00", cron: "8,38 * * * *" },
+      { slug: "research-review", name: "Returned Work and Inbox Review - Research and Intelligence Director", startsAt: "2026-07-06T00:10:00-05:00", cron: "10,40 * * * *" },
+      { slug: "social-review", name: "Returned Work and Inbox Review - Social Media and Growth Director", startsAt: "2026-07-06T00:14:00-05:00", cron: "14,44 * * * *" },
+      { slug: "technology-review", name: "Returned Work and Inbox Review - Technology Director", startsAt: "2026-07-06T00:04:00-05:00", cron: "4,34 * * * *" },
+    ];
+
+    const files: Record<string, string> = {
+      "COMPANY.md": ['---', 'schema: "agentcompanies/v1"', 'name: "Imported Paperclip"', "---", ""].join("\n"),
+      "agents/operations/AGENTS.md": ['---', 'name: "Operations"', "---", "", "You keep routines healthy.", ""].join("\n"),
+      "projects/heartbeat-mesh/PROJECT.md": ['---', 'name: "Heartbeat Mesh"', "---", ""].join("\n"),
+    };
+
+    for (const fixture of heartbeatFixtures) {
+      files[`tasks/${fixture.slug}/TASK.md`] = [
+        "---",
+        `name: "${fixture.name}"`,
+        'project: "heartbeat-mesh"',
+        'assignee: "operations"',
+        "schedule:",
+        '  timezone: "America/Chicago"',
+        `  startsAt: "${fixture.startsAt}"`,
+        "  recurrence:",
+        '    frequency: "hourly"',
+        "    interval: 2",
+        "---",
+        "",
+        "Keep returned work moving.",
+        "",
+      ].join("\n");
+    }
+
+    const preview = await portability.previewImport({
+      source: { type: "inline", rootPath: "paperclip-demo", files },
+      include: { company: true, agents: true, projects: true, issues: true, skills: false },
+      target: { mode: "new_company", newCompanyName: "Imported Paperclip" },
+      agents: "all",
+      collisionStrategy: "rename",
+    });
+
+    expect(preview.errors).toEqual([]);
+
+    await portability.importBundle({
+      source: { type: "inline", rootPath: "paperclip-demo", files },
+      include: { company: true, agents: true, projects: true, issues: true, skills: false },
+      target: { mode: "new_company", newCompanyName: "Imported Paperclip" },
+      agents: "all",
+      collisionStrategy: "rename",
+    }, "user-1");
+
+    expect(routineSvc.createTrigger).toHaveBeenCalledTimes(heartbeatFixtures.length);
+    for (const fixture of heartbeatFixtures) {
+      expect(routineSvc.createTrigger).toHaveBeenCalledWith("routine-created", expect.objectContaining({
+        kind: "schedule",
+        cronExpression: fixture.cron,
+        timezone: "America/Chicago",
+      }), expect.any(Object));
+    }
+  });
+
   it("flags recurring task imports that are missing routine-required fields", async () => {
     const portability = companyPortabilityService({} as any);
 

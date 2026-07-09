@@ -1077,6 +1077,22 @@ function normalizeCronList(values: string[]) {
   return Array.from(new Set(values)).sort((left, right) => Number(left) - Number(right)).join(",");
 }
 
+function buildLegacyHourlyMinuteField(startMinute: number, interval: number) {
+  if (interval <= 1 || interval > 60 || 60 % interval !== 0) return null;
+  const step = 60 / interval;
+  if (!Number.isInteger(step) || step <= 0 || step >= 60) return null;
+
+  const minutes: string[] = [];
+  const seen = new Set<number>();
+  let cursor = startMinute;
+  while (!seen.has(cursor)) {
+    seen.add(cursor);
+    minutes.push(String(cursor));
+    cursor = (cursor + step) % 60;
+  }
+  return normalizeCronList(minutes);
+}
+
 function buildLegacyRoutineTriggerFromRecurrence(
   issue: Pick<CompanyPortabilityIssueManifestEntry, "slug" | "legacyRecurrence">,
   scheduleValue: unknown,
@@ -1108,7 +1124,8 @@ function buildLegacyRoutineTriggerFromRecurrence(
   }
 
   const time = isPlainRecord(issue.legacyRecurrence.time) ? issue.legacyRecurrence.time : null;
-  const hour = asInteger(time?.hour) ?? zonedStartsAt?.hour ?? 0;
+  const explicitHour = asInteger(time?.hour);
+  const hour = explicitHour ?? zonedStartsAt?.hour ?? 0;
   const minute = asInteger(time?.minute) ?? zonedStartsAt?.minute ?? 0;
   if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
     errors.push(`Recurring task ${issue.slug} uses legacy recurrence with an invalid time; add .paperclip.yaml routines.${issue.slug}.triggers.`);
@@ -1122,12 +1139,21 @@ function buildLegacyRoutineTriggerFromRecurrence(
   let cronExpression: string | null = null;
 
   if (frequency === "hourly") {
-    const hourField = interval === 1
-      ? "*"
-      : zonedStartsAt
-        ? `${zonedStartsAt.hour}-23/${interval}`
-        : `*/${interval}`;
-    cronExpression = `${minute} ${hourField} * * *`;
+    // Older heartbeat migrations encoded twice-per-hour meshes as hourly interval=2
+    // with only a startsAt minute anchor. Preserve that sub-hour cadence here.
+    const minuteField = explicitHour == null
+      ? buildLegacyHourlyMinuteField(minute, interval)
+      : null;
+    if (minuteField) {
+      cronExpression = `${minuteField} * * * *`;
+    } else {
+      const hourField = interval === 1
+        ? "*"
+        : zonedStartsAt
+          ? `${zonedStartsAt.hour}-23/${interval}`
+          : `*/${interval}`;
+      cronExpression = `${minute} ${hourField} * * *`;
+    }
   } else if (frequency === "daily") {
     if (Array.isArray(issue.legacyRecurrence.weekdays) || Array.isArray(issue.legacyRecurrence.monthDays) || Array.isArray(issue.legacyRecurrence.months)) {
       errors.push(`Recurring task ${issue.slug} uses unsupported legacy daily recurrence constraints; add .paperclip.yaml routines.${issue.slug}.triggers.`);
