@@ -104,6 +104,12 @@ every 30 seconds and commits any change (from the agent, from Obsidian, from
 you) with a timestamped message. Any bad write is a normal `git revert` /
 `git log` away.
 
+It also adds `.obsidian/plugins/*/data.json` to the vault's `.gitignore`
+before the first commit (and backfills it into an existing vault repo if you
+already had one) — that's where the Local REST API plugin, and most other
+plugins that store credentials, keep them in plaintext. Without this, your
+API key would otherwise end up committed into the vault's git history.
+
 Keep it running in the background — e.g. as a `launchd` (macOS) or `systemd`
 (Linux) user service, or a simple `pm2 start` / `screen` session. It needs to
 be running continuously alongside Paperclip and Obsidian for the safety net to
