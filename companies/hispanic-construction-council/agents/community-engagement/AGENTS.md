@@ -5,6 +5,7 @@ reportsTo: executive-director
 skills:
   - hcc-brand-voice
   - hcc-engagement-standards
+  - oauth-capacity-budget
   - paperclip
 ---
 

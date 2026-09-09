@@ -93,6 +93,19 @@ sourcing on Monday, and the Social Media Manager, Video Producer, and Community
 Engagement Specialist all draw from it so the week reads as one voice rather
 than five.
 
+## Shared capacity
+
+All six agents run on **one Claude subscription**. There is no per-agent
+allowance — every heartbeat draws from the same pool, so capacity is a
+company-level resource and the real risk is cheap early work starving the
+Wednesday article.
+
+The `oauth-capacity-budget` skill defines the rule: read the live session and
+weekly usage windows at the start of each heartbeat, run in Normal / Guarded /
+Priority-only / Freeze mode accordingly, and cut by priority tier — public
+commitments last. Capacity-driven cuts are always stated in the task comment and
+carried into the Friday review, never absorbed silently.
+
 ## Non-negotiables
 
 These apply to every agent in this company:
@@ -110,3 +123,6 @@ These apply to every agent in this company:
 4. **Disclose nothing confidential.** Member lists, internal financials, and
    unpublished research stay internal until the President releases them.
 5. **When a claim is uncertain, say so or leave it out.**
+6. **Never set `ANTHROPIC_API_KEY` to work around a capacity limit.** It
+   silently converts the company from a fixed subscription to uncapped metered
+   billing. That is the President's decision, not an agent's.

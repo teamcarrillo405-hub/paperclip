@@ -5,6 +5,7 @@ reportsTo: null
 skills:
   - hcc-brand-voice
   - hcc-editorial-standards
+  - oauth-capacity-budget
   - paperclip
 ---
 

@@ -6,6 +6,7 @@ skills:
   - hcc-brand-voice
   - hcc-editorial-standards
   - national-report-production
+  - oauth-capacity-budget
   - paperclip
 ---
 

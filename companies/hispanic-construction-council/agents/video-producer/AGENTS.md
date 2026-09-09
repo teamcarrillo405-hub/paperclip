@@ -6,6 +6,7 @@ skills:
   - hcc-brand-voice
   - hcc-editorial-standards
   - blotato-publishing
+  - oauth-capacity-budget
   - paperclip
 ---
 

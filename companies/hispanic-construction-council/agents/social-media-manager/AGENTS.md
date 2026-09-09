@@ -7,6 +7,7 @@ skills:
   - hcc-editorial-standards
   - blotato-publishing
   - hcc-engagement-standards
+  - oauth-capacity-budget
   - paperclip
 ---
 
