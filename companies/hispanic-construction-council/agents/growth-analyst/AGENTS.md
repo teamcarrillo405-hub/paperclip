@@ -5,6 +5,7 @@ reportsTo: executive-director
 skills:
   - blotato-publishing
   - hcc-engagement-standards
+  - oauth-capacity-budget
   - paperclip
 ---
 
